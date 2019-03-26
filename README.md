@@ -29,10 +29,16 @@ The TensorFlow Docker image is from a Ubuntu 16.04 (`lsb_release -a` shows `Ubun
 
 Code written for Tensorflow should follow principles described in https://www.tensorflow.org/guide/using_gpu
 
-In particular, the following section https://www.tensorflow.org/guide/using_gpu#allowing_gpu_memory_growth might be needed to allow efficient use of the GPU's memory. In particular:
+In particular, the following section https://www.tensorflow.org/guide/using_gpu#allowing_gpu_memory_growth might be needed to allow proper use of the GPU's memory. In particular:
    
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
+    session = tf.Session(config=config, ...)
+
+Note that this often allocates all the GPU memory to one Tensorflow client. If you intend to run multiple Tensorflow containers, limiting the available memory available to the container's Tensorflow can be achieved as described in https://stackoverflow.com/questions/34199233/how-to-prevent-tensorflow-from-allocating-the-totality-of-a-gpu-memory by instead specifying the percentage of the GPU memory to be used:
+
+    config = tf.ConfigProto()
+    config.gpu_options.per_process_gpu_memory_fraction=0.125
     session = tf.Session(config=config, ...)
 
 The built Docker images do NOT install any models, add/build/download your own in your `Dockerfile` that is `FROM cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1`
