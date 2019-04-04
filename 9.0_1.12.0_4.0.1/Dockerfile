@@ -1,15 +1,15 @@
 FROM tensorflow/tensorflow:1.12.0-gpu-py3
 # tensorflow-gpu requires nvidia-docker v2 to run
 # and is based of nvidia's CUDA 9.0 Docker image running on Ubuntu 16.04 
-
-# Version: 0.1
-# Build using: docker build -t cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1 .
+#
+# Build using: docker build -t cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.2 .
 
 ENV PROTOBUF_VERSION 3.5.1
 ENV OPENCV_VERSION 4.0.1
 
 LABEL "Author"="Data Machines Corp <help@datamachines.io>"
 LABEL description="Preconfigured Ubuntu 16.04 with Nvidia CUDA enabled version of TensorFlow and OpenCV"
+LABEL version="0.2"
 
 # Install system packages
 RUN apt-get -qq update \
@@ -54,7 +54,9 @@ RUN apt-get -qq update \
     libboost-all-dev \
     cuda-npp-dev-9.0 \
     cuda-cublas-dev-9.0 \
-    cuda-cufft-dev-9.0
+    cuda-cufft-dev-9.0 \
+    libxvidcore-dev \
+    libx264-dev 
 
 # Download & build protobuf-python
 RUN wget -q -P /usr/local/src/ --no-check-certificate https://github.com/google/protobuf/releases/download/v3.5.1/protobuf-python-${PROTOBUF_VERSION}.tar.gz

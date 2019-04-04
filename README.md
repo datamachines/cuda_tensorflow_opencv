@@ -21,6 +21,8 @@ Recommended reading on Tensorflow Docker GPU at https://www.tensorflow.org/insta
 
 The TensorFlow Docker image is from a Ubuntu 16.04 (`lsb_release -a` shows `Ubuntu 16.04.5 LTS`) and has CUDA 10.0 libraries available (`dpkg -l | grep cuda`). For more details, see https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.0/runtime/cudnn7/Dockerfile
 
+A `runDocker.sh` script is present in the directory to test the built image; it will set up the X11 passthrough and give the use a prompt, as well as mount the calling directory as `/dmc`.The user can test X11 is functional by using a simple X command such as `xlogo` from the command line.
+
 ### 9.0_1.12.0_4.0.1
 
 `Dockerfile` using `FROM tensorflow/tensorflow:1.12.0-gpu-py3` using Ubuntu 16.04 and CUDA 9.0
@@ -62,5 +64,7 @@ To run an interactive `/bin/bash` with X11 set for Docker and the current direct
     XSOCK=/tmp/.X11-unix
     XAUTH=/tmp/.docker.xauth
     xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-    nvidia-docker run -it --rm -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH -v ${PWD}:/dmc cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1 /bin/bash
+    nvidia-docker run -it --rm -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH -v ${PWD}:/dmc --ipc host cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1 /bin/bash
     xhost -local:docker
+
+Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `nvidia-docker` command line but ensure that you have access to the directories you will work in.
