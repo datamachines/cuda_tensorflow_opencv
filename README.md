@@ -1,8 +1,12 @@
-# DockerFile with GPU support for TensorFlow and OpenCV
+# DockerFile with Nvidia GPU support for TensorFlow and OpenCV
 
-Install GPU optimized version of TensorFlow and OpenCV. Also install protobuf, Jupyter, Keras, numpy, pandas and X11 support.
+Install Nvidia GPU optimized version of TensorFlow and OpenCV. Also install protobuf, Jupyter, Keras, numpy, pandas and X11 support.
 
 Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
+
+**Docker Images built from this repository publicly available at https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv 
+It is possible to use those as `FROM` for your `Dockerfile`.
+For example: `FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-0.3` **
 
 ## Directories and tag naming
 
@@ -12,6 +16,8 @@ As such `9.0_1.12.0_4.0.1` refers to *Cuda 9.0*, *TensorFlow 1.12.0* and *OpenCV
 Docker images are tagged with a version information for the Dockerfile they were built from at the end of the tag string (following a dash character), such that `cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1` is for *version 0.1*.
 
 ## Version specific information
+
+(not all versions available are listed below, only the base builds are detailed)
 
 ### 10.0_1.13.1_4.0.1
 
@@ -27,7 +33,9 @@ A `runDocker.sh` script is present in the directory to test the built image; it 
 
 `Dockerfile` using `FROM tensorflow/tensorflow:1.12.0-gpu-py3` using Ubuntu 16.04 and CUDA 9.0
 
-## Using TensorFlow in your code
+## Using the tools
+
+### Using TensorFlow in your code
 
 Code written for Tensorflow should follow principles described in https://www.tensorflow.org/guide/using_gpu
 
@@ -56,7 +64,7 @@ For example:
     ENV PYTHONPATH "$PYTHONPATH:/usr/local/lib/python3.5/dist-packages/tensorflow/models/research:/usr/local/lib/python3.5/dist-packages/tensorflow/models/research/slim"
     RUN cd /usr/local/lib/python3.5/dist-packages/tensorflow/models/research && protoc object_detection/protos/*.proto --python_out=.
 
-## X11 display
+### X11 display
 
 To run an interactive `/bin/bash` with X11 set for Docker and the current directory loaded in `/dmc`
 
@@ -68,3 +76,26 @@ To run an interactive `/bin/bash` with X11 set for Docker and the current direct
     xhost -local:docker
 
 Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `nvidia-docker` command line but ensure that you have access to the directories you will work in.
+
+### CuDNN 
+
+Because CuDNN needs to be downloaded from Nvidia with a developer account, it is not included in any builds. If you want to add it to your own builds, the simplest way is to use the `cuda_tensorflow_opencv` as a `FROM` and install the needed `.deb` files
+
+For example, basing it on the CUDA 9.0 public image: create a new build directory, and download in this directory the main/dev/doc `deb` files for cudnn (for Ubuntu 16.04 and CUDA 9.0) that can be retrieved from https://developer.nvidia.com/rdp/cudnn-download (registration required)
+
+Use/Adapt the following `Dockerfile` for your need:
+
+	FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-0.3
+	
+	# Tagged build: docker build --tag="cudnn_tensorflow_opencv:9.0_1.12.0_4.1.0-0.3" .
+	# Tag version kept in sync with the cuda_tensorflow_opencv one it is "FROM"
+	
+	RUN mkdir /tmp/cudnn
+	COPY *.deb /tmp/cudnn/
+	RUN dpkg -i /tmp/cudnn/*.deb && rm -rf /tmp/cudnn 
+	
+Warning: This build will copy any `.deb`present in the directory where the `Dockerfile` is found
+
+### OpenCV and GPU
+
+OpenCV is compiled with CUDA support, but note that not all of OpenCV's functions are CUDA optimized. This is true in particular for some of the `contrib` code.
