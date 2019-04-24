@@ -2,15 +2,11 @@ FROM tensorflow/tensorflow:1.12.0-gpu-py3
 # tensorflow-gpu requires nvidia-docker v2 to run
 # and is based of nvidia's CUDA 9.0 Docker image running on Ubuntu 16.04 
 #
-# Build using: docker build -t cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-0.3 .
+# Build using: docker build --tag="cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-0.4" .
 
 ENV CUDA_VERSION 9.0
 ENV PROTOBUF_VERSION 3.5.1
 ENV OPENCV_VERSION 4.1.0
-
-LABEL "Author"="Data Machines Corp <help@datamachines.io>"
-LABEL description="Preconfigured Ubuntu 16.04 with Nvidia CUDA enabled version of TensorFlow and OpenCV"
-LABEL version="0.3"
 
 # Install system packages
 RUN apt-get -qq update \
@@ -125,6 +121,7 @@ RUN mkdir -p /usr/local/src/opencv/build \
     -D CUDA_nppicom_LIBRARY=nppicom \
     -D OPENCV_GENERATE_PKGCONFIG=ON \
     -D WITH_WEBP=OFF \
+    -D WITH_OPENMP=ON \
     .. \
   && export NUMPROC=$(nproc --all) \
   && make -j$NUMPROC VERBOSE=1 install \
@@ -154,3 +151,7 @@ RUN mkdir /dmc
 WORKDIR /dmc
 
 CMD bash
+
+# Labels -- kept at the end to maximize layer reuse when possible
+LABEL "Author"="Data Machines Corp <help@datamachines.io>"
+LABEL description="Preconfigured Ubuntu 16.04 with Nvidia CUDA enabled version of TensorFlow and OpenCV"
