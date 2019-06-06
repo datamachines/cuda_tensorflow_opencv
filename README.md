@@ -11,9 +11,9 @@ For example: `FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605
 ## Docker images tag naming
 
 The image tags follow the `cuda_tensorflow_opencv` naming order.
-As such `9.0_1.12.0_4.0.1` refers to *Cuda 9.0*, *TensorFlow 1.12.0* and *OpenCV 4.0.1*, and `10.0_1.13.1_4.0.1` refers to *Cuda 10.0*, *TensorFlow 1.13.1* and *OpenCV 4.0.1*.
+As such `9.0_1.12.0_4.1.0` refers to *Cuda 9.0*, *TensorFlow 1.12.0* and *OpenCV 4.1.0*, and `10.0_1.13.1_3.4.6` refers to *Cuda 10.0*, *TensorFlow 1.13.1* and *OpenCV 3.4.6*.
 
-Docker images also tagged with a version information for the date (YYYYMMDD) of the Dockerfile against which they were built from, added at the end of the tag string (following a dash character), such that `cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-20190605` is for *Dockerfile dating June 5th, 2019*.
+Docker images also tagged with a version information for the date (YYYYMMDD) of the Dockerfile against which they were built from, added at the end of the tag string (following a dash character), such that `cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605` is for *Dockerfile dating June 5th, 2019*.
 
 ## Building the images
 
@@ -47,7 +47,7 @@ From the bash interactive shell, type `cd /dmc; python3 display_pic.py3` will di
 
 (not all versions available are listed below, only the base builds are detailed)
 
-### 10.0_1.13.1_4.0.1
+### 10.0_1.13.1_4.1.0
 
 `Dockerfile`  using `FROM tensorflow/tensorflow:1.13.1-gpu-py3` 
 For more information, see https://github.com/tensorflow/tensorflow/releases/tag/v1.13.1 and https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/docker, knowing that `TensorFlow GPU binaries are now built against CUDA 10 and TensorRT 5.0`.
@@ -55,7 +55,7 @@ Recommended reading on Tensorflow Docker GPU at https://www.tensorflow.org/insta
 
 The TensorFlow Docker image is from a Ubuntu 16.04 (use `lsb_release -a`) and has CUDA 10.0 libraries available (`dpkg -l | grep cuda`). For more details, see https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.0/runtime/cudnn7/Dockerfile
 
-### 9.0_1.12.0_4.0.1
+### 9.0_1.12.0_3.4.6
 
 `Dockerfile` using `FROM tensorflow/tensorflow:1.12.0-gpu-py3` using Ubuntu 16.04 and CUDA 9.0
 
@@ -77,11 +77,11 @@ Note that this often allocates all the GPU memory to one Tensorflow client. If y
     config.gpu_options.per_process_gpu_memory_fraction=0.125
     session = tf.Session(config=config, ...)
 
-The built Docker images do NOT install any models, add/build/download your own in your `Dockerfile` that is `FROM cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-0.1`
+The built Docker images do NOT install any models, add/build/download your own in your `Dockerfile` that is `FROM cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605`
 
 For example:
 
-    FROM cuda_tensorflow_opencv:9.0_1.12.0_4.0.1-20190605
+    FROM cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605
     
     # Download tensorflow object detection models
     RUN GIT_SSL_NO_VERIFY=true git clone -q https://github.com/tensorflow/models /usr/local/lib/python3.5/dist-packages/tensorflow/models
