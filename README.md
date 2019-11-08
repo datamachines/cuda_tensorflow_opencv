@@ -1,33 +1,43 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
 
-Install an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+As of 20191107 version, also builds a non-CUDA version: `tensorflow_opencv`
 
-Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
+`cuda_tensorflow_opencv`:
+- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
+
+`tensorflow_opencv`:
+- Builds a similar container with a version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- can be used on systems without a Nvidia GPU
 
 **Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv 
 It is possible to use those as `FROM` for your `Dockerfile`.
-For example: `FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605` **
+For example: `FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107` **
 
 ## Docker images tag naming
 
 The image tags follow the `cuda_tensorflow_opencv` naming order.
-As such `9.0_1.12.0_4.1.0` refers to *Cuda 9.0*, *TensorFlow 1.12.0* and *OpenCV 4.1.0*, and `10.0_1.13.1_3.4.6` refers to *Cuda 10.0*, *TensorFlow 1.13.1* and *OpenCV 3.4.6*.
+As such `9.0_1.12.3_4.1.2` refers to *Cuda 9.0*, *TensorFlow 1.12.3* and *OpenCV 4.1.2*.
 
-Docker images also tagged with a version information for the date (YYYYMMDD) of the Dockerfile against which they were built from, added at the end of the tag string (following a dash character), such that `cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605` is for *Dockerfile dating June 5th, 2019*.
+Docker images are also tagged with a version information for the date (YYYYMMDD) of the Dockerfile against which they were built from, added at the end of the tag string (following a dash character), such that `cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107` is for *Dockerfile dating November 7th, 2019*.
+
+Similarly, the `tensorflow_opencv` tag follow the same naming convention, and `1.12.3_3.4.8-20191107` refers to *Tensorflow 1.23.3*, *OpenCV 3.4.8*. with a *Dockerfile dating November 7th, 2019*.
 
 ## Building the images
 
-Use the provided `Makefile` to get a list of tags.
-Use `make build_all` to build all containers.
-Note that the tag for those images does not contain the `datamachines/` organization addition that is found in the publicly released pre-built container images.
+Use the provided `Makefile` to get a list of targets to build.
+
+Use `make build_all` to build all container images, `make cuda_tensorflow_opencv` to build all the `cuda_tensorflow_opencv` container images, `make tensorflow_opencv` to build all the `tensorflow_opencv` container images, and a direct tag to build a specific version; for example `make 9.0_1.12.3_3.4.8`, will build the `datamachines/cuda_tensorflow_opencv:9.0_1.12.3_3.4.8-20191107` container image.
+
+Note that the tag for those images does contain the `datamachines/` organization addition that is found in the publicly released pre-built container images.
 
 ## Using the container images
 
-The use of the provided `runDocker.sh` script  present in the directory to test the built image; it will set up the X11 passthrough and give the use a prompt, as well as mount the calling directory as `/dmc`.The user can test X11 is functional by using a simple X command such as `xlogo` from the command line.
+On Linux, the use of the provided `runDocker.sh` script  present in the directory to test the built image; it will set up the X11 passthrough and give the use a prompt, as well as mount the calling directory as `/dmc`.The user can test X11 is functional by using a simple X command such as `xlogo` from the command line.
 
 Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `nvidia-docker` command line but ensure that you have access to the directories you will work in.
 
-To use it, the full tag of the container image should be passed as the `CTO_TAG` environment variable. For example, to use `9.0_1.12.0_4.1.0-20190605`, run `CTO_TAG=9.0_1.12.0_4.1.0-20190605 ./runDocker.sh`. Note that `./` can be replaced by the location of `runDocker.sh` so that the user can mount its current working directory as `/dmc` in order to access local files.
+To use it, the full name of the container image should be passed as the `CTO` environment variable. For example, to use `datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107`, run `CTO=datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107 ./runDocker.sh`. Note that `./` can be replaced by the location of `runDocker.sh` so that the user can mount its current working directory as `/dmc` in order to access local files.
 
 For example, if the user place a picture (named `pic.jpg`) in the directory to be mount as `/dmc` and the following example script (naming it `display_pic.py3`)
 
@@ -40,28 +50,12 @@ For example, if the user place a picture (named `pic.jpg`) in the directory to b
     cv2.waitKey(0) & 0xFF
     cv2.destroyAllWindows()
 
-, adapting "PATH_TO_RUNDOCKER" in `CTO_TAG=9.0_1.12.0_4.1.0-20190605 PATH_TO_RUNDOCKER/runDocker.sh`.
+, adapting "PATH_TO_RUNDOCKER" in `CTO=datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107 PATH_TO_RUNDOCKER/runDocker.sh`.
 From the bash interactive shell, type `cd /dmc; python3 display_pic.py3` will display the picture on the user's X11 display.
-
-## Version specific information
-
-(not all versions available are listed below, only the base builds are detailed)
-
-### 10.0_1.13.1_4.1.0
-
-`Dockerfile`  using `FROM tensorflow/tensorflow:1.13.1-gpu-py3` 
-For more information, see https://github.com/tensorflow/tensorflow/releases/tag/v1.13.1 and https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/docker, knowing that `TensorFlow GPU binaries are now built against CUDA 10 and TensorRT 5.0`.
-Recommended reading on Tensorflow Docker GPU at https://www.tensorflow.org/install/docker#gpu_support
-
-The TensorFlow Docker image is from a Ubuntu 16.04 (use `lsb_release -a`) and has CUDA 10.0 libraries available (`dpkg -l | grep cuda`). For more details, see https://gitlab.com/nvidia/cuda/blob/ubuntu16.04/10.0/runtime/cudnn7/Dockerfile
-
-### 9.0_1.12.0_3.4.6
-
-`Dockerfile` using `FROM tensorflow/tensorflow:1.12.0-gpu-py3` using Ubuntu 16.04 and CUDA 9.0
 
 ## Using the tools
 
-### Using TensorFlow in your code
+### Using GPU TensorFlow in your code
 
 Code written for Tensorflow should follow principles described in https://www.tensorflow.org/guide/using_gpu
 
@@ -77,11 +71,11 @@ Note that this often allocates all the GPU memory to one Tensorflow client. If y
     config.gpu_options.per_process_gpu_memory_fraction=0.125
     session = tf.Session(config=config, ...)
 
-The built Docker images do NOT install any models, add/build/download your own in your `Dockerfile` that is `FROM cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605`
+The built Docker images do NOT install any models, add/build/download your own in your `Dockerfile` that is `FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107`
 
 For example:
 
-    FROM cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605
+    FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107
     
     # Download tensorflow object detection models
     RUN GIT_SSL_NO_VERIFY=true git clone -q https://github.com/tensorflow/models /usr/local/lib/python3.5/dist-packages/tensorflow/models
@@ -98,9 +92,9 @@ For example, basing it on the CUDA 9.0 public image: create a new build director
 
 Use/Adapt the following `Dockerfile` for your need:
 
-	FROM cuda_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605
+	FROM datamachines/cuda_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107
 	
-	# Tagged build: docker build --tag="cudnn_tensorflow_opencv:9.0_1.12.0_4.1.0-20190605" .
+	# Tagged build: docker build --tag="cudnn_tensorflow_opencv:9.0_1.12.3_4.1.2-20191107" .
 	# Tag version kept in sync with the cuda_tensorflow_opencv one it is "FROM"
 	
 	RUN mkdir /tmp/cudnn
@@ -111,4 +105,4 @@ Warning: This build will copy any `.deb`present in the directory where the `Dock
 
 ### OpenCV and GPU
 
-OpenCV is compiled with CUDA support, but note that not all of OpenCV's functions are CUDA optimized. This is true in particular for some of the `contrib` code.
+In `cuda_tensorflow_opencv`, OpenCV is compiled with CUDA support, but note that not all of OpenCV's functions are CUDA optimized. This is true in particular for some of the `contrib` code.
