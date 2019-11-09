@@ -2,7 +2,7 @@ ARG CTO_TENSORFLOW_TAG
 FROM tensorflow/tensorflow:$CTO_TENSORFLOW_TAG
 #
 # Note: tensorflow-gpu requires nvidia-docker v2 to run
-# and is based of nvidia's CUDA Docker image running on Ubuntu 16.04 
+# and is based of nvidia's CUDA Docker image running on Ubuntu 18.04 
 ##
 # Recommended build: follow the options offered by the Makefile
 #
@@ -23,12 +23,17 @@ RUN apt-get update \
     libatlas-base-dev libboost-all-dev \
     x11-apps libgtk2.0-dev libgtk2.0-dev libcanberra-gtk-module libgtk-3-dev qt4-default \
     libtbb2 libtbb-dev \ 
-    libjpeg-dev libpng12-dev libtiff-dev libpng-dev imagemagick \
-    libv4l-dev libdc1394-22-dev libatk-adaptor libjasper-dev \
+    libjpeg-dev libpng-dev libtiff-dev libpng-dev imagemagick \
+    libv4l-dev libdc1394-22-dev libatk-adaptor \
     python3-dev libpython3-dev python-pil python-lxml python-tk \
     libfreetype6-dev libhdf5-serial-dev libzmq3-dev \
     libavcodec-dev libavformat-dev libswscale-dev libxvidcore-dev \
     libx264-dev ffmpeg ${CTO_CUDA_APT}
+
+# For OpenCV 3 compilation
+RUN add-apt-repository "deb http://security.ubuntu.com/ubuntu xenial-security main" \
+  && apt-get update \
+  && apt-get install -y libjasper1 libjasper-dev
 
 # Install core python packages 
 RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
