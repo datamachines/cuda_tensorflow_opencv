@@ -14,7 +14,7 @@ The base OS for those container images is Ubuntu 18.04 (as the base `tensorflow/
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/tensorflow_opencv . The [https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/DockerHub-Builds.md](DockerHub-Builds.md) file is a quick way of seeing the list of pre-built container images**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/tensorflow_opencv . The [DockerHub-Builds.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/DockerHub-Builds.md) file is a quick way of seeing the list of pre-built container images**
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.0_1.13.2_4.1.2-20191108`
 
