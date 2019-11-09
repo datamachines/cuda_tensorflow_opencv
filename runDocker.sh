@@ -1,11 +1,91 @@
 #!/bin/bash
 
-if [ -z ${CTO+x} ]; then echo "CTO variable not set, unable to continue"; exit 1; fi
-if [ "A${CTO}" == "A" ]; then echo "CTO variable empty, unable to continue"; exit 1; fi 
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-xhost +local:docker
-XSOCK=/tmp/.X11-unix
-XAUTH=/tmp/.docker.xauth
-xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
-nvidia-docker run -it --runtime=nvidia --rm -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH -v ${PWD}:/dmc --ipc host ${CTO} /bin/bash
-xhost -local:docker
+usage () {
+  echo ""
+  echo "$0 [-h] [-d dir] [-c cmd_full_path] [-N] [-X] [-e \"extra docker options\"] [-b] -- cmd_args"
+  echo " -h   this helps text"
+  echo " -d   directory mounted in the container as /dmc (default: current directory)"
+  echo " -c   Full path of the command to run (accessible from within container) (default: /bin/bash)"
+  echo " -N   Non-interactive run (default is interactive)"
+  echo " -X   Disable X11 support (default is enabled)"
+  echo " -e   Extra docker command line options"
+  echo " -b   Bypass any provided command and use the container built in one, if any (also disable any cmd_args provided"
+  echo ""
+  echo "Run using: CONTAINER_ID=\"<name:tag>\" <PATH_TO_RUNDOCKER>/runDocker.sh <command_line_options>"
+  exit 1
+}
+
+if [ -z ${CONTAINER_ID+x} ]; then echo "CONTAINER_ID variable not set, unable to continue"; usage; exit 1; fi # variable unset case
+if [ "A${CONTAINER_ID}" == "A" ]; then echo "CONTAINER_ID variable empty, unable to continue"; usage; exit 1; fi # variable set but empty case
+
+ARGS_ALWAYS="-v /etc/localtime:/etc/localtime -v /etc/timezone:/etc/timezone"
+DMC=${PWD}
+DRCMD="/bin/bash"
+D_ARGS_INT="-it"
+D_ARGS_X11="-e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH"
+D_ARGS_XTRA=""
+D_ARGS_BYPASS=""
+while getopts ":hd:c:NXe:b" opt; do
+  case "$opt" in
+    h) usage ;;
+    d) DMC=${OPTARG} ;;
+    c) RCMD=${OPTARG} ;;
+    N) D_ARGS_INT="" ;;
+    X) D_ARGS_X11="" ;;
+    e) D_ARGS_XTRA=${OPTARG} ;;
+    b) D_ARGS_BYPASS="yes" ;;
+    \?) usage ;;
+  esac
+done
+shift "$(($OPTIND -1))"
+
+RCMD_ARGS="$@"
+
+if [ "A${D_ARGS_BYPASS}" == "Ayes" ]; then
+  RCMD=""
+  RCMD_ARGS=""
+else
+  if [ "A${RCMD}" == "A" ]; then # no command passed, use an interactive shell
+    RCMD=${DRCMD}
+    D_ARGS_INTS="-it"
+  fi
+fi
+
+D_ARGS_OS=""
+if [ "A${D_ARGS_X11}" != "A" ]; then
+  unameOut="$(uname -s)"
+  case "${unameOut}" in
+    Linux*)     D_ARGS_OS="Linux" ;;
+    Darwin*)    D_ARGS_OS="Mac" ;;
+    *) echo "Unsupported OS ($unameOut) for X11, aborting"; exit 1 ;;
+  esac
+  if [ "A${D_ARGS_OS}" == "ALinux" ]; then
+    xhost +local:docker
+    XSOCK=/tmp/.X11-unix
+    XAUTH=/tmp/.docker.xauth
+    USER_UID=$(id -u)
+    xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+  else # Darwin (macOS)
+    xhost + 127.0.0.1
+    D_ARGS_X11="-e DISPLAY=host.docker.internal:0"
+  fi
+fi
+
+DOCKER_RUN="docker run"
+if [ "A${D_ARGS_OS}" == "ALinux" ]; then
+  if [[ ${CONTAINER_ID} =~ ^datamachines/cuda_.* ]]; then
+    DOCKER_RUN="nvidia-docker run --runtime=nvidia --ipc host"
+  fi 
+fi
+
+${DOCKER_RUN} ${D_ARGS_INT} --rm \
+    -v ${DMC}:/dmc ${D_ARGS_X11} ${D_ARGS_XTRA} ${ARGS_ALWAYS} \
+    ${CONTAINER_ID} ${RCMD} ${RCMD_ARGS}
+
+if [ "A${D_ARGS_X11}" != "A" ]; then
+  if [ "A${D_ARGS_OS}" == "ALinux" ]; then
+    xhost -local:docker
+  fi
+fi
