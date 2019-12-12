@@ -44,9 +44,9 @@ URL: https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv
 
 URL: https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv
 
-| Docker Tag | CUDA | TensorFlow | OpenCV | Ubuntu | Github Link |
-| --- | --- | --- | --- | --- | --- |
-| 10.2_1.15-3.4.8-20191210 | 10.2 | 1.15 | 3.4.8 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
-| 10.2_1.15-3.4.8-20191210 | 10.2 | 1.15 | 4.1.2 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
-| 10.2_2.0-3.4.8-20191210 | 10.2 | 2.0 | 3.4.8 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
-| 10.2_2.0-4.1.2-20191210 | 10.2 | 2.0 | 4.1.2 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
+| Docker Tag | CUDA | CUDNN | TensorFlow | OpenCV | Ubuntu | Github Link |
+| --- | --- | --- | --- | --- | --- | --- |
+| 10.2_1.15-3.4.8-20191210 | 10.2 | 7.6 | 1.15 | 3.4.8 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
+| 10.2_1.15-3.4.8-20191210 | 10.2 | 7.6 | 1.15 | 4.1.2 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
+| 10.2_2.0-3.4.8-20191210 | 10.2 | 7.6 | 2.0 | 3.4.8 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
+| 10.2_2.0-4.1.2-20191210 | 10.2 | 7.6 | 2.0 | 4.1.2 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/f0da94d1fa0362e52b62accb500815abb9092dc1) |
