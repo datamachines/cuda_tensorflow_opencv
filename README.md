@@ -6,7 +6,7 @@ More details on the Nvidia base images are available at https://hub.docker.com/r
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"; with further details on DockerHub version from https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 
 As of the `20191107` Dockerfile version, it also builds a non-CUDA version: `tensorflow_opencv`.
-As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_tensorflow_opencv` (still confirming that a version built upon the official `-cudnn7` container can be redistributed, so you may have to build it yourself until this is cleared)
+As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_tensorflow_opencv`
 
 `cuda_tensorflow_opencv`:
 - Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
@@ -20,7 +20,7 @@ As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/tensorflow_opencv . The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv, https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv . The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15_3.4.8-20191210`
 
