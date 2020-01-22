@@ -20,11 +20,11 @@ usage () {
 if [ -z ${CONTAINER_ID+x} ]; then echo "CONTAINER_ID variable not set, unable to continue"; usage; exit 1; fi # variable unset case
 if [ "A${CONTAINER_ID}" == "A" ]; then echo "CONTAINER_ID variable empty, unable to continue"; usage; exit 1; fi # variable set but empty case
 
-ARGS_ALWAYS="-v /etc/localtime:/etc/localtime -v /etc/timezone:/etc/timezone"
+ARGS_ALWAYS=""
 DMC=${PWD}
 DRCMD="/bin/bash"
 D_ARGS_INT="-it"
-D_ARGS_X11="-e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH"
+D_ARGS_X11=""
 D_ARGS_XTRA=""
 D_ARGS_BYPASS=""
 while getopts ":hd:c:NXe:b" opt; do
@@ -33,13 +33,21 @@ while getopts ":hd:c:NXe:b" opt; do
     d) DMC=${OPTARG} ;;
     c) RCMD=${OPTARG} ;;
     N) D_ARGS_INT="" ;;
-    X) D_ARGS_X11="" ;;
+    X) D_ARGS_X11="___" ;;
     e) D_ARGS_XTRA=${OPTARG} ;;
     b) D_ARGS_BYPASS="yes" ;;
     \?) usage ;;
   esac
 done
 shift "$(($OPTIND -1))"
+
+D_ARGS_OS=""
+unameOut="$(uname -s)"
+case "${unameOut}" in
+  Linux*)     D_ARGS_OS="Linux" ;;
+  Darwin*)    D_ARGS_OS="Mac" ;;
+  *) echo "Unsupported OS ($unameOut), aborting"; exit 1 ;;
+esac
 
 RCMD_ARGS="$@"
 
@@ -53,24 +61,24 @@ else
   fi
 fi
 
-D_ARGS_OS=""
-if [ "A${D_ARGS_X11}" != "A" ]; then
-  unameOut="$(uname -s)"
-  case "${unameOut}" in
-    Linux*)     D_ARGS_OS="Linux" ;;
-    Darwin*)    D_ARGS_OS="Mac" ;;
-    *) echo "Unsupported OS ($unameOut) for X11, aborting"; exit 1 ;;
-  esac
+if [ "A${D_ARGS_X11}" == "A___" ]; then
+  D_ARGS_X11=""
+else
   if [ "A${D_ARGS_OS}" == "ALinux" ]; then
     xhost +local:docker
     XSOCK=/tmp/.X11-unix
     XAUTH=/tmp/.docker.xauth
     USER_UID=$(id -u)
+    D_ARGS_X11="-e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH"
     xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
   else # Darwin (macOS)
     xhost + 127.0.0.1
     D_ARGS_X11="-e DISPLAY=host.docker.internal:0"
   fi
+fi
+
+if [ "A${D_ARGS_OS}" == "ALinux" ]; then
+  ARGS_ALWAYS="-v /etc/localtime:/etc/localtime -v /etc/timezone:/etc/timezone"
 fi
 
 DOCKER_RUN="docker run"
