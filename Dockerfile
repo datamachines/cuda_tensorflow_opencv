@@ -16,9 +16,9 @@ RUN apt-get update \
     python3-dev libpython3-dev python-pil python-lxml python-tk \
     libfreetype6-dev libhdf5-serial-dev libzmq3-dev \
     libavcodec-dev libavformat-dev libswscale-dev \
-    libv4l-dev libxvidcore-dev \
+    libv4l-dev libxvidcore-dev libx264-dev \
     gcc-6 g++-6 libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev \
-    libopenblas-dev libatlas-base-dev liblapack-dev gfortran \
+    libopenblas-dev liblapack-dev gfortran \
     libhdf5-serial-dev python3-tk python-imaging-tk libgtk-3-dev
 
 # Setup pip
@@ -68,7 +68,15 @@ RUN mkdir -p /usr/local/src/opencv/build \
     -DWITH_GDAL=ON -DWITH_XINE=ON -DWITH_GTK=ON \
     -DWITH_OPENMP=ON ${CTO_CUDA_BUILD} \
     .. \
-  && make -j${CTO_NUMPROC} install
+  && make -j${CTO_NUMPROC} install \
+  && rm -rf /usr/local/src/opencv/build
+## FYI: We are removing the OpenCV build directory (in /usr/local/src/opencv) 
+#   to attempt to save additional disk space
+# Comment the above line (and remove the \ in the line above) if you want to
+#  rerun cmake with additional/modified options AFTER it was built; for example:
+# cd /usr/local/src/opencv/build
+# cmake -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .
+# make
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
@@ -83,10 +91,3 @@ LABEL "Author"="Data Machines Corp <help@datamachines.io>"
 
 # Attempt to Minimize image size 
 RUN (apt-get autoremove -y; apt-get autoclean -y)
-
-## FYI: We are removing the OpenCV build directory (in /usr/local/src/opencv) to attempt to save additional disk space
-RUN rm -rf /usr/local/src/opencv/build
-# Comment the above line if you want to rerun cmake with additional/modified options; for example:
-#  cd /usr/local/src/opencv/build
-#  cmake -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .
-#  make
