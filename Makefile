@@ -3,34 +3,62 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20191210
+CTO_RELEASE=20200211
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
 
-STABLE_OPENCV3=3.4.8
-STABLE_OPENCV4=4.1.2
+# According to https://hub.docker.com/r/nvidia/cuda/
+# Building .1 less for latest to help with systems which do not have the latest driver installed
+# (example: latest is 10.2, will also build 10.1)
+STABLE_CUDA9=9.2
+STABLE_CUDA10p=10.1
+STABLE_CUDA10=10.2
+# CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
+DNN_ARCH_CUDA9=5.3,6.0,6.1,6.2
+DNN_ARCH_CUDA10=5.3,6.0,6.1,6.2,7.0,7.2,7.5
 
-STABLE_TF15=1.15
-STABLE_TF20=2.0
+# According to https://opencv.org/releases/
+STABLE_OPENCV3=3.4.9
+STABLE_OPENCV4=4.2.0
+
+# According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
+STABLE_TF1=1.15.2
+STABLE_TF2=2.1.0
 
 ##### CUDA _ Tensorflow _ OpenCV
-CTO_BUILDALL =cuda_tensorflow_opencv-10.2_${STABLE_TF15}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-10.2_${STABLE_TF15}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-10.2_${STABLE_TF20}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-10.2_${STABLE_TF20}_${STABLE_OPENCV4}
+CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### CuDNN _ Tensorflow _ OpenCV
-DTO_BUILDALL =cudnn_tensorflow_opencv-10.2_${STABLE_TF15}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-10.2_${STABLE_TF15}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-10.2_${STABLE_TF20}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-10.2_${STABLE_TF20}_${STABLE_OPENCV4}
+DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10p}_${STABLE_TF2}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Tensorflow _ OpenCV
-TO_BUILDALL =tensorflow_opencv-${STABLE_TF15}_${STABLE_OPENCV3}
-TO_BUILDALL+=tensorflow_opencv-${STABLE_TF15}_${STABLE_OPENCV4}
-TO_BUILDALL+=tensorflow_opencv-${STABLE_TF20}_${STABLE_OPENCV3}
-TO_BUILDALL+=tensorflow_opencv-${STABLE_TF20}_${STABLE_OPENCV4}
+TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
+TO_BUILDALL+=tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV4}
+TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV3}
+TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV4}
 
 ## By default, provide the list of build targets
 all:
@@ -66,6 +94,7 @@ ${CTO_BUILDALL}:
 
 ${DTO_BUILDALL}:
 	@CUDX="cudnn" CUDX_FROM="-cudnn7" CUDX_COMP="-DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON" BTARG="$@" make build_prep
+# CUDA_ARCH_BIN is set in build_prep now 
 
 build_prep:
 	@$(eval CTO_NAME=$(shell echo ${BTARG} | cut -d- -f 1))
@@ -78,13 +107,16 @@ build_prep:
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
-	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A1.15" ]; then echo "tensorflow==1.15"; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow"; else echo "tensorflow-gpu"; fi; fi))
+	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "tensorflow==${STABLE_TF1}"; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF2}"; else echo "tensorflow-gpu==${STABLE_TF2}"; fi; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
 
 	@$(eval CTO_TMP="cuda-npp-${CTO_CUDA_VERSION} cuda-cublas-${CTO_CUDA_PRIMEVERSION} cuda-cufft-${CTO_CUDA_VERSION} cuda-libraries-${CTO_CUDA_VERSION} cuda-npp-dev-${CTO_CUDA_VERSION} cuda-cublas-dev-${CTO_CUDA_PRIMEVERSION} cuda-cufft-dev-${CTO_CUDA_VERSION} cuda-libraries-dev-${CTO_CUDA_VERSION}")
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
+
+	@$(eval DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else echo "${DNN_ARCH_CUDA10}"; fi))
+	@$(eval CUDX_COMP=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${DNN_ARCH}"; else echo "${CUDX_COMP}"; fi))
 
 	@$(eval CTO_FROM=$(shell if [ ${CTO_SC} == 1 ]; then echo "ubuntu:18.04"; else echo "nvidia/cuda:${CTO_CUDA_VERSION}${CUDX_FROM}-devel-ubuntu18.04"; fi))
 
@@ -112,3 +144,5 @@ actual_build:
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
+	@mkdir -p OpenCV_BuildConf
+	@perl -0777 -ne 'print $$1 if m%(\-\-\sGeneral\sconfiguration\sfor.+?)\-\-\s*\-\-\sConfiguring\sdone%s' ${CTO_NAME}-${CTO_TAG}.log > OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
