@@ -1,5 +1,7 @@
 #!/bin/bash
 
+D_GPUS="--gpus all"
+
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 usage () {
@@ -83,8 +85,8 @@ fi
 
 DOCKER_RUN="docker run"
 if [ "A${D_ARGS_OS}" == "ALinux" ]; then
-  if [[ ${CONTAINER_ID} =~ ^datamachines/cuda_.* ]]; then
-    DOCKER_RUN="nvidia-docker run --runtime=nvidia --ipc host"
+  if [[ ${CONTAINER_ID} =~ ^datamachines/cud.* ]]; then
+    DOCKER_RUN="docker run ${D_GPUS} --ipc host"
   fi 
 fi
 
