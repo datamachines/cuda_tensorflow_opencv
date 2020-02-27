@@ -1,12 +1,16 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20191210
+Revision: 20200211
 
 The base OS for those container images is Ubuntu 18.04 or DockerHub's `nvidia/cuda` based on Ubuntu 18.04. 
 More details on the Nvidia base images are available at https://hub.docker.com/r/nvidia/cuda/ . 
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"; with further details on DockerHub version from https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 
+
 As of the `20191107` Dockerfile version, it also builds a non-CUDA version: `tensorflow_opencv`.
+
 As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_tensorflow_opencv`
+
+As of the `20200211` Dockerfile version, we are making use of Docker 19.03's GPU support and are adding information about the OpenCV builds in the `OpenCV_BuildConf` directory.
 
 `cuda_tensorflow_opencv`:
 - Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
@@ -14,6 +18,7 @@ As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_
 
 `cudnn_tensorflow_opencv`:
 - Similar to `cuda_tensorflow_opencv` but with CuDNN installed and used for OpenCV compilation (this was more deeply integrated within OpenCV after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827) for additional details).
+- For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher; please see https://en.wikipedia.org/wiki/CUDA#GPUs_supported to confirm your architecture is supported
 
 `tensorflow_opencv`:
 - Builds a similar container with a version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
@@ -44,6 +49,8 @@ Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make cudnn_tensorflow_opencv` will build all the `cudnn_tensorflow_opencv` container images
 - use a direct tag to build a specific version; for example `make cudnn_tensorflow_opencv-10.2_2.0_4.1.2`, will build the `datamachines/cudnn_tensorflow_opencv:10.2_2.0_4.1.2-20191210` container image.
 
+If you have a system available to run the `build_all`, sometimes OpenCV will fail, the following `bash` is useful to keep building: `while true; do make -i build_all ; sleep 200; done`. Just be ready to `Ctrl+c` it when done/ready (completion can be seen by the matching log files).
+
 ## Using the container images
 
 The use of the provided `runDocker.sh` script present in the source directory allows users to utilize the built image. Dy default, it will set up the X11 passthrough (for Linux and MacOS) and give the user a `/bin/bash` prompt within the running container, as well as mount the calling directory as `/dmc`. A user can test that X11 is functional by using a simple X command such as `xlogo` from the command line.
@@ -52,7 +59,9 @@ To use it, the full name of the container image should be passed as the `CONTAIN
 
 `runDocker.sh` can take multiple arguments; running it without any argument will provide a list of those arguments.
 
-Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `nvidia-docker`/`docker` command line but ensure that you have access to the directories you will work in. This can be done using the `-e` command line option of `runDocker.sh`.
+As of Docker 19.03, GPU support is native to the container runtime, as such, we have shifted from the use of `nvidia-docker` to the native `docker [...] --gpus all`. We understand not every user want to use all the GPUs installed on his system, as such, to change this option, change the `D_GPUS` line in the first few lines of `runDocker.sh` to reflect the paramaters that best reflect your system or needs. GPU support is only enabled for the `cuda_` and `cudnn_` images.
+
+Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `docker` command line but ensure that you have access to the directories you will work in. This can be done using the `-e` command line option of `runDocker.sh`.
 
 ### Making use of the container
 
@@ -102,4 +111,4 @@ For example:
 
 ### A note about OpenCV and GPU
 
-In `cuda_tensorflow_opencv` (resp. `cuda_tensorflow_opencv`), OpenCV is compiled with CUDA (resp. CUDA+CuDNN support), but note that not all of OpenCV's functions are optimized. This is true in particular for some of the `contrib` code.
+In `cuda_tensorflow_opencv` (resp. `cudnn_tensorflow_opencv`), OpenCV is compiled with CUDA (resp. CUDA+CuDNN support), but note that not all of OpenCV's functions are optimized. This is true in particular for some of the `contrib` code.
