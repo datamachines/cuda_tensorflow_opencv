@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200211
+CTO_RELEASE=20200327
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)

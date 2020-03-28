@@ -3,23 +3,30 @@ FROM ${CTO_FROM}
 
 # Install system packages
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update \
+RUN apt-get update -y \
   && apt-get install -y --no-install-recommends apt-utils \
-  && apt-get install -y --no-install-recommends \ 
-    wget unzip file \
+  && apt-get install -y \ 
+    wget curl unzip file \
     build-essential cmake git pkg-config software-properties-common \
+    checkinstall yasm \
     libatlas-base-dev libboost-all-dev \
-    x11-apps libgtk2.0-dev libgtk2.0-dev libcanberra-gtk-module libgtk-3-dev qt4-default \
+    x11-apps libgtk2.0-dev libgtk2.0-dev libcanberra-gtk-module libgtk-3-dev qt5-default \
     libtbb2 libtbb-dev \ 
-    libjpeg-dev libpng-dev libtiff-dev imagemagick \
-    libv4l-dev libdc1394-22-dev libatk-adaptor \
+    libjpeg8-dev libpng-dev libtiff5-dev libopenjp2-7-dev libopenjp2-tools imagemagick \
+    v4l-utils libv4l-dev libdc1394-22-dev libatk-adaptor \
     python3-dev libpython3-dev python-pil python-lxml python-tk \
     libfreetype6-dev libhdf5-serial-dev libzmq3-dev \
     libavcodec-dev libavformat-dev libswscale-dev \
-    libv4l-dev libxvidcore-dev libx264-dev \
+    libxvidcore-dev libxine2-dev x264 libx264-dev \
+    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
+    libfaac-dev libmp3lame-dev libtheora-dev libvorbis-dev \
+    libopencore-amrnb-dev libopencore-amrwb-dev \
+    libprotobuf-dev protobuf-compiler \
+    libgoogle-glog-dev libgflags-dev \ 
+    libgphoto2-dev libeigen3-dev libhdf5-dev doxygen \
     gcc-6 g++-6 libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev \
     libopenblas-dev liblapack-dev gfortran \
-    libhdf5-serial-dev python3-tk python-imaging-tk libgtk-3-dev
+    python3-tk python-imaging-tk libgtk-3-dev
 
 # Setup pip
 # Install core python packages 
@@ -47,7 +54,7 @@ RUN mkdir -p /usr/local/src \
 
 # Install Python tools and TensorFlow
 ARG CTO_TENSORFLOW_PYTHON
-RUN pip install -U numpy matplotlib notebook pandas moviepy keras autovizwidget jupyter \
+RUN pip install -U numpy scipy matplotlib scikit-image scikit-learn ipython notebook pandas moviepy keras autovizwidget jupyter \
     && pip install ${CTO_TENSORFLOW_PYTHON}
 
 # Build OpenCV
@@ -56,27 +63,30 @@ ARG CTO_CUDA_BUILD
 RUN mkdir -p /usr/local/src/opencv/build \
   && cd /usr/local/src/opencv/build \
   && cmake \
-    -DCMAKE_INSTALL_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-    -DOPENCV_GENERATE_PKGCONFIG=ON \
-    -DWITH_WEBP=OFF \
+    -DOPENCV_ENABLE_NONFREE=OFF \
+    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    -DOPENCV_GENERATE_PKGCONFIG=YES \
+    -DWITH_WEBP=ON \
     -DINSTALL_C_EXAMPLES=OFF -DINSTALL_PYTHON_EXAMPLES=OFF -DBUILD_EXAMPLES=OFF \
     -DOPENCV_EXTRA_MODULES_PATH=/usr/local/src/opencv_contrib/modules \
     -DBUILD_DOCS=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF \
     -DWITH_TBB=ON -D WITH_EIGEN=ON \
     -DWITH_IPP=ON -DWITH_CSTRIPES=ON -DWITH_OPENCL=ON \
     -DWITH_V4L=ON -DENABLE_FAST_MATH=1 -DFORCE_VTK=ON \
-    -DWITH_GDAL=ON -DWITH_XINE=ON -DWITH_GTK=ON \
+    -DWITH_GDAL=ON -DWITH_XINE=ON -DWITH_GTK=ON -DWITH_QT=ON \
     -DWITH_OPENMP=ON ${CTO_CUDA_BUILD} \
     .. \
   && make -j${CTO_NUMPROC} install \
+  && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' \
+  && ldconfig \
   && rm -rf /usr/local/src/opencv/build
 ## FYI: We are removing the OpenCV build directory (in /usr/local/src/opencv) 
 #   to attempt to save additional disk space
 # Comment the above line (and remove the \ in the line above) if you want to
 #  rerun cmake with additional/modified options AFTER it was built; for example:
 # cd /usr/local/src/opencv/build
-# cmake -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .
-# make
+# cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension

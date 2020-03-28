@@ -12,6 +12,8 @@ As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_
 
 As of the `20200211` Dockerfile version, we are making use of Docker 19.03's GPU support and are adding information about the OpenCV builds in the `OpenCV_BuildConf` directory.
 
+As of the `20200327` Dockerfile version, we have added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
+
 `cuda_tensorflow_opencv`:
 - Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
 - Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
