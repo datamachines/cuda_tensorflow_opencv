@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20200211
+Revision: 20200327
 
 The base OS for those container images is Ubuntu 18.04 or DockerHub's `nvidia/cuda` based on Ubuntu 18.04. 
 More details on the Nvidia base images are available at https://hub.docker.com/r/nvidia/cuda/ . 
