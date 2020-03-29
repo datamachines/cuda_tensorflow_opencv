@@ -3,8 +3,8 @@
 tag=`make -f Makefile | grep tag | cut -d ':' -f 2`
 list=`make -f Makefile| grep '-' | tr -s ' ' | cut -d ' ' -f 2`
 
-# Link to the Github release (do not forget to do the release :) )
-gh="https://github.com/datamachines/cuda_tensorflow_opencv/releases/tag/"
+# Link to the Github released tag (do not forget to tag, push the tag and do the release)
+gh="https://github.com/datamachines/cuda_tensorflow_opencv/tree/"
 # Base link for OpenCV build dumps
 lgb="https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/OpenCV_BuildConf/"
 # CuDNN version (consistent among entries)
