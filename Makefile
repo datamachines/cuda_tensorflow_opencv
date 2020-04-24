@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200327
+CTO_RELEASE=20200423
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -19,8 +19,8 @@ DNN_ARCH_CUDA9=5.3,6.0,6.1,6.2
 DNN_ARCH_CUDA10=5.3,6.0,6.1,6.2,7.0,7.2,7.5
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.9
-STABLE_OPENCV4=4.2.0
+STABLE_OPENCV3=3.4.10
+STABLE_OPENCV4=4.3.0
 
 # According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
 STABLE_TF1=1.15.2
@@ -131,8 +131,8 @@ build_prep:
 
 actual_build:
 	@echo "Press Ctl+c within 5 seconds to cancel"
-	@echo "  CTO_FROM               : ${CTO_FROM}"
-	@echo "  CTO_TENSORFLOW_PYTHON  : ${CTO_TENSORFLOW_PYTHON}"
+	@echo "  CTO_FROM               : ${CTO_FROM}" | tee OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@echo "  CTO_TENSORFLOW_PYTHON  : ${CTO_TENSORFLOW_PYTHON}" | tee -a OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
 	docker build \
 	  --build-arg CTO_FROM=${CTO_FROM} \
@@ -145,4 +145,4 @@ actual_build:
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
 	@mkdir -p OpenCV_BuildConf
-	@perl -0777 -ne 'print $$1 if m%(\-\-\sGeneral\sconfiguration\sfor.+?)\-\-\s*\-\-\sConfiguring\sdone%s' ${CTO_NAME}-${CTO_TAG}.log > OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
