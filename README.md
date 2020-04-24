@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20200327
+Revision: 20200423
 
 The base OS for those container images is Ubuntu 18.04 or DockerHub's `nvidia/cuda` based on Ubuntu 18.04. 
 More details on the Nvidia base images are available at https://hub.docker.com/r/nvidia/cuda/ . 
@@ -14,6 +14,9 @@ As of the `20200211` Dockerfile version, we are making use of Docker 19.03's GPU
 
 As of the `20200327` Dockerfile version, we have added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
 
+As of the `20200423` Dockerfile version, we have added added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build.
+We have also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
+
 `cuda_tensorflow_opencv`:
 - Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
 - Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
@@ -26,6 +29,9 @@ As of the `20200327` Dockerfile version, we have added Protobuf, WebP, GStreamer
 - Builds a similar container with a version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
+
+`jetsonnano-cudnn_tensorflow_opencv` (see the `JetsonNano` directory):
+- Builds a Nvidia Jetson Nano `cudnn_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
 **Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv, https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv . The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
 
