@@ -14,7 +14,7 @@ As of the `20200211` Dockerfile version, we are making use of Docker 19.03's GPU
 
 As of the `20200327` Dockerfile version, we have added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
 
-As of the `20200423` Dockerfile version, we have added added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build.
+As of the `20200423` Dockerfile version, we have added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build.
 We have also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
 
 `cuda_tensorflow_opencv`:
