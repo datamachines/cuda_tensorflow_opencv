@@ -38,7 +38,7 @@ all:
 	@echo "** Docker Image tag ending: ${CTO_RELEASE}"
 	@echo ""
 	@echo "** Available Docker images to be built (make targets):"
-	@echo "  nano-cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
+	@echo "  jetsonnano-cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
 	@echo "** To build all, use: make build_all"
 
@@ -46,7 +46,7 @@ all:
 build_all:
 	@make ${DTO_BUILDALL}
 
-nano-cudnn_tensorflow_opencv:
+jetsonnano-cudnn_tensorflow_opencv:
 	@make ${DTO_BUILDALL}
 
 ${DTO_BUILDALL}:
