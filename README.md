@@ -55,7 +55,7 @@ Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make tensorflow_opencv` to build all the `tensorflow_opencv` container images
 - `make cuda_tensorflow_opencv` will build all the `cuda_tensorflow_opencv` container images
 - `make cudnn_tensorflow_opencv` will build all the `cudnn_tensorflow_opencv` container images
-- use a direct tag to build a specific version; for example `make cudnn_tensorflow_opencv-10.2_2.0_4.1.2`, will build the `datamachines/cudnn_tensorflow_opencv:10.2_2.0_4.1.2-20191210` container image.
+- use a direct tag to build a specific version; for example `make cudnn_tensorflow_opencv-10.2_2.0_4.1.2`, will build the `datamachines/cudnn_tensorflow_opencv:10.2_2.0_4.1.2-20191210` container image  (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
 
 If you have a system available to run the `build_all`, sometimes OpenCV will fail, the following `bash` is useful to keep building: `while true; do make -i build_all ; sleep 200; done`. Just be ready to `Ctrl+c` it when done/ready (completion can be seen by the matching log files).
 
