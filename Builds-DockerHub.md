@@ -139,3 +139,13 @@ URL: https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv
 | 10.2_2.1.0_4.2.0-20200327 | 10.2 | 7.6.5 | 2.1.0 | 4.2.0 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/releases/tag/20200327) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/OpenCV_BuildConf/cudnn_tensorflow_opencv-10.2_2.1.0_4.2.0-20200327.txt) |
 | 10.2_2.1.0_4.3.0-20200423 | 10.2 | 7.6.5 | 2.1.0 | 4.3.0 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20200423) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/OpenCV_BuildConf/cudnn_tensorflow_opencv-10.2_2.1.0_4.3.0-20200423.txt) |
 
+## jetsonnano-cuda_tensorflow_opencv
+
+URL: https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv
+
+| Docker Tag | CUDA | TensorFlow | OpenCV | Ubuntu | Github Link | OpenCV Build Conf | 
+| --- | --- | --- | --- | --- | --- | --- |
+| 10.0_1.15.2_3.4.10-20200423 | 10.0 | 1.15.2 | 3.4.10 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20200423) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/JetsonNano/OpenCV_BuildConf/jetsonnano-cuda_tensorflow_opencv-10.0_1.15.2_3.4.10-20200423.txt) |
+| 10.0_1.15.2_4.3.0-20200423 | 10.0 | 1.15.2 | 4.3.0 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20200423) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/JetsonNano/OpenCV_BuildConf/jetsonnano-cuda_tensorflow_opencv-10.0_1.15.2_4.3.0-20200423.txt) |
+| 10.0_2.1.0_3.4.10-20200423 | 10.0 | 2.1.0 | 3.4.10 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20200423) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/JetsonNano/OpenCV_BuildConf/jetsonnano-cuda_tensorflow_opencv-10.0_2.1.0_3.4.10-20200423.txt) |
+| 10.0_2.1.0_4.3.0-20200423 | 10.0 | 2.1.0 | 4.3.0 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20200423) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/JetsonNano/OpenCV_BuildConf/jetsonnano-cuda_tensorflow_opencv-10.0_2.1.0_4.3.0-20200423.txt) |
