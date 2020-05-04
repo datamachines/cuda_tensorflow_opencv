@@ -1,18 +1,21 @@
 # DockerFile for Nvidia Jetson Nano with GPU support for TensorFlow and OpenCV
 Revision: 20200423
 
-The base OS for those container images is provided by Nvidia at https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
+The base container for those container images is provided by Nvidia at https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
 Please refer to the following for further details https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
+Because the `L4T BSP EULA` includes redistribution rights, we are able provide pre-compiled builds.
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"
+
+Publicly available builds can be found at https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv
 
 Most of the `README.md` in the parent directory explains the logic behind this tool, including the changes to said versions, such as:
 - Docker images tag naming
 - Using the container images
 - Making use of the container
 
-## Building the images
+## Building the images (on a JetsonNano)
 
-Unless your system is configured for cross-compilation (see https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson#building-jetson-containers-on-an-x86-workstation-using-qemu ), you will need a Jetson Nano running JetPack 4.3 with `docker` installed to build those container images.
+Please note that without build caching, on a MAXN-configured Nano with additional swap, each build takes over 3 hours.
 
 The tag for any image built will contain the `datamachines/` organization addition that is found in any of the publicly released pre-built container images.
 
