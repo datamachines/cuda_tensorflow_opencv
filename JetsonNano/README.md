@@ -21,5 +21,5 @@ The tag for any image built will contain the `datamachines/` organization additi
 
 Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make build_all` will build all container images
-- `make jetsonnano-cudnn_tensorflow_opencv` will build all the `jetsonnano-cudnn_tensorflow_opencv` container images
-- use a direct tag to build a specific version; for example `make jetsonnano-cudnn_tensorflow_opencv-10.0_2.1.0_4.3.0`, will build the `datamachines/jetsonnano-cudnn_tensorflow_opencv:10.0_2.1.0_4.3.0-20200423` container image (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
+- `make jetsonnano-cuda_tensorflow_opencv` will build all the `jetsonnano-cuda_tensorflow_opencv` container images
+- use a direct tag to build a specific version; for example `make jetsonnano-cuda_tensorflow_opencv-10.0_2.1.0_4.3.0`, will build the `datamachines/jetsonnano-cuda_tensorflow_opencv:10.0_2.1.0_4.3.0-20200423` container image (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
