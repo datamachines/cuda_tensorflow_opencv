@@ -40,11 +40,12 @@ RUN pip3 install -U testresources setuptools
 ## Nano refactorization: build takes a lot longer than download, so build common components first, including OpenCV
 
 # Install Python tools (split install for Nano)
+RUN pip3 install -U Cython
+RUN pip3 install -U pillow
 RUN pip3 install -U numpy
 RUN pip3 install -U scipy
 RUN pip3 install -U matplotlib
 RUN pip3 install -U scikit-image
-RUN pip3 install -U Cython
 RUN pip3 install -U scikit-learn
 RUN pip3 install -U ipython
 RUN pip3 install -U notebook
@@ -91,7 +92,8 @@ RUN mkdir -p /usr/local/src/opencv/build \
     -DWITH_V4L=ON -DENABLE_FAST_MATH=1 -DFORCE_VTK=ON \
     -DWITH_GDAL=ON -DWITH_XINE=ON -DWITH_GTK=ON \
     -DWITH_GSTREAMER=ON -DWITH_GSTREAMER_0_10=OFF \
-    -DWITH_OPENMP=ON ${CTO_CUDA_BUILD} \
+    -DWITH_OPENMP=ON -DWITH_IPP=OFF \
+    ${CTO_CUDA_BUILD} \
     .. \
   && make -j${CTO_NUMPROC} install \
   && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' \
