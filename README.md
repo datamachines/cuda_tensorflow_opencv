@@ -30,10 +30,10 @@ We have also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
-`jetsonnano-cudnn_tensorflow_opencv` (see the `JetsonNano` directory):
-- Builds a Nvidia Jetson Nano `cudnn_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
+`jetsonnano-cuda_tensorflow_opencv` (see the `JetsonNano` directory):
+- Builds a Nvidia Jetson Nano `cuda_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv, https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv . The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .  The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15_3.4.8-20191210`
 
