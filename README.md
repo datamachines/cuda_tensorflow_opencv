@@ -30,10 +30,10 @@ We have also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
-`jetsonnano-cuda_tensorflow_opencv` (see the `JetsonNano` directory):
-- Builds a Nvidia Jetson Nano `cuda_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
+`jetsonnano-cudnn_tensorflow_opencv` (see the `JetsonNano` directory):
+- Builds a Nvidia Jetson Nano `cudnn_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .  The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv, https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv and https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv . The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15_3.4.8-20191210`
 
@@ -120,3 +120,19 @@ For example:
 ### A note about OpenCV and GPU
 
 In `cuda_tensorflow_opencv` (resp. `cudnn_tensorflow_opencv`), OpenCV is compiled with CUDA (resp. CUDA+CuDNN support), but note that not all of OpenCV's functions are optimized. This is true in particular for some of the `contrib` code.
+
+### A note on exposing ports
+
+By choice, the containers built do not expose any ports, or start any services. This is left to the end-user. To start any, the simpler solution is to base a new container `FROM` one of those containers, expose a port and start said service to be able to access it.
+
+For example, the start and expose Jupyter Notebook (on port `8888`) from the `tensorflow_opencv` container, one could write the following `Dockerfile` and tag it as `jupnb:local`:
+<pre>
+FROM datamachines/tensorflow_opencv:2.1.0_4.3.0-20200423
+EXPOSE 8888
+CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+</pre>
+, using `docker build --tag jupnb:local .`
+
+
+When starting it using `docker run -p 8888:8888 jupnb:local` to publish the container's port `8888` to the local system's port `8888`, an `http://127.0.0.1:8888/` based URL will shown with the access token.
+Using this url in a web browser will grant access to the running instance of Jupyter Notebook.
