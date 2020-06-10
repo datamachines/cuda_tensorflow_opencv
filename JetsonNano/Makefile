@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200423
+CTO_RELEASE=20200515
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -12,8 +12,6 @@ CTO_NUMPROC := $(shell nproc --all)
 # provides:
 # CUDA 10.0
 # ARCH = 5.3
-CTO_FROM="nvcr.io/nvidia/l4t-base:r32.3.1"
-CTO_CUDA_APT=""
 STABLE_CUDA10=10.0
 ARCH_CUDA10=5.3
 
@@ -33,6 +31,12 @@ CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_$
 CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
 CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
+##### CuDNN _ Tensorflow _ OpenCV
+DTO_BUILDALL =jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+
 ## By default, provide the list of build targets
 all:
 	@echo "** Docker Image tag ending: ${CTO_RELEASE}"
@@ -40,18 +44,27 @@ all:
 	@echo "** Available Docker images to be built (make targets):"
 	@echo "  jetsonnano-cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
+	@echo "  jetsonnano-cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
+	@echo ""
 	@echo "** To build all, use: make build_all"
 
 ## special command to build all targets
 build_all:
 	@make ${CTO_BUILDALL}
+	@make ${DTO_BUILDALL}
 
 jetsonnano-cuda_tensorflow_opencv:
 	@make ${CTO_BUILDALL}
 
+jetsonnano-cudnn_tensorflow_opencv:
+	@make ${DTO_BUILDALL}
+
 ${CTO_BUILDALL}:
-	@CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
+	@CTO_FROM="nvcr.io/nvidia/l4t-base:r32.3.1" CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
 # CUDA_ARCH_BIN is set in build_prep now 
+
+${DTO_BUILDALL}:
+	@CTO_FROM="nvcr.io/nvidia/deepstream-l4t:4.0.2-19.12-base" CUDX="cudnn" CUDX_COMP="-DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON" BTARG="$@" make build_prep
 
 build_prep:
 	@$(eval CTO_NAME=$(shell echo ${BTARG} | cut -d- -f 1-2))
@@ -63,18 +76,18 @@ build_prep:
 	@$(eval CTO_TENSORFLOW_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 2))
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
-	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
+	@$(eval CTO_TMP=$(shell echo ${CTO_TENSORFLOW_VERSION}))
 	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "tensorflow==${STABLE_TF1}"; else echo "tensorflow==${STABLE_TF2}"; fi))
-	@$(eval CTO_TENSORFLOW_PYTHON="${CTO_TENSORFLOW_PYTHON}+${NV_VERSION}")
+	@$(eval CTO_TENSORFLOW_PYTHON=$(shell echo "${CTO_TENSORFLOW_PYTHON}+${NV_VERSION}"))
 
-	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
-	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
+	@$(eval CTO_TAG=$(shell echo "${CTO_CUDA_VERSION}_${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE}"))
+
+	@$(eval CTO_CUDA_APT=$(shell echo ""))
 
 	@$(eval DNN_ARCH=$(shell echo "${ARCH_CUDA10}"))
 	@$(eval CUDX_COMP=$(shell echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${DNN_ARCH}"))
 
-	@$(eval CTO_TMP="-DWITH_CUDA=ON -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 ${CUDX_COMP} -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CTO_CUDA_VERSION} -DCUDA_ARCH_PTX=\"\"")
-	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
+	@$(eval CTO_CUDA_BUILD=$(shell echo "-DWITH_CUDA=ON -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 ${CUDX_COMP} -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CTO_CUDA_VERSION} -DCUDA_ARCH_PTX=\"\""))
 
 	@echo ""; echo ""
 	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
@@ -88,8 +101,8 @@ actual_build:
 	@echo "  CTO_TENSORFLOW_PYTHON  : ${CTO_TENSORFLOW_PYTHON}" | tee -a OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
 	docker build \
-	  --build-arg CTO_FROM=${CTO_FROM} \
-	  --build-arg CTO_TENSORFLOW_PYTHON=${CTO_TENSORFLOW_PYTHON} \
+	  --build-arg CTO_FROM="${CTO_FROM}" \
+	  --build-arg CTO_TENSORFLOW_PYTHON="${CTO_TENSORFLOW_PYTHON}" \
 	  --build-arg CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} \
 	  --build-arg CTO_NUMPROC=$(CTO_NUMPROC) \
 	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
@@ -99,4 +112,3 @@ actual_build:
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
 	@mkdir -p OpenCV_BuildConf
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
-	
