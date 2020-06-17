@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200423
+CTO_RELEASE=20200615
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -23,8 +23,8 @@ STABLE_OPENCV3=3.4.10
 STABLE_OPENCV4=4.3.0
 
 # According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
-STABLE_TF1=1.15.2
-STABLE_TF2=2.1.0
+STABLE_TF1=1.15.3
+STABLE_TF2=2.2.0
 
 ##### CUDA _ Tensorflow _ OpenCV
 CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
@@ -107,7 +107,8 @@ build_prep:
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
-	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "tensorflow==${STABLE_TF1}"; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF2}"; else echo "tensorflow-gpu==${STABLE_TF2}"; fi; fi))
+	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF1}"; else echo "tensorflow-gpu==${STABLE_TF1}"; fi; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF2}"; else echo "tensorflow-gpu==${STABLE_TF2}"; fi; fi))
+	@$(eval CTO_TF_CUDA=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then if [ ${CTO_SC} != 1 ]; then echo "10.0"; fi; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
@@ -126,7 +127,7 @@ build_prep:
 	@echo ""; echo ""
 	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
 
-	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_PYTHON=${CTO_TENSORFLOW_PYTHON} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" make actual_build; fi
+	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_PYTHON=${CTO_TENSORFLOW_PYTHON} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDA="${CTO_TF_CUDA}" make actual_build; fi
 
 
 actual_build:
@@ -141,6 +142,7 @@ actual_build:
 	  --build-arg CTO_NUMPROC=$(CTO_NUMPROC) \
 	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
 	  --build-arg CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" \
+	  --build-arg CTO_TF_CUDA="${CTO_TF_CUDA}" \
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log

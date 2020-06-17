@@ -89,6 +89,14 @@ RUN mkdir -p /usr/local/src/opencv/build \
 # cd /usr/local/src/opencv/build
 # cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
 
+# TensorFlow GPU 's pip seems to only work with CUDA 10.0
+RUN apt-get install -y rsync
+RUN cd /usr/local && ln -s cuda nvidia
+
+ARG CTO_TF_CUDA="None"
+COPY tf_cuda_adds.sh /tmp/
+RUN chmod +x /tmp/tf_cuda_adds.sh && /tmp/tf_cuda_adds.sh ${CTO_TF_CUDA}
+
 # Install TensorFlow
 ARG CTO_TENSORFLOW_PYTHON
 RUN pip3 install ${CTO_TENSORFLOW_PYTHON}
