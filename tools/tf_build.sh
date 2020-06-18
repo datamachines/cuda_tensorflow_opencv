@@ -86,9 +86,13 @@ for i in GCC_HOST_COMPILER_PATH CC_OPT_FLAGS PYTHON_BIN_PATH PYTHON_LIB_PATH; do
 done
 
 echo "-- ./configure output:" | tee -a /tmp/tf_env.dump 
-./configure
+./configure | tee -a /tmp/tf_env.dump 
 
-
+start_time=$SECONDS
 echo "-- bazel command to run:" | tee -a /tmp/tf_env.dump 
 echo bazel build $config_add //tensorflow/tools/pip_package:build_pip_package | tee -a /tmp/tf_env.dump 
 bazel build $config_add //tensorflow/tools/pip_package:build_pip_package
+end_time=$SECONDS
+elapsed=$(( end_time - start_time ))
+echo "-- TensorFlow building time (in seconds): $elapsed"
+
