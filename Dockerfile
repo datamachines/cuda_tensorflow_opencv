@@ -104,7 +104,7 @@ RUN ln -s $(which python3) /usr/local/bin/python
 # Additional specialized apt installs
 ARG CTO_CUDA_APT
 RUN apt-get install -y --no-install-recommends \
-      vim ${CTO_CUDA_APT}
+      time ${CTO_CUDA_APT}
 # /etc/ld.so.conf.d/nvidia.conf point to /usr/local/nvidia which seems to be missing, point to the cuda directory install for libraries
 RUN cd /usr/local && ln -s cuda nvidia
 
@@ -153,9 +153,9 @@ RUN mkdir -p /usr/local/src \
   && perl /tmp/bazel_check.pl ${LATEST_BAZEL} `cat .bazelversion.temp` > .bazelversion \
   && bazel clean \
   && chmod +x /tmp/tf_build.sh \
-  && /tmp/tf_build.sh ${CTO_TF_CUDNN} ${CTO_TF_OPT} \
-  && ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg \
-  && pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
+  && time /tmp/tf_build.sh ${CTO_TF_CUDNN} ${CTO_TF_OPT} \
+  && time ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg \
+  && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
   && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root
 
 # Download & Build OpenCV in same RUN
@@ -174,7 +174,7 @@ RUN mkdir -p /usr/local/src \
   && rm ${CTO_OPENCV_VERSION}.tar.gz \
   && mkdir -p /usr/local/src/opencv/build \
   && cd /usr/local/src/opencv/build \
-  && cmake \
+  && time cmake \
     -DBUILD_DOCS=OFF \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_PERF_TESTS=OFF \
@@ -205,7 +205,7 @@ RUN mkdir -p /usr/local/src \
     -DWITH_XINE=ON \
     ${CTO_CUDA_BUILD} \
     .. \
-  && make -j${CTO_NUMPROC} install \
+  && time make -j${CTO_NUMPROC} install \
   && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' \
   && ldconfig \
   && rm -rf /usr/local/src/opencv
