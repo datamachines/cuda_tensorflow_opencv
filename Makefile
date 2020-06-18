@@ -25,6 +25,9 @@ STABLE_OPENCV4=4.3.0
 # According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
 STABLE_TF1=1.15.3
 STABLE_TF2=2.2.0
+# Information for build
+LATEST_BAZELISK=1.5.0
+LATEST_BAZEL=3.3.0
 
 ##### CUDA _ Tensorflow _ OpenCV
 CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
@@ -108,7 +111,9 @@ build_prep:
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
 	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF1}"; else echo "tensorflow-gpu==${STABLE_TF1}"; fi; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF2}"; else echo "tensorflow-gpu==${STABLE_TF2}"; fi; fi))
-	@$(eval CTO_TF_CUDA=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then if [ ${CTO_SC} != 1 ]; then echo "10.0"; fi; fi))
+	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
+	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
+	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "keras==2.3.1 tensorflow<2"; else echo "keras"; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
@@ -127,24 +132,29 @@ build_prep:
 	@echo ""; echo ""
 	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
 
-	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_PYTHON=${CTO_TENSORFLOW_PYTHON} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDA="${CTO_TF_CUDA}" make actual_build; fi
+	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" make actual_build; fi
 
 
 actual_build:
 	@echo "Press Ctl+c within 5 seconds to cancel"
 	@echo "  CTO_FROM               : ${CTO_FROM}" | tee OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
-	@echo "  CTO_TENSORFLOW_PYTHON  : ${CTO_TENSORFLOW_PYTHON}" | tee -a OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
 	docker build \
 	  --build-arg CTO_FROM=${CTO_FROM} \
-	  --build-arg CTO_TENSORFLOW_PYTHON=${CTO_TENSORFLOW_PYTHON} \
+	  --build-arg CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} \
 	  --build-arg CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} \
 	  --build-arg CTO_NUMPROC=$(CTO_NUMPROC) \
 	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
 	  --build-arg CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" \
-	  --build-arg CTO_TF_CUDA="${CTO_TF_CUDA}" \
+	  --build-arg LATEST_BAZELISK="${LATEST_BAZELISK}" \
+	  --build-arg LATEST_BAZEL="${LATEST_BAZEL}" \
+	  --build-arg CTO_TF_CUDNN="${CTO_TF_CUDNN}" \
+	  --build-arg CTO_TF_OPT="${CTO_TF_OPT}" \
+	  --build-arg CTO_TF_KERAS="${CTO_TF_KERAS}" \
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
 	@mkdir -p OpenCV_BuildConf
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@mkdir -p TensorFlow_BuildConf
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > TensorFlow_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
