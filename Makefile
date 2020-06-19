@@ -152,4 +152,8 @@ actual_build:
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > TensorFlow_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 
 clean:
+	rm -f *.log.temp
+
+allclean:
+	@make clean
 	rm -f *.log
