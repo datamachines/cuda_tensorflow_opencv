@@ -68,6 +68,7 @@ RUN apt-get update -y \
     libxmu-dev \
     libxvidcore-dev \
     libzmq3-dev \
+    locales \
     perl \
     pkg-config \
     protobuf-compiler \
@@ -86,11 +87,11 @@ RUN apt-get update -y \
     x264 \
     yasm \
     zip \
-    zlib1g-dev
+    zlib1g-dev \
+  && apt-get clean
 
 # UTF-8
-RUN apt-get install -y locales \
-    && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
 # Setup pip
@@ -104,7 +105,8 @@ RUN ln -s $(which python3) /usr/local/bin/python
 # Additional specialized apt installs
 ARG CTO_CUDA_APT
 RUN apt-get install -y --no-install-recommends \
-      time ${CTO_CUDA_APT}
+      time ${CTO_CUDA_APT} \
+    && apt-get clean
 # /etc/ld.so.conf.d/nvidia.conf point to /usr/local/nvidia which seems to be missing, point to the cuda directory install for libraries
 RUN cd /usr/local && ln -s cuda nvidia
 
@@ -124,25 +126,23 @@ RUN pip3 install -U \
   scipy \
   setuptools \
   six \
-  wheel
-RUN pip3 install 'future>=0.17.1'
-RUN pip3 install -U keras_applications --no-deps
-RUN pip3 install -U keras_preprocessing --no-deps
-# Removing keras for now as it installs the latest version of TensorFlow
-
-# Bazel is needed for TF compilation
-ARG LATEST_BAZELISK=1.5.0
-RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v${LATEST_BAZELISK}/bazelisk-linux-amd64 \
-  && chmod +x /usr/local/bin/bazel
+  wheel \
+  && pip3 install 'future>=0.17.1' \
+  && pip3 install -U keras_applications --no-deps \
+  && pip3 install -U keras_preprocessing --no-deps \
+  && rm -rf /root/.cache/pip
 
 ## Download & Building TensorFlow from source in same RUN
+ARG LATEST_BAZELISK=1.5.0
 ARG CTO_TENSORFLOW_VERSION
 ARG LATEST_BAZEL=3.3.0
 ARG CTO_TF_CUDNN="no"
 ARG CTO_TF_OPT=""
 COPY tools/bazel_check.pl /tmp/
 COPY tools/tf_build.sh /tmp/
-RUN mkdir -p /usr/local/src \
+RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v${LATEST_BAZELISK}/bazelisk-linux-amd64 \
+  && chmod +x /usr/local/bin/bazel \
+  && mkdir -p /usr/local/src \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/tensorflow/tensorflow/archive/v${CTO_TENSORFLOW_VERSION}.tar.gz \
   && tar xfz v${CTO_TENSORFLOW_VERSION}.tar.gz \
@@ -156,7 +156,8 @@ RUN mkdir -p /usr/local/src \
   && time /tmp/tf_build.sh ${CTO_TF_CUDNN} ${CTO_TF_OPT} \
   && time ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg \
   && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
-  && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root
+  && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root /root/.cache/bazel /root/.cache/pip /root/.cache/bazelisk
+
 
 # Download & Build OpenCV in same RUN
 ARG CTO_OPENCV_VERSION
@@ -208,17 +209,16 @@ RUN mkdir -p /usr/local/src \
   && time make -j${CTO_NUMPROC} install \
   && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' \
   && ldconfig \
-  && rm -rf /usr/local/src/opencv
-## FYI: We are removing the OpenCV source and build directory (/usr/local/src/opencv) 
-#   to attempt to save additional disk space
-# Comment the above line (and remove the \ in the line above) if you want to
-#  rerun cmake with additional/modified options: for example:
+  && rm -rf /usr/local/src/opencv /usr/local/src/opencv_contrib
+## FYI: We are removing the OpenCV source and build directory in /usr/local/src to attempt to save additional disk space
+# Comment the above line (and remove the \ in the line above) if you want to rerun cmake with additional/modified options. For example:
 # cd /usr/local/src/opencv/build
 # cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
 
 # Installing a built-TF compatible keras
 ARG CTO_TF_KERAS
-RUN pip3 install ${CTO_TF_KERAS}
+RUN pip3 install ${CTO_TF_KERAS} \
+  && rm -rf /root/.cache/pip
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
@@ -235,6 +235,3 @@ WORKDIR /dmc
 CMD bash
 
 LABEL "Author"="Data Machines Corp <help@datamachines.io>"
-
-# Attempt to Minimize image size 
-RUN (apt-get autoremove -y; apt-get autoclean -y)
