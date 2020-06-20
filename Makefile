@@ -10,10 +10,13 @@ CTO_NUMPROC := $(shell nproc --all)
 
 # According to https://hub.docker.com/r/nvidia/cuda/
 # CUDA 11 came out in May 2020
-# 20200615: Removing support for 10.1, all is needed to use the 10.2 container is a driver 440.33
+# TF1 needs CUDA 10.1
+# TF2 needs CUDA 10.2
+# Table below shows driver/CUDA support; for example the 10.2 container needs at least driver 440.33
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
 STABLE_CUDA9=9.2
-STABLE_CUDA10=10.2
+STABLE_CUDA10TF1=10.1
+STABLE_CUDA10TF2=10.2
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
 DNN_ARCH_CUDA9=5.3,6.0,6.1,6.2
 DNN_ARCH_CUDA10=5.3,6.0,6.1,6.2,7.0,7.2,7.5
@@ -28,26 +31,32 @@ STABLE_TF2=2.2.0
 # Information for build
 LATEST_BAZELISK=1.5.0
 LATEST_BAZEL=3.3.0
+TF1_KERAS="keras==2.3.1 tensorflow<2"
+TF2_KERAS="keras"
 
 ##### CUDA _ Tensorflow _ OpenCV
 CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2n}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### CuDNN _ Tensorflow _ OpenCV
 DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Tensorflow _ OpenCV
 TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
@@ -65,6 +74,8 @@ all:
 	@echo "  cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
 	@echo "** To build all, use: make build_all"
+	@echo ""
+	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers"
 
 ## special command to build all targets
 build_all:
@@ -102,10 +113,9 @@ build_prep:
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
-	@$(eval CTO_TENSORFLOW_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF1}"; else echo "tensorflow-gpu==${STABLE_TF1}"; fi; else if [ ${CTO_SC} == 1 ]; then echo "tensorflow==${STABLE_TF2}"; else echo "tensorflow-gpu==${STABLE_TF2}"; fi; fi))
 	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
 	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
-	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "keras==2.3.1 tensorflow<2"; else echo "keras"; fi))
+	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_KERAS}; else echo ${TF2_KERAS}; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
