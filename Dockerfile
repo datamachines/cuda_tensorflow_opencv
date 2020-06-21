@@ -158,7 +158,6 @@ RUN curl -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/release
   && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
   && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root /root/.cache/bazel /root/.cache/pip /root/.cache/bazelisk
 
-
 # Download & Build OpenCV in same RUN
 ARG CTO_OPENCV_VERSION
 ARG CTO_NUMPROC=1

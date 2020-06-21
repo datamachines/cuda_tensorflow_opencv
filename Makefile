@@ -15,8 +15,7 @@ CTO_NUMPROC := $(shell nproc --all)
 # Table below shows driver/CUDA support; for example the 10.2 container needs at least driver 440.33
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
 STABLE_CUDA9=9.2
-STABLE_CUDA10TF1=10.1
-STABLE_CUDA10TF2=10.2
+STABLE_CUDA10=10.2
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
 DNN_ARCH_CUDA9=5.3,6.0,6.1,6.2
 DNN_ARCH_CUDA10=5.3,6.0,6.1,6.2,7.0,7.2,7.5
@@ -39,24 +38,20 @@ CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPEN
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF2}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10TF2n}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### CuDNN _ Tensorflow _ OpenCV
 DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF1}_${STABLE_TF1}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10TF2}_${STABLE_TF2}_${STABLE_OPENCV4}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Tensorflow _ OpenCV
 TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
