@@ -35,17 +35,22 @@ if [ "A$1" == "Ayes" ]; then
   fi
 fi
 if [ "A$cuda" == "A1" ]; then
-  export TF_NEED_CUDA=1
-  export TF_NEED_TENSORRT=0
-  export TF_CUDA_VERSION="$(nvcc --version | sed -n 's/^.*release \(.*\),.*/\1/p')"
   export TF_CUDNN_VERSION="$(sed -n 's/^#define CUDNN_MAJOR\s*\(.*\).*/\1/p' $cudnn_inc)"
   if [ "A$TF_CUDNN_VERSION" == "A" ]; then
     cuda=0
     echo "** Problem finding DNN major version, unsetting GPU optimizations for TF" | tee -a /tmp/tf_env.dump
     export TF_NEED_CUDA=0
-    unset TF_NEED_TENSORRT
-    unset TF_CUDA_VERSION
     unset TF_CUDNN_VERSION
+  else
+    export TF_NEED_CUDA=1
+    export TF_NEED_TENSORRT=0
+    export TF_CUDA_VERSION="$(nvcc --version | sed -n 's/^.*release \(.*\),.*/\1/p')"
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64
+    # v1.15.3 specific build fix -- see https://github.com/tensorflow/tensorflow/issues/34429
+    if grep -q 1.15.3 /usr/local/src/tensorflow/RELEASE.md; then
+      echo "-- Patching third_party/nccl/build_defs.bzl.tpl"
+      perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.3 compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
+    fi
   fi
 fi
 if [ "A$cuda" == "A1" ]; then
@@ -90,8 +95,8 @@ echo "-- ./configure output:" | tee -a /tmp/tf_env.dump
 
 start_time=$SECONDS
 echo "-- bazel command to run:" | tee -a /tmp/tf_env.dump
-echo bazel build $config_add //tensorflow/tools/pip_package:build_pip_package | tee -a /tmp/tf_env.dump 
-bazel build $config_add //tensorflow/tools/pip_package:build_pip_package
+echo bazel build --verbose_failures $config_add //tensorflow/tools/pip_package:build_pip_package | tee -a /tmp/tf_env.dump 
+bazel build --verbose_failures $config_add //tensorflow/tools/pip_package:build_pip_package
 end_time=$SECONDS
 elapsed=$(( end_time - start_time ))
 echo "-- TensorFlow building time (in seconds): $elapsed" | tee -a /tmp/tf_env.dump
