@@ -8,6 +8,9 @@ fi
 
 echo "[pip list]"
 pip3 list
+echo ""
+echo -n "-- Confirming OpenCV Python is installed. Version: "
+python3 -c 'import cv2; print(cv2.__version__)'
 
 echo ""
 echo "-------------------------------------------------------"
