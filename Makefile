@@ -17,8 +17,10 @@ CTO_NUMPROC := $(shell nproc --all)
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
-DNN_ARCH_CUDA9=5.3,6.0,6.1,6.2
-DNN_ARCH_CUDA10=5.3,6.0,6.1,6.2,7.0,7.2,7.5
+# Skipping Tegra, Jetson, ... from this list
+# Keeping Pascal and above
+DNN_ARCH_CUDA9=6.0,6.1
+DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 
 # According to https://opencv.org/releases/
 STABLE_OPENCV3=3.4.10
@@ -29,7 +31,6 @@ STABLE_TF1=1.15.3
 STABLE_TF2=2.2.0
 # Information for build
 LATEST_BAZELISK=1.5.0
-LATEST_BAZEL=3.3.0
 TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
 
@@ -48,8 +49,8 @@ DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPE
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
@@ -118,8 +119,8 @@ build_prep:
 	@$(eval CTO_TMP="cuda-npp-${CTO_CUDA_VERSION} cuda-cublas-${CTO_CUDA_PRIMEVERSION} cuda-cufft-${CTO_CUDA_VERSION} cuda-libraries-${CTO_CUDA_VERSION} cuda-npp-dev-${CTO_CUDA_VERSION} cuda-cublas-dev-${CTO_CUDA_PRIMEVERSION} cuda-cufft-dev-${CTO_CUDA_VERSION} cuda-libraries-dev-${CTO_CUDA_VERSION}")
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
 
-	@$(eval DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else echo "${DNN_ARCH_CUDA10}"; fi))
-	@$(eval CUDX_COMP=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${DNN_ARCH}"; else echo "${CUDX_COMP}"; fi))
+	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else echo "${DNN_ARCH_CUDA10}"; fi))
+	@$(eval CUDX_COMP=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; else echo "${CUDX_COMP}"; fi))
 
 	@$(eval CTO_FROM=$(shell if [ ${CTO_SC} == 1 ]; then echo "ubuntu:18.04"; else echo "nvidia/cuda:${CTO_CUDA_VERSION}${CUDX_FROM}-devel-ubuntu18.04"; fi))
 
@@ -129,7 +130,7 @@ build_prep:
 	@echo ""; echo ""
 	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
 
-	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" make actual_build; fi
+	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" make actual_build; fi
 
 
 actual_build:
@@ -144,10 +145,10 @@ actual_build:
 	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
 	  --build-arg CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" \
 	  --build-arg LATEST_BAZELISK="${LATEST_BAZELISK}" \
-	  --build-arg LATEST_BAZEL="${LATEST_BAZEL}" \
 	  --build-arg CTO_TF_CUDNN="${CTO_TF_CUDNN}" \
 	  --build-arg CTO_TF_OPT="${CTO_TF_OPT}" \
 	  --build-arg CTO_TF_KERAS="${CTO_TF_KERAS}" \
+	  --build-arg CTO_DNN_ARCH="${CTO_DNN_ARCH}" \
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
