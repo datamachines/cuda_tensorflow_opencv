@@ -1,0 +1,183 @@
+[pip list]
+Package                Version
+---------------------- ---------------
+absl-py                0.9.0
+astunparse             1.6.3
+attrs                  19.3.0
+autovizwidget          0.15.0
+backcall               0.2.0
+bleach                 3.1.5
+cachetools             4.1.0
+certifi                2020.6.20
+chardet                3.0.4
+cycler                 0.10.0
+decorator              4.4.2
+defusedxml             0.6.0
+entrypoints            0.3
+future                 0.18.2
+gast                   0.3.3
+google-auth            1.18.0
+google-auth-oauthlib   0.4.1
+google-pasta           0.2.0
+grpcio                 1.30.0
+h5py                   2.10.0
+hdijupyterutils        0.15.0
+idna                   2.9
+imageio                2.8.0
+imageio-ffmpeg         0.4.2
+importlib-metadata     1.6.1
+ipykernel              5.3.0
+ipython                7.15.0
+ipython-genutils       0.2.0
+ipywidgets             7.5.1
+jedi                   0.17.1
+Jinja2                 2.11.2
+joblib                 0.15.1
+jsonschema             3.2.0
+jupyter                1.0.0
+jupyter-client         6.1.3
+jupyter-console        6.1.0
+jupyter-core           4.6.3
+Keras                  2.4.2
+Keras-Applications     1.0.8
+Keras-Preprocessing    1.1.2
+kiwisolver             1.2.0
+Markdown               3.2.2
+MarkupSafe             1.1.1
+matplotlib             3.2.2
+mistune                0.8.4
+mock                   4.0.2
+moviepy                1.0.3
+nbconvert              5.6.1
+nbformat               5.0.7
+networkx               2.4
+nose                   1.3.7
+notebook               6.0.3
+numpy                  1.18.5
+oauthlib               3.1.0
+opt-einsum             3.2.1
+packaging              20.4
+pandas                 1.0.5
+pandocfilters          1.4.2
+parso                  0.7.0
+pexpect                4.8.0
+pickleshare            0.7.5
+Pillow                 7.1.2
+pip                    20.1.1
+plotly                 4.8.1
+proglog                0.1.9
+prometheus-client      0.8.0
+prompt-toolkit         3.0.5
+protobuf               3.12.2
+ptyprocess             0.6.0
+pyasn1                 0.4.8
+pyasn1-modules         0.2.8
+Pygments               2.6.1
+pygobject              3.26.1
+pyparsing              2.4.7
+pyrsistent             0.16.0
+python-apt             1.6.5+ubuntu0.3
+python-dateutil        2.8.1
+pytz                   2020.1
+PyWavelets             1.1.1
+PyYAML                 5.3.1
+pyzmq                  19.0.1
+qtconsole              4.7.5
+QtPy                   1.9.0
+requests               2.24.0
+requests-oauthlib      1.3.0
+retrying               1.3.3
+rsa                    4.6
+scikit-image           0.17.2
+scikit-learn           0.23.1
+scipy                  1.4.1
+Send2Trash             1.5.0
+setuptools             47.3.1
+six                    1.15.0
+tensorboard            2.2.2
+tensorboard-plugin-wit 1.6.0.post3
+tensorflow             2.2.0
+tensorflow-estimator   2.2.0
+termcolor              1.1.0
+terminado              0.8.3
+testpath               0.4.4
+threadpoolctl          2.1.0
+tifffile               2020.6.3
+tornado                6.0.4
+tqdm                   4.46.1
+traitlets              4.3.3
+unattended-upgrades    0.1
+urllib3                1.25.9
+wcwidth                0.2.5
+webencodings           0.5.1
+Werkzeug               1.0.1
+wheel                  0.34.2
+widgetsnbextension     3.5.1
+wrapt                  1.12.1
+zipp                   3.1.0
+
+-- Confirming OpenCV Python is installed. Version: 4.3.0
+
+-------------------------------------------------------
+
+[TensorFlow build information]
+--- Tensorflow Build --- 
+** CUDNN requested
+-- Environment variables set:
+TF_CUDA_CLANG=0
+TF_CUDA_COMPUTE_CAPABILITIES=6.0,6.1
+TF_CUDA_VERSION=9.2
+TF_CUDNN_VERSION=7
+TF_DOWNLOAD_CLANG=0
+TF_DOWNLOAD_MKL=0
+TF_ENABLE_XLA=0
+TF_NEED_AWS=0
+TF_NEED_COMPUTECPP=0
+TF_NEED_CUDA=1
+TF_NEED_GCP=0
+TF_NEED_GDR=0
+TF_NEED_HDFS=0
+TF_NEED_JEMALLOC=1
+TF_NEED_KAFKA=0
+TF_NEED_MKL=0
+TF_NEED_MPI=0
+TF_NEED_OPENCL=0
+TF_NEED_OPENCL_SYCL=0
+TF_NEED_ROCM=0
+TF_NEED_S3=0
+TF_NEED_TENSORRT=0
+TF_NEED_VERBS=0
+TF_SET_ANDROID_WORKSPACE=0
+GCC_HOST_COMPILER_PATH=/usr/bin/gcc
+CC_OPT_FLAGS=
+PYTHON_BIN_PATH=/usr/local/bin/python
+PYTHON_LIB_PATH=/usr/local/lib/python3.6/dist-packages
+-- ./configure output:
+WARNING: Running Bazel server needs to be killed, because the startup options are different.
+You have bazel 2.0.0 installed.
+Found CUDA 9.2 in:
+    /usr/local/cuda-9.2/lib64
+    /usr/local/cuda-9.2/include
+Found cuDNN 7 in:
+    /usr/lib/x86_64-linux-gnu
+    /usr/include
+
+
+Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -march=native -Wno-sign-compare]: 
+
+Preconfigured Bazel build configs. You can use any of the below by adding "--config=<>" to your build command. See .bazelrc for more details.
+	--config=mkl         	# Build with MKL support.
+	--config=monolithic  	# Config for mostly static monolithic build.
+	--config=ngraph      	# Build with Intel nGraph support.
+	--config=numa        	# Build with NUMA support.
+	--config=dynamic_kernels	# (Experimental) Build kernels into separate shared objects.
+	--config=v2          	# Build TensorFlow 2.x instead of 1.x.
+Preconfigured Bazel build configs to DISABLE default on features:
+	--config=noaws       	# Disable AWS S3 filesystem support.
+	--config=nogcp       	# Disable GCP support.
+	--config=nohdfs      	# Disable HDFS support.
+	--config=nonccl      	# Disable NVIDIA NCCL support.
+Configuration finished
+-- bazel command to run:
+bazel build --verbose_failures --config=opt --config=v2 --config=cuda //tensorflow/tools/pip_package:build_pip_package
+-- TensorFlow building time (in seconds): 2372
