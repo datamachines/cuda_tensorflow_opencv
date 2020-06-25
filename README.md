@@ -1,39 +1,42 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20200423
+Revision: 20200615
+
+For TensorFlow GPU, you will need to build the `cudnn_` version.
 
 The base OS for those container images is Ubuntu 18.04 or DockerHub's `nvidia/cuda` based on Ubuntu 18.04. 
 More details on the Nvidia base images are available at https://hub.docker.com/r/nvidia/cuda/ . 
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"; with further details on DockerHub version from https://docs.nvidia.com/cuda/eula/index.html#attachment-a
 
+Version history:
+- `20191107`: builds a non-CUDA version: `tensorflow_opencv`.
+- `20191210`: builds a CuDNN version: `cudnn_tensorflow_opencv`
+- `20200211`: making use of Docker 19.03's GPU support and adding information about the OpenCV builds in the `OpenCV_BuildConf` directory.
+- `20200327`: added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
+- `20200423`: added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build. Also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
+- `20200615`: TensorFlow is built from source. Note that TensorFlow will not have GPU support unless it was compiled with CUDNN support. 
 
-As of the `20191107` Dockerfile version, it also builds a non-CUDA version: `tensorflow_opencv`.
-
-As of the `20191210` Dockerfile version, it also builds a CuDNN version: `cudnn_tensorflow_opencv`
-
-As of the `20200211` Dockerfile version, we are making use of Docker 19.03's GPU support and are adding information about the OpenCV builds in the `OpenCV_BuildConf` directory.
-
-As of the `20200327` Dockerfile version, we have added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
-
-As of the `20200423` Dockerfile version, we have added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build.
-We have also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
+`tensorflow_opencv`:
+- Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
+- for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
 `cuda_tensorflow_opencv`:
-- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Builds an Nvidia GPU optimized version of OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Note that TensorFlow need CUDNN for GPU support.
 - Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
 
 `cudnn_tensorflow_opencv`:
-- Similar to `cuda_tensorflow_opencv` but with CuDNN installed and used for OpenCV compilation (this was more deeply integrated within OpenCV after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827) for additional details).
-- For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher; please see https://en.wikipedia.org/wiki/CUDA#GPUs_supported to confirm your architecture is supported
-
-`tensorflow_opencv`:
-- Builds a similar container with a version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
-- Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
-- for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
+- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- As of the 20200615 version, both OpenCV and TensorFlow are compiled within the container.
+- OpenCV integrated additional CUDNN support after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827).
+- For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher.
 
 `jetsonnano-cuda_tensorflow_opencv` (see the `JetsonNano` directory):
 - Builds a Nvidia Jetson Nano `cuda_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .  The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .**
+
+The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15_3.4.8-20191210`
 
