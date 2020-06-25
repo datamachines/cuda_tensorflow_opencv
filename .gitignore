@@ -39,6 +39,7 @@ inc/
 *.filelist
 *.sollist
 *.log
+*.log.temp
 
 # Emacs
 .*~

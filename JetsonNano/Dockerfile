@@ -6,30 +6,129 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends apt-utils \
   && apt-get install -y \ 
-    wget curl unzip file \
-    build-essential cmake git pkg-config software-properties-common \
-    checkinstall yasm \
-    libatlas-base-dev libboost-all-dev \
-    x11-apps libgtk2.0-dev libgtk2.0-dev libcanberra-gtk-module libgtk-3-dev \
-    libtbb2 libtbb-dev \ 
-    libjpeg-dev libpng-dev libtiff5-dev libopenjp2-7-dev libopenjp2-tools imagemagick \
-    v4l-utils libv4l-dev libdc1394-22-dev libatk-adaptor \
-    python3-dev libpython3-dev python-pil python-lxml python-tk \
-    libfreetype6-dev libhdf5-serial-dev libzmq3-dev \
-    libavcodec-dev libavformat-dev libswscale-dev \
-    libxvidcore-dev libxine2-dev x264 libx264-dev libavutil-dev \
-    libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev \
-    gstreamer1.0-plugins-good libgstreamer-plugins-bad1.0-0 \
-    libfaac-dev libmp3lame-dev libtheora-dev libvorbis-dev \
-    libopencore-amrnb-dev libopencore-amrwb-dev \
-    libprotobuf-dev protobuf-compiler \
-    libgoogle-glog-dev libgflags-dev \ 
-    libgphoto2-dev libeigen3-dev libhdf5-dev doxygen \
-    gcc-6 g++-6 libxmu-dev libxi-dev libglu1-mesa libglu1-mesa-dev \
-    libopenblas-dev liblapack-dev gfortran \
-    python3-tk python-imaging-tk libgtk-3-dev \
-    libglew-dev libpostproc-dev zlib1g-dev \
-    hdf5-tools zip
+    autoconf \
+    automake \
+    build-essential \
+    bzip2 \
+    checkinstall \
+    cmake \
+    curl \
+    doxygen \
+    file \
+    g++-6 \
+    gcc-6 \
+    gfortran \
+    git \
+    gstreamer1.0-plugins-good \
+    hdf5-tools \
+    imagemagick \
+    libaec-dev \
+    libatk-adaptor \
+    libatlas-base-dev \
+    libavcodec-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libblosc-dev \
+    libboost-all-dev \
+    libbrotli-dev \
+    libbz2-dev \
+    libcanberra-gtk-module \
+    libcharls-dev \
+    libdc1394-22-dev \
+    libeigen3-dev \
+    libfaac-dev \
+    libfreetype6-dev \
+    libgflags-dev \
+    libgif-dev \
+    libglew-dev \
+    libglu1-mesa \
+    libglu1-mesa-dev \
+    libgoogle-glog-dev \
+    libgphoto2-dev \
+    libgstreamer-plugins-bad1.0-0 \
+    libgstreamer-plugins-base1.0-dev \
+    libgstreamer1.0-dev \
+    libgtk-3-dev \
+    libgtk2.0-dev \
+    libhdf5-dev \
+    libhdf5-serial-dev \
+    libjpeg-dev \
+    libjpeg-turbo8-dev \
+    libjxr-dev \
+    liblapack-dev \
+    liblcms2-dev \
+    liblz4-dev \
+    liblzma-dev \
+    libmp3lame-dev \
+    libopenblas-dev \
+    libopencore-amrnb-dev \
+    libopencore-amrwb-dev \
+    libopenjp2-7-dev \
+    libopenjp2-tools \
+    libpng-dev \
+    libpostproc-dev \
+    libprotobuf-dev \
+    libpython3-dev \
+    libsnappy-dev \
+    libswscale-dev \
+    libtbb-dev \
+    libtbb2 \
+    libtheora-dev \
+    libtool \
+    libv4l-dev \
+    libvorbis-dev \
+    libwebp-dev \
+    libx264-dev \
+    libxi-dev \
+    libxine2-dev \
+    libxmu-dev \
+    libxvidcore-dev \
+    libzmq3-dev \
+    libzopfli-dev \
+    libzstd-dev \
+    locales \
+    pkg-config \
+    protobuf-compiler \
+    python-imaging-tk \
+    python-lxml \
+    python-pil \
+    python3-dev \
+    python3-tk \
+    software-properties-common \
+    unzip \
+    v4l-utils \
+    wget \
+    x11-apps \
+    x264 \
+    yasm \
+    zip \
+    zlib1g-dev
+
+# Set locale to UTF-8; seems to be ANSI_X3.4-1968 by default (to allow scikit-image to compile)
+RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && dpkg-reconfigure locales \
+    && update-locale LANG=en_US.UTF-8
+ENV LANG en_US.UTF-8
+
+# CFLAGS (for imagecodecs)
+ENV CFLAGS="-I/usr/include/openjpeg-2.3 -I/usr/include/jxrlib"
+
+# Building libtiff (to allow imagecodecs to compile)
+RUN cd /tmp \
+  && wget https://gitlab.com/libtiff/libtiff/-/archive/v4.1.0/libtiff-v4.1.0.tar.bz2 \
+  && tar xvfj libtiff-v4.1.0.tar.bz2 \
+  && cd libtiff-v4.1.0 \
+  && ./autogen.sh \
+  && ./configure \
+  && make install
+
+# brunsli (for imagecodecs)
+RUN cd /tmp \
+  && git clone --depth=1 https://github.com/google/brunsli.git \
+  && cd brunsli \
+  && git submodule update --init --recursive \
+  && cmake -DCMAKE_BUILD_TYPE=Release \
+  && make install
 
 # Setup pip
 RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
@@ -43,8 +142,10 @@ RUN pip3 install -U testresources setuptools
 RUN pip3 install -U Cython
 RUN pip3 install -U pillow
 RUN pip3 install -U numpy
-RUN pip3 install -U scipy
 RUN pip3 install -U matplotlib
+RUN pip3 install -U PyWavelets
+RUN pip3 install -U kiwisolver
+RUN pip3 install -U imagecodecs
 RUN pip3 install -U scikit-image
 RUN pip3 install -U scikit-learn
 RUN pip3 install -U ipython
@@ -79,20 +180,33 @@ ARG CTO_CUDA_BUILD
 RUN mkdir -p /usr/local/src/opencv/build \
   && cd /usr/local/src/opencv/build \
   && cmake \
-    -DOPENCV_ENABLE_NONFREE=OFF \
-    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_TYPE=Release \
+    -DBUILD_DOCS=OFF \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_PERF_TESTS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local/ \
-    -DOPENCV_GENERATE_PKGCONFIG=YES \
-    -DWITH_WEBP=ON \
-    -DINSTALL_C_EXAMPLES=OFF -DINSTALL_PYTHON_EXAMPLES=OFF -DBUILD_EXAMPLES=OFF \
+    -DCMAKE_INSTALL_TYPE=Release \
+    -DENABLE_FAST_MATH=1 \
+    -DFORCE_VTK=ON \
+    -DINSTALL_C_EXAMPLES=OFF \
+    -DINSTALL_PYTHON_EXAMPLES=OFF \
+    -DOPENCV_ENABLE_NONFREE=OFF \
     -DOPENCV_EXTRA_MODULES_PATH=/usr/local/src/opencv_contrib/modules \
-    -DBUILD_DOCS=OFF -DBUILD_TESTS=OFF -DBUILD_PERF_TESTS=OFF \
-    -DWITH_TBB=ON -DWITH_EIGEN=ON \
-    -DWITH_CSTRIPES=ON -DWITH_OPENCL=ON \
-    -DWITH_V4L=ON -DENABLE_FAST_MATH=1 -DFORCE_VTK=ON \
-    -DWITH_GDAL=ON -DWITH_XINE=ON -DWITH_GTK=ON \
-    -DWITH_GSTREAMER=ON -DWITH_GSTREAMER_0_10=OFF \
-    -DWITH_OPENMP=ON -DWITH_IPP=OFF \
+    -DOPENCV_GENERATE_PKGCONFIG=YES \
+    -DWITH_CSTRIPES=ON \
+    -DWITH_EIGEN=ON \
+    -DWITH_GDAL=ON \
+    -DWITH_GSTREAMER=ON \
+    -DWITH_GSTREAMER_0_10=OFF \
+    -DWITH_GTK=ON \
+    -DWITH_IPP=OFF \
+    -DWITH_OPENCL=ON \
+    -DWITH_OPENMP=ON \
+    -DWITH_TBB=ON \
+    -DWITH_V4L=ON \
+    -DWITH_WEBP=ON \
+    -DWITH_XINE=ON \
     ${CTO_CUDA_BUILD} \
     .. \
   && make -j${CTO_NUMPROC} install \
@@ -117,9 +231,6 @@ RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
 RUN mkdir /dmc
 WORKDIR /dmc
 
-CMD bash
+CMD /bin/bash
 
 LABEL "Author"="Data Machines Corp <help@datamachines.io>"
-
-# Attempt to Minimize image size 
-RUN (apt-get autoremove -y; apt-get autoclean -y)
