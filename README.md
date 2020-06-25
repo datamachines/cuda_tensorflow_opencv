@@ -37,6 +37,7 @@ Version history:
 **Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .**
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
+This is useful for you to decide if you would benefit from re-compiling some container(s) for your specific hardware.
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15_3.4.8-20191210`
 
@@ -60,7 +61,7 @@ Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make cudnn_tensorflow_opencv` will build all the `cudnn_tensorflow_opencv` container images
 - use a direct tag to build a specific version; for example `make cudnn_tensorflow_opencv-10.2_2.0_4.1.2`, will build the `datamachines/cudnn_tensorflow_opencv:10.2_2.0_4.1.2-20191210` container image  (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
 
-If you have a system available to run the `build_all`, sometimes OpenCV will fail, the following `bash` is useful to keep building: `while true; do make -i build_all ; sleep 200; done`. Just be ready to `Ctrl+c` it when done/ready (completion can be seen by the matching log files).
+The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) will give you quick access to the `BuildInfo-OpenCV` and `BuildInfo-TensorFlow` (if available) for a given compilation. Building the image takes time, but we encourage you to modify the `Dockerfile` to reflect your specific needs. If you run a specific `make` you will see the values of the parameters passed to the build, simply set their default `ARG` value to what matches your needs and manually compile, bypassing the `make` by using a form of `docker build --tag="mycto:tag" .` 
 
 ## Using the container images
 
@@ -91,7 +92,7 @@ If a user place a picture (named `pic.jpg`) in the directory to be mounted as `/
 
 ## Additional usage options
 
-### Using GPU TensorFlow in your code
+### Using GPU TensorFlow in your code (only for cudnn- versions)
 
 Code written for Tensorflow should follow principles described in https://www.tensorflow.org/guide/using_gpu
 
@@ -136,6 +137,15 @@ CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 </pre>
 , using `docker build --tag jupnb:local .`
 
-
 When starting it using `docker run -p 8888:8888 jupnb:local` to publish the container's port `8888` to the local system's port `8888`, an `http://127.0.0.1:8888/` based URL will shown with the access token.
 Using this url in a web browser will grant access to the running instance of Jupyter Notebook.
+
+### A note about opencv-contrib-python
+
+The python version of `cv2` built within the container is already built with the "contrib" code (expect the "non free" portion, see the `Makefile` for additional details). `opencv-contrib-python` install another version of `cv2` (as in `import cv2`), as such please be aware that you might lose some of the compiled optimizations.
+
+### Testing GPU availability for TensorFlow
+
+From the `test` directory, you will find a `tf_hw.py` script. You can test it with a `cudnn-` container by adapating the following command:
+
+    CONTAINER_ID="datamachines/cudnn_tensorflow_opencv:10.2_1.15.3_4.3.0-20200615" ../runDocker.sh -X -N -c python3 -- /dmc/tf_hw.py
