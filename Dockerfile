@@ -204,7 +204,7 @@ RUN mkdir -p /usr/local/src \
     -DINSTALL_C_EXAMPLES=OFF \
     -DINSTALL_PYTHON_EXAMPLES=OFF \
     -DOPENCV_EXTRA_MODULES_PATH=/usr/local/src/opencv_contrib/modules \
-    -DOPENCV_GENERATE_PKGCONFIG=YES \
+    -DOPENCV_GENERATE_PKGCONFIG=ON \
     -DWITH_CSTRIPES=ON \
     -DWITH_EIGEN=ON \
     -DWITH_GDAL=ON \
