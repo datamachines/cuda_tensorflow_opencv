@@ -32,10 +32,10 @@ CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_$
 CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### CuDNN _ Tensorflow _ OpenCV
-DTO_BUILDALL =jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+#DTO_BUILDALL =jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+#DTO_BUILDALL+=jetsonnano-cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ## By default, provide the list of build targets
 all:
@@ -44,21 +44,21 @@ all:
 	@echo "** Available Docker images to be built (make targets):"
 	@echo "  jetsonnano-cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
-	@echo "  jetsonnano-cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
-	@echo ""
+#	@echo "  jetsonnano-cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
+#	@echo ""
 	@echo "** To build all, use: make build_all"
 
 ## special command to build all targets
 build_all:
 	@make ${CTO_BUILDALL}
-	@make ${DTO_BUILDALL}
+#	@make ${DTO_BUILDALL}
 
 jetsonnano-cuda_tensorflow_opencv:
 	@make ${CTO_BUILDALL}
 
-jetsonnano-cudnn_tensorflow_opencv:
-	@make ${DTO_BUILDALL}
-
+#jetsonnano-cudnn_tensorflow_opencv:
+#	@make ${DTO_BUILDALL}
+#
 ${CTO_BUILDALL}:
 	@CTO_FROM="nvcr.io/nvidia/l4t-base:r32.3.1" CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
 # CUDA_ARCH_BIN is set in build_prep now 
