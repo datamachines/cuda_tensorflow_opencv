@@ -12,6 +12,7 @@ Revision: 20200615
 	* 6.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
 	* 6.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
 	* 6.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
+		* 6.4.1. [Using PyYolo](#UsingPyYolo)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -204,3 +205,22 @@ Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be access
 </pre>
 
 For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
+
+####  6.4.1. <a name='UsingPyYolo'></a>Using PyYolo
+
+[PyYolo](https://github.com/goktug97/PyYOLO) was recently made Yolo v4 compatible and uses already installed OpenCV and Darknet, so it can easily be integrated within the container.
+
+- Edit the `Dockerfile` and add the folowing two lines after the darknet make
+<pre>
+RUN pip3 install pyyolo
+ENV LIB_DARKNET=/wrk/darknet/libdarknet.so
+</pre>
+- rebuild the container
+- copy PyYolo's [`sample.py`](https://github.com/goktug97/PyYOLO/blob/master/sample.py) code in the directory where the cfg/weights are and adapt the location (on line 5) to reflect their location as mounted in the soon to be started container:
+<pre>
+    detector = pyyolo.YOLO("/dmc/yolov4.cfg",
+                           "/dmc/yolov4.weights",
+                           "./cfg/coco.data",
+</pre>
+- run using the same `runDocker.sh` command line
+- from within the started container, run `python3 /dmc/sample.py`
