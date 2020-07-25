@@ -208,11 +208,11 @@ For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` whi
 
 ####  6.4.1. <a name='UsingPyYolo'></a>Using PyYolo
 
-[PyYolo](https://github.com/goktug97/PyYOLO) was recently made Yolo v4 compatible and uses already installed OpenCV and Darknet, so it can easily be integrated within the container.
+[PyYolo](https://github.com/goktug97/PyYOLO) was recently made Yolo v4 compatible and uses already installed OpenCV and Darknet, so it can easily be integrated within the container. Because we are using a _release_ for `AlexyeyAB/darknet` (instead of pulling the latest development code from github) we have to use a specific version of PyYolo that is compatible with it; namely `0.1.5` (ie the newly release `0.1.6` will not work)
 
 - Edit the `Dockerfile` and add the folowing two lines after the darknet make
 <pre>
-RUN pip3 install pyyolo
+RUN pip3 install pyyolo=0.1.5
 ENV LIB_DARKNET=/wrk/darknet/libdarknet.so
 </pre>
 - rebuild the container
