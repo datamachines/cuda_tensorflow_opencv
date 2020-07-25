@@ -212,7 +212,7 @@ For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` whi
 
 - Edit the `Dockerfile` and add the folowing two lines after the darknet make
 <pre>
-RUN pip3 install pyyolo=0.1.5
+RUN pip3 install pyyolo==0.1.5
 ENV LIB_DARKNET=/wrk/darknet/libdarknet.so
 </pre>
 - rebuild the container
