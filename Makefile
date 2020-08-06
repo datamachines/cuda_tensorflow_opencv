@@ -3,36 +3,51 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200615
+CTO_RELEASE=20200803
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
 
-# According to https://hub.docker.com/r/nvidia/cuda/
-# CUDA 11 came out in May 2020
-# TF1 needs CUDA 10.1
-# TF2 needs CUDA 10.2
+# docker build extra parameters
+DOCKER_BUILD_ARGS=
+#DOCKER_BUILD_ARGS="--no-cache"
+
 # Table below shows driver/CUDA support; for example the 10.2 container needs at least driver 440.33
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
+#
+# According to https://hub.docker.com/r/nvidia/cuda/
+# CUDA 11 came out in May 2020
+# Nivida released their CUDA11 containers only with Ubuntu 20.04 support
+# https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=20.04
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
-# Skipping Tegra, Jetson, ... from this list
-# Keeping Pascal and above
+# Skipping Tegra, Jetson, ... (ie not desktop/server GPUs) from this list
+# Keeping from Pascal and above
 DNN_ARCH_CUDA9=6.0,6.1
 DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.10
-STABLE_OPENCV4=4.3.0
+STABLE_OPENCV3=3.4.11
+STABLE_OPENCV4=4.4.0
 
+# TF2 at minimum CUDA 10.1
+# TF2 is not going to support CUDA11 until 2.4.0, so not building those yet
+#
 # According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
 STABLE_TF1=1.15.3
-STABLE_TF2=2.2.0
+STABLE_TF2=2.3.0
 # Information for build
 LATEST_BAZELISK=1.5.0
+LATEST_BAZEL=3.4.1
 TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
+
+# PyTorch (from pip) using instructions from https://pytorch.org/
+PT_CPU="torch==1.6.0+cpu torchvision==0.7.0+cpu -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CUDA9="torch==1.6.0+cu92 torchvision==0.7.0+cu92 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CUDA10="torch torchvision"
+
 
 ##### CUDA _ Tensorflow _ OpenCV
 CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
@@ -47,8 +62,9 @@ CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPE
 ##### CuDNN _ Tensorflow _ OpenCV
 DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
+# TF > 2.1.0 requires CUDA >= 10.1 -- error when building 2.3.0, skipping CUDNN 9.2 for the time being
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
@@ -127,17 +143,23 @@ build_prep:
 	@$(eval CTO_TMP="-DWITH_CUDA=ON -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 ${CUDX_COMP} -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CTO_CUDA_VERSION} -DCUDA_cublas_LIBRARY=cublas -DCUDA_cufft_LIBRARY=cufft -DCUDA_nppim_LIBRARY=nppim -DCUDA_nppidei_LIBRARY=nppidei -DCUDA_nppif_LIBRARY=nppif -DCUDA_nppig_LIBRARY=nppig -DCUDA_nppim_LIBRARY=nppim -DCUDA_nppist_LIBRARY=nppist -DCUDA_nppisu_LIBRARY=nppisu -DCUDA_nppitc_LIBRARY=nppitc -DCUDA_npps_LIBRARY=npps -DCUDA_nppc_LIBRARY=nppc -DCUDA_nppial_LIBRARY=nppial -DCUDA_nppicc_LIBRARY=nppicc -D CUDA_nppicom_LIBRARY=nppicom")
 	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
 
+	@$(eval CTO_PYTORCH=$(shell if [ ${CTO_SC} == 1 ]; then echo "${PT_CPU}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${PT_CUDA9}"; else echo "${PT_CUDA10}"; fi; fi))
+
 	@echo ""; echo ""
 	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
 
-	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" make actual_build; fi
+	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" CTO_PYTORCH="${CTO_PYTORCH}" make actual_build; fi
 
 
 actual_build:
 	@echo "Press Ctl+c within 5 seconds to cancel"
-	@echo "  CTO_FROM               : ${CTO_FROM}" | tee OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@mkdir -p BuildInfo-OpenCV
+	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
-	docker build \
+	# Pulling the latest base image to include latest security updates
+	docker pull ${CTO_FROM}
+	# Actual build
+	docker build ${DOCKER_BUILD_ARGS} \
 	  --build-arg CTO_FROM=${CTO_FROM} \
 	  --build-arg CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} \
 	  --build-arg CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} \
@@ -145,17 +167,18 @@ actual_build:
 	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
 	  --build-arg CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" \
 	  --build-arg LATEST_BAZELISK="${LATEST_BAZELISK}" \
+	  --build-arg LATEST_BAZEL="${LATEST_BAZEL}" \
 	  --build-arg CTO_TF_CUDNN="${CTO_TF_CUDNN}" \
 	  --build-arg CTO_TF_OPT="${CTO_TF_OPT}" \
 	  --build-arg CTO_TF_KERAS="${CTO_TF_KERAS}" \
 	  --build-arg CTO_DNN_ARCH="${CTO_DNN_ARCH}" \
+	  --build-arg CTO_PYTORCH="${CTO_PYTORCH}" \
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
 	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
-	@mkdir -p OpenCV_BuildConf
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
-	@mkdir -p TensorFlow_BuildConf
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > TensorFlow_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
+	@mkdir -p BuildInfo-TensorFlow
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
 
 clean:
 	rm -f *.log.temp
