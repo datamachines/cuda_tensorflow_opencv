@@ -12,7 +12,8 @@ FROM ${CTO_FROM}
 # Install system packages
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends apt-utils \
+  && apt-get install -y --no-install-recommends \
+    apt-utils \
     locales \
   && apt-get clean
 
@@ -23,7 +24,8 @@ ENV LANG en_US.utf8
 ##### TensorFlow
 
 # Install system packages
-RUN apt-get install -y \
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
     build-essential \
     checkinstall \
     cmake \
@@ -57,9 +59,10 @@ RUN cd /usr/local && ln -s cuda nvidia
 
 # Additional specialized apt installs
 ARG CTO_CUDA_APT
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
       time ${CTO_CUDA_APT} \
-    && apt-get clean
+  && apt-get clean
 
 # CUPTI library needed by TensorFlow but not in default path, adding
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64"
@@ -79,6 +82,7 @@ RUN pip3 install -U \
 
 ## Download & Building TensorFlow from source in same RUN
 ARG LATEST_BAZELISK=1.5.0
+ARG LATEST_BAZEL=3.4.1
 ARG CTO_TENSORFLOW_VERSION
 ARG CTO_TF_CUDNN="no"
 ARG CTO_TF_OPT=""
@@ -86,14 +90,11 @@ ARG CTO_DNN_ARCH=""
 COPY tools/tf_build.sh /tmp/
 RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v${LATEST_BAZELISK}/bazelisk-linux-amd64 \
   && chmod +x /usr/local/bin/bazel \
-  && mkdir -p /usr/local/src \
+  && mkdir -p /usr/local/src/tensorflow \
   && cd /usr/local/src \
-  && wget -q --no-check-certificate https://github.com/tensorflow/tensorflow/archive/v${CTO_TENSORFLOW_VERSION}.tar.gz \
-  && tar xfz v${CTO_TENSORFLOW_VERSION}.tar.gz \
-  && mv tensorflow-${CTO_TENSORFLOW_VERSION} tensorflow \
-  && rm v${CTO_TENSORFLOW_VERSION}.tar.gz \
+  && wget -q --no-check-certificate -c https://github.com/tensorflow/tensorflow/archive/v${CTO_TENSORFLOW_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/tensorflow \
   && cd /usr/local/src/tensorflow \
-  && fgrep _TF_MAX_BAZEL configure.py | grep '=' | perl -ne 'print $1 if (m%\=\s+.([\d\.]+).$+%)' > .bazelversion \
+  && fgrep _TF_MAX_BAZEL configure.py | grep '=' | perl -ne '$lb="'${LATEST_BAZEL}'";$brv=$1 if (m%\=\s+.([\d\.]+).$+%); sub numit{@g=split(m%\.%,$_[0]);return(1000000*$g[0]+1000*$g[1]+$g[2]);}; if (&numit($brv) > &numit($lb)) { print "$lb" } else {print "$brv"};' > .bazelversion \
   && bazel clean \
   && chmod +x /tmp/tf_build.sh \
   && time /tmp/tf_build.sh ${CTO_TF_CUDNN} ${CTO_TF_OPT} \
@@ -104,7 +105,8 @@ RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/rele
 ##### OpenCV
 
 # Install system packages
-RUN apt-get install -y \
+RUN apt-get update -y \
+  && apt-get install -y --no-install-recommends \
     doxygen \
     file \
     gfortran \
@@ -177,16 +179,10 @@ RUN apt-get install -y \
 ARG CTO_OPENCV_VERSION
 ARG CTO_NUMPROC=1
 ARG CTO_CUDA_BUILD
-RUN mkdir -p /usr/local/src \
+RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
   && cd /usr/local/src \
-  && wget -q --no-check-certificate https://github.com/opencv/opencv/archive/${CTO_OPENCV_VERSION}.tar.gz \
-  && tar xfz ${CTO_OPENCV_VERSION}.tar.gz \
-  && mv opencv-${CTO_OPENCV_VERSION} opencv \
-  && rm ${CTO_OPENCV_VERSION}.tar.gz \
-  && wget -q --no-check-certificate https://github.com/opencv/opencv_contrib/archive/${CTO_OPENCV_VERSION}.tar.gz \
-  && tar xfz ${CTO_OPENCV_VERSION}.tar.gz \
-  && mv opencv_contrib-${CTO_OPENCV_VERSION} opencv_contrib \
-  && rm ${CTO_OPENCV_VERSION}.tar.gz \
+  && wget -q --no-check-certificate https://github.com/opencv/opencv/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv \
+  && wget -q --no-check-certificate https://github.com/opencv/opencv_contrib/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv_contrib \
   && mkdir -p /usr/local/src/opencv/build \
   && cd /usr/local/src/opencv/build \
   && time cmake \
@@ -248,6 +244,11 @@ RUN pip3 install -U \
 # Installing a built-TF compatible keras
 ARG CTO_TF_KERAS
 RUN pip3 install ${CTO_TF_KERAS} \
+  && rm -rf /root/.cache/pip
+
+# Installing PyTorch
+ARG CTO_PYTORCH
+RUN pip3 install ${CTO_PYTORCH} \
   && rm -rf /root/.cache/pip
 
 # Add dataframe display widget
