@@ -58,7 +58,7 @@ if [ "A$cuda" == "A1" ]; then
 
     # v1.15.3 AND CUDA 10.2 specific build fix -- see https://github.com/tensorflow/tensorflow/issues/34429
     if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
-      if grep -q 1.15.3 /usr/local/src/tensorflow/RELEASE.md; then
+      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q 1.15.3 ; then
         echo "-- Patching third_party/nccl/build_defs.bzl.tpl"
         perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.3 compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
       fi
