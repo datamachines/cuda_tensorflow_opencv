@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20200615
+Revision: 20200803
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -35,19 +35,20 @@ Version history:
 - `20200327`: added Protobuf, WebP, GStreamer and Eigen to the OpenCV build. 
 - `20200423`: added support for OpenCV 3.4.10 and 4.3.0, and added GStreamer plugins to the build. Also added Nvidia Jetson Nano build steps in the `JetsonNano` directory.
 - `20200615`: TensorFlow is built from source. Note that TensorFlow will not have GPU support unless it was compiled with CUDNN support. 
+- `20200803`: added PyTorch. Removal of `cudnn_` version for CUDA 9.2 with TensorFlow 2.3.0 (minimum needed was 10.1)
 
 `tensorflow_opencv`:
-- Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
 
 `cuda_tensorflow_opencv`:
-- Builds an Nvidia GPU optimized version of OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Builds an Nvidia GPU optimized version of OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
 - Note that TensorFlow need CUDNN for GPU support.
 - Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
 
 `cudnn_tensorflow_opencv`:
-- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas and X11 support.
+- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
 - As of the 20200615 version, both OpenCV and TensorFlow are compiled within the container.
 - OpenCV integrated additional CUDNN support after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827).
 - For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher.
