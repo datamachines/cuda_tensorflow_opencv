@@ -15,11 +15,36 @@ RUN apt-get update -y \
   && apt-get install -y --no-install-recommends \
     apt-utils \
     locales \
+    wget \
   && apt-get clean
 
 # UTF-8
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
+
+##### Python > 3.6
+# https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa
+ARG CTO_TF_PYTHON
+RUN apt-get update -y \
+  && apt-get install -y \
+    software-properties-common \
+  && add-apt-repository ppa:deadsnakes/ppa \
+  && apt-get update -y \
+  && apt-get install -y --no-install-recommends \
+    python${CTO_TF_PYTHON} \
+    python${CTO_TF_PYTHON}-dev \
+    python${CTO_TF_PYTHON}-lib2to3 \
+    python${CTO_TF_PYTHON}-tk \
+    python${CTO_TF_PYTHON}-venv \
+    python${CTO_TF_PYTHON}-distutils \
+  && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${CTO_TF_PYTHON} 0 \
+  && apt-get clean
+
+# Setup pip
+RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
+  && python3 /tmp/get-pip.py \
+  && pip3 install -U pip \
+  && rm /tmp/get-pip.py
 
 ##### TensorFlow
 
@@ -36,20 +61,12 @@ RUN apt-get update -y \
     perl \
     pkg-config \
     protobuf-compiler \
-    python3-dev \
     rsync \
-    software-properties-common \
     unzip \
     wget \
     zip \
     zlib1g-dev \
   && apt-get clean
-
-# Setup pip
-RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
-  && python3 /tmp/get-pip.py \
-  && pip3 install -U pip \
-  && rm /tmp/get-pip.py
 
 # Some TF tools expect a "python" binary
 RUN ln -s $(which python3) /usr/local/bin/python
@@ -68,14 +85,15 @@ RUN apt-get update -y \
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64"
 
 # Install TF needed Python tools (for buiding) 
-# 20200615 note: numpy 1.19.0 breaks TF build
+# 20200615: numpy 1.19.0 breaks TF build
+# 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
 RUN pip3 install -U \
   mock \
   'numpy<1.19.0' \
   setuptools \
   six \
   wheel \
-  && pip3 install 'future>=0.17.1' \
+  future \
   && pip3 install -U keras_applications --no-deps \
   && pip3 install -U keras_preprocessing --no-deps \
   && rm -rf /root/.cache/pip
@@ -148,7 +166,6 @@ RUN apt-get update -y \
     libpng-dev \
     libpostproc-dev \
     libprotobuf-dev \
-    libpython3-dev \
     libswscale-dev \
     libtbb2 \
     libtbb-dev \
@@ -162,18 +179,17 @@ RUN apt-get update -y \
     libxmu-dev \
     libxvidcore-dev \
     libzmq3-dev \
-    python3-tk \
-    python-imaging-tk \
-    python-lxml \
-    python-pil \
-    python-tk \
     v4l-utils \
     x11-apps \
     x264 \
     yasm \
   && apt-get clean
 
-# Python wise, OpenCV needs numpy which is installed during the TF step
+# Python
+RUN pip3 install -U \
+  Pillow \
+  lxml \
+  && rm -rf /root/.cache/pip
 
 # Download & Build OpenCV in same RUN
 ARG CTO_OPENCV_VERSION

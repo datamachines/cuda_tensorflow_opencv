@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20200803
+CTO_RELEASE=20201204
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -12,10 +12,15 @@ CTO_NUMPROC := $(shell nproc --all)
 DOCKER_BUILD_ARGS=
 #DOCKER_BUILD_ARGS="--no-cache"
 
+# Use "yes" below before a multi build to have docker pull the base images using "make build_all" 
+DOCKERPULL="no"
+
 # Table below shows driver/CUDA support; for example the 10.2 container needs at least driver 440.33
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
 #
 # According to https://hub.docker.com/r/nvidia/cuda/
+# Looking at the tags, Ubuntu 18.04 is still the primary for 9.x and 10.x
+# 
 # CUDA 11 came out in May 2020
 # Nivida released their CUDA11 containers only with Ubuntu 20.04 support
 # https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=20.04
@@ -24,28 +29,38 @@ STABLE_CUDA10=10.2
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
 # Skipping Tegra, Jetson, ... (ie not desktop/server GPUs) from this list
 # Keeping from Pascal and above
+# Also only installing cudnn7 for 18.04 based systems
 DNN_ARCH_CUDA9=6.0,6.1
 DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.11
-STABLE_OPENCV4=4.4.0
+STABLE_OPENCV3=3.4.12
+STABLE_OPENCV4=4.5.0
 
 # TF2 at minimum CUDA 10.1
 # TF2 is not going to support CUDA11 until 2.4.0, so not building those yet
-#
-# According to https://github.com/tensorflow/tensorflow/blob/master/RELEASE.md
-STABLE_TF1=1.15.3
-STABLE_TF2=2.3.0
-# Information for build
-LATEST_BAZELISK=1.5.0
-LATEST_BAZEL=3.4.1
+##
+# According to https://github.com/tensorflow/tensorflow/tags
+STABLE_TF1=1.15.4
+STABLE_TF2=2.3.1
+
+## Information for build
+# https://github.com/bazelbuild/bazelisk
+LATEST_BAZELISK=1.7.3
+# https://github.com/bazelbuild/bazel
+LATEST_BAZEL=3.7.1
+# https://github.com/keras-team/keras/releases
 TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
 
+# https://github.com/tensorflow/tensorflow/issues/39768
+# "use TF 1.15, you have to use Python 3.7 or lower. If you want to use Python 3.8 you have to use TF 2.2 or newer"
+TF1_PYTHON=3.7
+TF2_PYTHON=3.8
+
 # PyTorch (from pip) using instructions from https://pytorch.org/
-PT_CPU="torch==1.6.0+cpu torchvision==0.7.0+cpu -f https://download.pytorch.org/whl/torch_stable.html"
-PT_CUDA9="torch==1.6.0+cu92 torchvision==0.7.0+cu92 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CPU="pip install torch==1.7.0+cpu torchvision==0.8.1+cpu torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CUDA9="torch==1.7.0+cu92 torchvision==0.8.1+cu92 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA10="torch torchvision"
 
 
@@ -128,6 +143,7 @@ build_prep:
 	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
 	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
 	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_KERAS}; else echo ${TF2_KERAS}; fi))
+	@$(eval CTO_TF_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_PYTHON}; else echo ${TF2_PYTHON}; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
@@ -145,10 +161,10 @@ build_prep:
 
 	@$(eval CTO_PYTORCH=$(shell if [ ${CTO_SC} == 1 ]; then echo "${PT_CPU}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${PT_CUDA9}"; else echo "${PT_CUDA10}"; fi; fi))
 
-	@echo ""; echo ""
-	@echo "[*****] About to build datamachines/${CTO_NAME}:${CTO_TAG}"
+	@echo ""; echo "";
+	@echo "[*****] Build: datamachines/${CTO_NAME}:${CTO_TAG}";\
 
-	@if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" CTO_PYTORCH="${CTO_PYTORCH}" make actual_build; fi
+	@if [ "A${DOCKERPULL}" == "Ayes" ]; then echo "** Base image: ${CTO_FROM}"; docker pull ${CTO_FROM}; echo ""; else if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_TF_PYTHON="${CTO_TF_PYTHON}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" CTO_PYTORCH="${CTO_PYTORCH}" make actual_build; fi; fi
 
 
 actual_build:
@@ -171,6 +187,7 @@ actual_build:
 	  --build-arg CTO_TF_CUDNN="${CTO_TF_CUDNN}" \
 	  --build-arg CTO_TF_OPT="${CTO_TF_OPT}" \
 	  --build-arg CTO_TF_KERAS="${CTO_TF_KERAS}" \
+	  --build-arg CTO_TF_PYTHON="${CTO_TF_PYTHON}" \
 	  --build-arg CTO_DNN_ARCH="${CTO_DNN_ARCH}" \
 	  --build-arg CTO_PYTORCH="${CTO_PYTORCH}" \
 	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \

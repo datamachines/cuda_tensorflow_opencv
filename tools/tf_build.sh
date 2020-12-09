@@ -56,11 +56,11 @@ if [ "A$cuda" == "A1" ]; then
       export TF_NCCL_VERSION="$(sed -n 's/^#define NCCL_MAJOR\s*\(.*\).*/\1/p' $nccl_inc)"
     fi
 
-    # v1.15.3 AND CUDA 10.2 specific build fix -- see https://github.com/tensorflow/tensorflow/issues/34429
+    # cudnn build: TF 1.15.[34] with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/issues/34429
     if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
-      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q 1.15.3 ; then
+      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '1.15.[34]' ; then
         echo "-- Patching third_party/nccl/build_defs.bzl.tpl"
-        perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.3 compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
+        perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.x compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
       fi
     fi
     
