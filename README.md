@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20200803
+Revision: 20201204
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
