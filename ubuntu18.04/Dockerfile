@@ -85,11 +85,11 @@ RUN apt-get update -y \
 ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64"
 
 # Install TF needed Python tools (for buiding) 
-# 20200615: numpy 1.19.0 breaks TF build
-# 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
+ARG CTO_TF_NUMPY=numpy
 RUN pip3 install -U \
   mock \
-  'numpy<1.19.0' \
+  ${CTO_TF_NUMPY} \
+  numpy \
   setuptools \
   six \
   wheel \

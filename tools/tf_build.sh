@@ -29,13 +29,19 @@ fi
 echo "--- Tensorflow Build --- " > /tmp/tf_env.dump
 export TF_NEED_CUDA=0
 cuda=0
-cudnn_inc="/usr/include/cudnn.h"
 if [ "A$1" == "Ayes" ]; then
   cuda=1
   echo "** CUDNN requested" | tee -a /tmp/tf_env.dump
+  # CuDNN8
+  cudnn_inc="/usr/include/cudnn.h"
+  cudnn8_inc="/usr/include/x86_64-linux-gnu/cudnn_version_v8.h"
+  if [ -f $cudnn8_inc ]; then
+    cudnn_inc="${cudnn8_inc}"
+  fi
   if [ ! -f $cuddn_inc ]; then
     echo "** Unable to find $cudnn_inc, will not be able to compile GPU build" | tee -a /tmp/tf_env.dump
     cuda=0
+    exit 1
   fi
 fi
 if [ "A$cuda" == "A1" ]; then
@@ -45,6 +51,7 @@ if [ "A$cuda" == "A1" ]; then
     echo "** Problem finding DNN major version, unsetting GPU optimizations for TF" | tee -a /tmp/tf_env.dump
     export TF_NEED_CUDA=0
     unset TF_CUDNN_VERSION
+    exit 1
   else
     export TF_NEED_CUDA=1
     export TF_NEED_TENSORRT=0
@@ -56,9 +63,9 @@ if [ "A$cuda" == "A1" ]; then
       export TF_NCCL_VERSION="$(sed -n 's/^#define NCCL_MAJOR\s*\(.*\).*/\1/p' $nccl_inc)"
     fi
 
-    # cudnn build: TF 1.15.[34] with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/issues/34429
+    # cudnn build: TF 1.15.[345] with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/issues/34429
     if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
-      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '1.15.[34]' ; then
+      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '1.15.[345]' ; then
         echo "-- Patching third_party/nccl/build_defs.bzl.tpl"
         perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.x compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
       fi
