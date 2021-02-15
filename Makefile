@@ -58,6 +58,7 @@ TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
 
 # https://github.com/tensorflow/tensorflow/issues/39768
+# Only for Ubuntu 18.04
 # "use TF 1.15, you have to use Python 3.7 or lower. If you want to use Python 3.8 you have to use TF 2.2 or newer"
 TF1_PYTHON=3.7
 TF2_PYTHON=3.8
@@ -159,28 +160,30 @@ build_prep:
 	@$(eval CTO_TENSORFLOW_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 2))
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
+# Nvidia's container requires Ubuntu 20.04 for CUDA11
+	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi))
+
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
 	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
 	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
 	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_KERAS}; else echo ${TF2_KERAS}; fi))
+
 	@$(eval CTO_TF_PYTHON=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_PYTHON}; else echo ${TF2_PYTHON}; fi))
+	@$(eval CTO_TF_PYTHON=$(shell if [ "A${CTO_UBUNTU}" == "Aubuntu18.04" ]; then echo ${CTO_TF_PYTHON}; else echo ""; fi))
+
 	@$(eval CTO_TF_NUMPY=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_NUMPY}; else echo ${TF2_NUMPY}; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE})
 	@$(eval CTO_TAG=$(shell if [ ${CTO_SC} == 1 ]; then echo ${CTO_TMP}; else echo ${CTO_CUDA_VERSION}_${CTO_TMP}; fi))
 
-	@# Nvidia's container requires Ubuntu 20.04 for CUDA11
-	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi))
-
-	@# 18.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
+# 18.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
 	@$(eval CTO_TMP18="cuda-npp-${CTO_CUDA_VERSION} cuda-cublas-${CTO_CUDA_PRIMEVERSION} cuda-cufft-${CTO_CUDA_VERSION} cuda-libraries-${CTO_CUDA_VERSION} cuda-npp-dev-${CTO_CUDA_VERSION} cuda-cublas-dev-${CTO_CUDA_PRIMEVERSION} cuda-cufft-dev-${CTO_CUDA_VERSION} cuda-libraries-dev-${CTO_CUDA_VERSION}")
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
-	@# 20.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/
+# 20.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/
 	@$(eval CTO_TMP20="cuda-libraries-${CTO_CUDA_USEDVERSION} cuda-libraries-dev-${CTO_CUDA_USEDVERSION} cuda-tools-${CTO_CUDA_USEDVERSION} cuda-toolkit-${CTO_CUDA_USEDVERSION} libcublas-${CTO_CUDA_USEDVERSION} libcublas-dev-${CTO_CUDA_USEDVERSION} libcufft-${CTO_CUDA_USEDVERSION} libcufft-dev-${CTO_CUDA_USEDVERSION} libnccl2 libnccl-dev libnpp-${CTO_CUDA_USEDVERSION} libnpp-dev-${CTO_CUDA_USEDVERSION}")
-	@# CUDA adds
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else if [ "A${CTO_UBUNTU}" == "Aubuntu18.04" ]; then echo ${CTO_TMP18}; else echo ${CTO_TMP20}; fi; fi))
 
-	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ]; then echo "${DNN_ARCH_CUDA10}"; else echo "${DNN_ARCH_CUDA1`}"; fi; fi))
+	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ]; then echo "${DNN_ARCH_CUDA10}"; else echo "${DNN_ARCH_CUDA11}"; fi; fi))
 	@$(eval CUDX_COMP=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; else echo "${CUDX_COMP}"; fi))
 
 	@$(eval CTO_TMP=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "-cudnn8"; else echo "-cudnn7"; fi))
@@ -188,7 +191,11 @@ build_prep:
 
 	@$(eval CTO_FROM=$(shell if [ ${CTO_SC} == 1 ]; then echo "ubuntu:18.04"; else echo "nvidia/cuda:${CTO_CUDA_VERSION}${CUDX_FROM}-devel-${CTO_UBUNTU}"; fi))
 
-	@$(eval CTO_TMP="-DWITH_CUDA=ON -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 ${CUDX_COMP} -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CTO_CUDA_VERSION} -DCUDA_cublas_LIBRARY=cublas -DCUDA_cufft_LIBRARY=cufft -DCUDA_nppim_LIBRARY=nppim -DCUDA_nppidei_LIBRARY=nppidei -DCUDA_nppif_LIBRARY=nppif -DCUDA_nppig_LIBRARY=nppig -DCUDA_nppim_LIBRARY=nppim -DCUDA_nppist_LIBRARY=nppist -DCUDA_nppisu_LIBRARY=nppisu -DCUDA_nppitc_LIBRARY=nppitc -DCUDA_npps_LIBRARY=npps -DCUDA_nppc_LIBRARY=nppc -DCUDA_nppial_LIBRARY=nppial -DCUDA_nppicc_LIBRARY=nppicc -D CUDA_nppicom_LIBRARY=nppicom")
+	@$(eval CTO_TMP="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 ${CUDX_COMP} -D WITH_NVCUVID=ON")
+#" -D CUDA_cublas_LIBRARY=cublas -D CUDA_cufft_LIBRARY=cufft -D CUDA_nppim_LIBRARY=nppim -D CUDA_nppidei_LIBRARY=nppidei -D CUDA_nppif_LIBRARY=nppif -D CUDA_nppig_LIBRARY=nppig -D CUDA_nppim_LIBRARY=nppim -D CUDA_nppist_LIBRARY=nppist -D CUDA_nppisu_LIBRARY=nppisu -D CUDA_nppitc_LIBRARY=nppitc -D CUDA_npps_LIBRARY=npps -D CUDA_nppc_LIBRARY=nppc -D CUDA_nppial_LIBRARY=nppial -D CUDA_nppicc_LIBRARY=nppicc -D CUDA_nppicom_LIBRARY=nppicom")
+#$(eval CTO_TMP20="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 ${CUDX_COMP} -D WITH_NVCUVID=ON")
+#" -D CUDA_cublas_LIBRARY=cublas -D CUDA_cufft_LIBRARY=cufft -D CUDA_nppim_LIBRARY=nppim -D CUDA_nppidei_LIBRARY=nppidei -D CUDA_nppif_LIBRARY=nppif -D CUDA_nppig_LIBRARY=nppig -D CUDA_nppim_LIBRARY=nppim -D CUDA_nppist_LIBRARY=nppist -D CUDA_nppisu_LIBRARY=nppisu -D CUDA_nppitc_LIBRARY=nppitc -D CUDA_npps_LIBRARY=npps -D CUDA_nppc_LIBRARY=nppc -D CUDA_nppial_LIBRARY=nppial -D CUDA_nppicc_LIBRARY=nppicc -D CUDA_nppicom_LIBRARY=nppicom")
+#  ##### $(eval CTO_TMP="${CTO_TMP} -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CTO_CUDA_VERSION}")
 	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
 
 	@$(eval CTO_PYTORCH=$(shell if [ ${CTO_SC} == 1 ]; then echo "${PT_CPU}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${PT_CUDA9}"; else echo "${PT_CUDA10}"; fi; fi))
@@ -200,33 +207,42 @@ build_prep:
 
 
 actual_build:
-	@echo "Press Ctl+c within 5 seconds to cancel"
+# Build prep
 	@mkdir -p BuildInfo-OpenCV
-	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
-	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
-	# Actual build
-	docker build ${DOCKER_BUILD_ARGS} \
-	  --build-arg CTO_FROM=${CTO_FROM} \
-	  --build-arg CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} \
-	  --build-arg CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} \
-	  --build-arg CTO_NUMPROC=$(CTO_NUMPROC) \
-	  --build-arg CTO_CUDA_APT="${CTO_CUDA_APT}" \
-	  --build-arg CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" \
-	  --build-arg LATEST_BAZELISK="${LATEST_BAZELISK}" \
-	  --build-arg LATEST_BAZEL="${LATEST_BAZEL}" \
-	  --build-arg CTO_TF_CUDNN="${CTO_TF_CUDNN}" \
-	  --build-arg CTO_TF_OPT="${CTO_TF_OPT}" \
-	  --build-arg CTO_TF_KERAS="${CTO_TF_KERAS}" \
-	  --build-arg CTO_TF_PYTHON="${CTO_TF_PYTHON}" \
-	  --build-arg CTO_TF_NUMPY="${CTO_TF_NUMPY}" \
-	  --build-arg CTO_DNN_ARCH="${CTO_DNN_ARCH}" \
-	  --build-arg CTO_PYTORCH="${CTO_PYTORCH}" \
-	  --tag="datamachines/${CTO_NAME}:${CTO_TAG}" \
-	  -f ${CTO_UBUNTU}/Dockerfile \
-	  . | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
-	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
 	@mkdir -p BuildInfo-TensorFlow
+	@echo ""
+	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt | tee BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@echo ""
+	@echo "-- Docker command to be run:"
+	@echo "docker build ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_FROM=\"${CTO_FROM}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TENSORFLOW_VERSION=\"${CTO_TENSORFLOW_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_OPENCV_VERSION=\"${CTO_OPENCV_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_NUMPROC=\"$(CTO_NUMPROC)\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_CUDA_APT=\"${CTO_CUDA_APT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_CUDA_BUILD=\"${CTO_CUDA_BUILD}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg LATEST_BAZELISK=\"${LATEST_BAZELISK}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg LATEST_BAZEL=\"${LATEST_BAZEL}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TF_CUDNN=\"${CTO_TF_CUDNN}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TF_OPT=\"${CTO_TF_OPT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TF_KERAS=\"${CTO_TF_KERAS}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TF_PYTHON=\"${CTO_TF_PYTHON}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_TF_NUMPY=\"${CTO_TF_NUMPY}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_DNN_ARCH=\"${CTO_DNN_ARCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_PYTORCH=\"${CTO_PYTORCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --tag=\"datamachines/${CTO_NAME}:${CTO_TAG}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  -f ${CTO_UBUNTU}/Dockerfile \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  ." >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@cat ${CTO_NAME}-${CTO_TAG}.cmd | tee ${CTO_NAME}-${CTO_TAG}.log.temp | tee -a BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@echo "" | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp
+	@echo "Press Ctl+c within 5 seconds to cancel"
+	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
+# Actual build
+	@chmod +x ./${CTO_NAME}-${CTO_TAG}.cmd
+	@./${CTO_NAME}-${CTO_TAG}.cmd | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
+	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
+	@rm -f ./${CTO_NAME}-${CTO_TAG}.cmd
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
 
 clean:
