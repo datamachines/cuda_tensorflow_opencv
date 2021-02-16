@@ -78,8 +78,10 @@ RUN apt-get install -y --no-install-recommends \
       time ${CTO_CUDA_APT} \
   && apt-get clean
 
-# CUPTI library needed by TensorFlow but not in default path, adding
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64"
+# CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
+COPY tools/cupti_helper.sh /tmp/
+RUN chmod +x /tmp/cupti_helper.sh \
+  && /tmp/cupti_helper.sh
 
 # Install TF needed Python tools (for buiding) 
 ARG CTO_TF_NUMPY=numpy
