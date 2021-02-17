@@ -15,6 +15,10 @@ DOCKER_BUILD_ARGS=
 # Use "yes" below before a multi build to have docker pull the base images using "make build_all" 
 DOCKERPULL="no"
 
+# Use "yes" below to force a TF check post build (recommended)
+# this will use docker run [...] --gpus all and extend the TF build log
+MLTK_CHECK="yes"
+
 # Table below shows driver/CUDA support; for example the 10.2 container needs at least driver 440.33
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
 #
@@ -69,9 +73,9 @@ TF2_PYTHON=3.8
 
 # 20200615: numpy 1.19.0 breaks TF build
 # 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
-# 20210211: numpy >= 1.19.0 still breaks build for TF 1.15.5
+# 20210211: numpy >= 1.19.0 breaks TF 1.15.5 + numpy >= 1.20 breaks TF 2.4.1
 TF1_NUMPY='numpy<1.19.0'
-TF2_NUMPY=numpy
+TF2_NUMPY='numpy<1.20.0'
 
 # PyTorch (from pip) using instructions from https://pytorch.org/
 PT_CPU="torch==1.7.1+cpu torchvision==0.8.2+cpu torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
@@ -188,7 +192,7 @@ build_prep:
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else if [ "A${CTO_UBUNTU}" == "Aubuntu18.04" ]; then echo ${CTO_TMP18}; else echo ${CTO_TMP20}; fi; fi))
 
 	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ]; then echo "${DNN_ARCH_CUDA10}"; else echo "${DNN_ARCH_CUDA11}"; fi; fi))
-	@$(eval CUDX_COMP=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; else echo "${CUDX_COMP}"; fi))
+	@$(eval CUDX_COMP=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; fi))
 
 	@$(eval CTO_TMP=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "-cudnn8"; else echo "-cudnn7"; fi))
 	@$(eval CUDX_FROM=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CTO_TMP}"; else echo ""; fi))
@@ -241,11 +245,18 @@ actual_build:
 # Actual build
 	@chmod +x ./${CTO_NAME}-${CTO_TAG}.cmd
 	@./${CTO_NAME}-${CTO_TAG}.cmd | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
+	@fgrep "CUDA NVCC" ${CTO_NAME}-${CTO_TAG}.log.temp >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt || true
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh >> BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@if [ "A${MLTK_CHECK}" == "Ayes" ]; then CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} make force_mltk_check; fi
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
 	@rm -f ./${CTO_NAME}-${CTO_TAG}.cmd
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh > BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
 
+##### Force ML Toolkit checks
+force_mltk_check:
+	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+
+##### Various cleanup
 clean:
 	rm -f *.log.temp
 
