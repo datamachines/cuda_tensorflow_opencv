@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20201204
+Revision: 20210211
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -37,6 +37,7 @@ Version history:
 - `20200615`: TensorFlow is built from source. Note that TensorFlow will not have GPU support unless it was compiled with CUDNN support. 
 - `20200803`: added PyTorch. Removal of `cudnn_` version for CUDA 9.2 with TensorFlow 2.3.0 (minimum needed was 10.1)
 - `20201204`: added support for Python 3.7 for TensorFlow 1 builds and Python 3.8 for Tensorflow 2 builds (makes use of the [`deadsnakes/ppa`](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) and changes the default `python3`). Warning: only `pip3` installed packages will work, not `apt-get` installed ones (Python 3.6 is still the default for Ubuntu 18.04)
+- `20210211`: added support for CUDA 11 (using Nvidia's Ubuntu 20.04 based container). CUDA 9.2 and 10.2 versions are still created from Nvidia's Ubuntu 18.04 based containers. 
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.

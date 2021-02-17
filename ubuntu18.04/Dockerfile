@@ -11,7 +11,7 @@ FROM ${CTO_FROM}
 
 # Install system packages
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update -y \
+RUN apt-get update -y --fix-missing\
   && apt-get install -y --no-install-recommends \
     apt-utils \
     locales \
@@ -25,11 +25,10 @@ ENV LANG en_US.utf8
 ##### Python > 3.6
 # https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa
 ARG CTO_TF_PYTHON
-RUN apt-get update -y \
-  && apt-get install -y \
+RUN apt-get install -y \
     software-properties-common \
   && add-apt-repository ppa:deadsnakes/ppa \
-  && apt-get update -y \
+  && apt-get update -y --fix-missing \
   && apt-get install -y --no-install-recommends \
     python${CTO_TF_PYTHON} \
     python${CTO_TF_PYTHON}-dev \
@@ -49,8 +48,7 @@ RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/
 ##### TensorFlow
 
 # Install system packages
-RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
     build-essential \
     checkinstall \
     cmake \
@@ -76,20 +74,20 @@ RUN cd /usr/local && ln -s cuda nvidia
 
 # Additional specialized apt installs
 ARG CTO_CUDA_APT
-RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
       time ${CTO_CUDA_APT} \
   && apt-get clean
 
-# CUPTI library needed by TensorFlow but not in default path, adding
-ENV LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda/extras/CUPTI/lib64"
+# CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
+COPY tools/cupti_helper.sh /tmp/
+RUN chmod +x /tmp/cupti_helper.sh \
+  && /tmp/cupti_helper.sh
 
 # Install TF needed Python tools (for buiding) 
-# 20200615: numpy 1.19.0 breaks TF build
-# 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
+ARG CTO_TF_NUMPY=numpy
 RUN pip3 install -U \
   mock \
-  'numpy<1.19.0' \
+  ${CTO_TF_NUMPY} \
   setuptools \
   six \
   wheel \
@@ -123,8 +121,7 @@ RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/rele
 ##### OpenCV
 
 # Install system packages
-RUN apt-get update -y \
-  && apt-get install -y --no-install-recommends \
+RUN apt-get install -y --no-install-recommends \
     doxygen \
     file \
     gfortran \
