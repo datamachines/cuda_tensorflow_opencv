@@ -88,7 +88,6 @@ ARG CTO_TF_NUMPY=numpy
 RUN pip3 install -U \
   mock \
   ${CTO_TF_NUMPY} \
-  numpy \
   setuptools \
   six \
   wheel \
