@@ -12,12 +12,14 @@ echo ""
 echo -n "-- Confirming OpenCV Python is installed. Version: "
 python3 -c 'import cv2; print(cv2.__version__)'
 
-echo ""
-echo "-------------------------------------------------------"
-echo ""
+if [ -f /tmp/tf_env.dump ]; then
+  echo ""
+  echo "-------------------------------------------------------"
+  echo ""
 
-echo "[TensorFlow build information]"
-cat /tmp/tf_env.dump
+  echo "[TensorFlow build information]"
+  cat /tmp/tf_env.dump
+fi
 
 echo ""
 echo "-------------------------------------------------------"
