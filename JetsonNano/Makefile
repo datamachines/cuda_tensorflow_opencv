@@ -21,7 +21,9 @@ MLTK_CHECK="yes"
 
 ##########
 JETPACK_RELEASE="32.5.0"
+# not user modifiable: CUDA version in the container
 STABLE_CUDA10=10.2
+# Tegra is 5.3
 ARCH_CUDA10=5.3
 
 # According to https://opencv.org/releases/
