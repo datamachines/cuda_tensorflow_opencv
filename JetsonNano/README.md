@@ -1,7 +1,9 @@
 # DockerFile for Nvidia Jetson Nano with GPU support for TensorFlow and OpenCV
-Revision: 20200423
+Revision: 20210218
 
-The base container for those container images is provided by Nvidia at https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base
+20210218: Changed the base image from https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base to https://ngc.nvidia.com/catalog/containers/nvidia:l4t-tensorflow
+Important: the base image is based on JetPack 4.5 (L4T R32.5.0), if this is not the JetPack version that you are using, please see "Building the images"
+
 Please refer to the following for further details https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
 Because the `L4T BSP EULA` includes redistribution rights, we are able provide pre-compiled builds.
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"
@@ -22,9 +24,13 @@ The tag for any image built will contain the `datamachines/` organization additi
 Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make build_all` will build all container images
 - `make jetsonnano-cuda_tensorflow_opencv` will build all the `jetsonnano-cuda_tensorflow_opencv` container images
-- use a direct tag to build a specific version; for example `make jetsonnano-cuda_tensorflow_opencv-10.0_2.1.0_4.3.0`, will build the `datamachines/jetsonnano-cuda_tensorflow_opencv:10.0_2.1.0_4.3.0-20200423` container image (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
+- use a direct tag to build a specific version; for example `make jetsonnano-cuda_tensorflow_opencv-10.2_2.3_4.5.1`, will build the `datamachines/jetsonnano-cuda_tensorflow_opencv:10.2_2.2_4.5.1-20210218` container image (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
 
-Note that the base container provider by Nvidia does not included CuDNN, therefore there is only `cuda` versions of the `jetsonnao-cuda_tensorflow_openv`.
+### Building a specialized container
+
+The 20210218 container is based on JetPack 4.5 (L4T R32.5.0), if you need to build a version based based on a different base container, please refer to the tags available at https://ngc.nvidia.com/catalog/containers/nvidia:l4t-tensorflow and reflect this value in the `Makefile`'s `JETPACK_RELEASE` as well as the `STABLE_TF` variables. Just keep in mind that we are not install CUDA or CuDNN but using the ones available within the base container we are pulling.
+
+Note: This base container provided by Nvidia for TensorFlow does include CuDNN, but we are keeping the `cuda` name as we are only providing a limited subset of release.
 
 ## A note on AlexyeyAB/darknet
 

@@ -10,11 +10,21 @@ print("*** TF include           : ", tf.sysconfig.get_include())
 print("*** TF lib               : ", tf.sysconfig.get_lib())
 print("*** TF link flags        : ", tf.sysconfig.get_link_flags())
 
+import cv2
+print("*** OpenCV version       : ", cv2.__version__)
+
 import keras
 print("*** Keras version        : ", keras.__version__)
 
 import torch
 print("*** PyTorch version      : ", torch.__version__)
+
+import torchaudio
+print("   *** PyTorch Audio     : ", torchaudio.__version__)
+
+import torchvision
+print("   *** PyTorch Vision    : ", torchvision.__version__)
+
 
 import pandas
 print("*** pandas version       : ", pandas.__version__)
