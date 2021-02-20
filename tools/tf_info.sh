@@ -41,8 +41,11 @@ echo ""
 # CUDNN version
 cudnn_inc="/usr/include/cudnn.h"
 cudnn8_inc="/usr/include/x86_64-linux-gnu/cudnn_version_v8.h"
+cudnnjn_inc="/usr/include/cudnn_version.h"
 if [ -f $cudnn8_inc ]; then
   cudnn_inc="${cudnn8_inc}"
+elif [ -f $cudnnjn_inc ]; then
+  cudnn_inc="$cudnnjn_inc"
 fi
 if [ ! -f $cudnn_inc ]; then
   cudnn="Not_Available"
