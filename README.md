@@ -5,20 +5,23 @@ Revision: 20210211
 * 1. [About](#About)
 * 2. [Docker images tag naming](#Dockerimagestagnaming)
 * 3. [Building the images](#Buildingtheimages)
-* 4. [Using the container images](#Usingthecontainerimages)
-* 5. [Additional details](#Additionaldetails)
-* 6. [Examples of use](#Examplesofuse)
-	* 6.1. [Simple OpenCV picture viewer](#SimpleOpenCVpictureviewer)
-	* 6.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
-	* 6.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
-	* 6.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
-		* 6.4.1. [Using PyYolo](#UsingPyYolo)
+* 4. [A note on supported GPU in the Docker Hub builds](#AnoteonsupportedGPUintheDockerHubbuilds)
+* 5. [Using the container images](#Usingthecontainerimages)
+* 6. [Additional details](#Additionaldetails)
+* 7. [Examples of use](#Examplesofuse)
+	* 7.1. [Simple OpenCV picture viewer](#SimpleOpenCVpictureviewer)
+		* 7.1.1. [Using OpenCV DNN](#UsingOpenCVDNN)
+	* 7.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
+	* 7.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
+	* 7.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
+		* 7.4.1. [Using PyYolo](#UsingPyYolo)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
 	autoSave=true
 	/vscode-markdown-toc-config -->
 <!-- /vscode-markdown-toc -->
+<!-- NOTE: joffreykern.markdown-toc use Ctrl+Shift+P to call Generate TOC for MarkDown-->
 
 ##  1. <a name='About'></a>About
 
@@ -87,7 +90,14 @@ Use the provided `Makefile` by running `make` to get a list of targets to build:
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) will give you quick access to the `BuildInfo-OpenCV` and `BuildInfo-TensorFlow` (if available) for a given compilation. Building the image takes time, but we encourage you to modify the `Dockerfile` to reflect your specific needs. If you run a specific `make` you will see the values of the parameters passed to the build, simply set their default `ARG` value to what matches your needs and manually compile, bypassing the `make` by using a form of `docker build --tag="mycto:tag" .` 
 
-##  4. <a name='Usingthecontainerimages'></a>Using the container images
+##  4. <a name='AnoteonsupportedGPUintheDockerHubbuilds'></a>A note on supported GPU in the Docker Hub builds
+
+In some cases, a minimum nvidia driver version is needed to run specific version of CUDA, [Table 1: CUDA Toolkit and Compatible Driver Versions](https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver) and [Table 2: CUDA Toolkit and Minimum Compatible Driver Versions](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html) as well as the `nvidia-smi` command on your host will help you determine if a specific version of CUDA will be supported.
+
+It is important to note that not all GPUs are supported in the Docker Hub provided builds. The containers are built for "compute capability (version)" (as defined in the [GPU supported](https://en.wikipedia.org/wiki/CUDA#GPUs_supported) Wikipedia page) of 6.0 and above (ie Pascal and above). 
+If you need a different compute capbility, please edit in the `Makefile` the `DNN_ARCH_CUDA` matching the one that you need to build and add your architecture. Then type `make` to see the entire list of containers that the release you have obtained can build and use the exact tag that you want to build to build it locally (on Ubuntu, you will need `docker` and `build-essential` installed at least to do this). For example, from the 20210211 release, you can `make cudnn_tensorflow_opencv-11.2.0_2.4.1_4.5.1`. We can not promise that self built docker image will build or be functional. Building one such container takes a lot of CPU and can take many hours, so we recommend you build only the target you need.
+
+##  5. <a name='Usingthecontainerimages'></a>Using the container images
 
 The use of the provided `runDocker.sh` script present in the source directory allows users to utilize the built image. Dy default, it will set up the X11 passthrough (for Linux and MacOS) and give the user a `/bin/bash` prompt within the running container, as well as mount the calling directory as `/dmc`. A user can test that X11 is functional by using a simple X command such as `xlogo` from the command line.
 
@@ -99,7 +109,7 @@ As of Docker 19.03, GPU support is native to the container runtime, as such, we 
 
 Note that the base container runs as root, if you want to run it as a non root user, add `-u $(id -u):$(id -g)` to the `docker` command line but ensure that you have access to the directories you will work in. This can be done using the `-e` command line option of `runDocker.sh`.
 
-##  5. <a name='Additionaldetails'></a>Additional details
+##  6. <a name='Additionaldetails'></a>Additional details
 
 - About OpenCV and GPU: In `cuda_tensorflow_opencv` (resp. `cudnn_tensorflow_opencv`), OpenCV is compiled with CUDA (resp. CUDA+CuDNN support), but note that not all of OpenCV's functions are optimized. This is true in particular for some of the `contrib` code.
 
@@ -110,9 +120,9 @@ Note that the base container runs as root, if you want to run it as a non root u
 CONTAINER_ID="datamachines/cudnn_tensorflow_opencv:10.2_1.15.3_4.3.0-20200615" ../runDocker.sh -X -N -c python3 -- /dmc/tf_hw.py
 </pre>
 
-##  6. <a name='Examplesofuse'></a>Examples of use
+##  7. <a name='Examplesofuse'></a>Examples of use
 
-###  6.1. <a name='SimpleOpenCVpictureviewer'></a>Simple OpenCV picture viewer
+###  7.1. <a name='SimpleOpenCVpictureviewer'></a>Simple OpenCV picture viewer
 
 If a user place a picture (named `pic.jpg`) in the directory to be mounted as `/dmc` and the following example script (naming it `display_pic.py3`)
 
@@ -127,7 +137,25 @@ If a user place a picture (named `pic.jpg`) in the directory to be mounted as `/
 
 , adapting `PATH_TO_RUNDOCKER` in `CONTAINER_ID=datamachines/cudnn_tensorflow_opencv-10.2_2.2.0_4.3.0-20200615 PATH_TO_RUNDOCKER/runDocker.sh`, from the provided bash interactive shell, when the user runs `cd /dmc; python3 display_pic.py3`, this will display the picture from the mounted directory on the user's X11 display.
 
-###  6.2. <a name='UsingGPUTensorFlowinyourcodeonlyforcudnn-versions'></a>Using GPU TensorFlow in your code (only for cudnn- versions)
+####  7.1.1. <a name='UsingOpenCVDNN'></a>Using OpenCV DNN
+
+This requires a `cudnn_tensorflow_opencv` container and the use of a form of the `--gpus` `docker` options (ex: `docker [...] --gpus all [...]`)
+
+In your `python3` code, make sure to ask OpenCV to use a CUDA backend. This can be achived by adding code similar to:
+
+<pre>
+import cv2
+
+net = cv2.dnn.[...]
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+</pre>
+
+You can see more details with this [OpenCV tutorial: YOLO - object detection](https://opencv-tutorial.readthedocs.io/en/latest/yolo/yolo.html?highlight=setpreferablebackend)
+
+We note that other target are available, for example `net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA_FP16)`
+
+###  7.2. <a name='UsingGPUTensorFlowinyourcodeonlyforcudnn-versions'></a>Using GPU TensorFlow in your code (only for cudnn- versions)
 
 Code written for Tensorflow should follow principles described in https://www.tensorflow.org/guide/using_gpu
 
@@ -156,7 +184,7 @@ For example:
     ENV PYTHONPATH "$PYTHONPATH:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research:/usr/local/lib/python3.6/dist-packages/tensorflow/models/research/slim"
     RUN cd /usr/local/lib/python3.6/dist-packages/tensorflow/models/research && protoc object_detection/protos/*.proto --python_out=.
 
-###  6.3. <a name='UsingJupyter-NotebookAnoteonexposingports'></a>Using Jupyter-Notebook (A note on exposing ports)
+###  7.3. <a name='UsingJupyter-NotebookAnoteonexposingports'></a>Using Jupyter-Notebook (A note on exposing ports)
 
 By choice, the containers built do not expose any ports, or start any services. This is left to the end-user. To start any, the simpler solution is to base a new container `FROM` one of those containers, expose a port and start said service to be able to access it.
 
@@ -171,7 +199,7 @@ CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 When starting it using `docker run -p 8888:8888 jupnb:local` to publish the container's port `8888` to the local system's port `8888`, an `http://127.0.0.1:8888/` based URL will shown with the access token.
 Using this url in a web browser will grant access to the running instance of Jupyter Notebook.
 
-###  6.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
+###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
 Recently, Yolo v4 was announced. It is possible to easy run it using a custom container, building it from source.
 In this example we will build [YOLOv4 pre-release](https://github.com/AlexeyAB/darknet/releases/tag/darknet_yolo_v4_pre) from source, enabling GPU, CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example as well as building additional GPU support into the container (7.5).
@@ -209,7 +237,7 @@ Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be access
 
 For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
 
-####  6.4.1. <a name='UsingPyYolo'></a>Using PyYolo
+####  7.4.1. <a name='UsingPyYolo'></a>Using PyYolo
 
 [PyYolo](https://github.com/goktug97/PyYOLO) was recently made Yolo v4 compatible and uses already installed OpenCV and Darknet, so it can easily be integrated within the container. Because we are using a _release_ for `AlexyeyAB/darknet` (instead of pulling the latest development code from github) we have to use a specific version of PyYolo that is compatible with it; namely `0.1.5` (ie the newly release `0.1.6` will not work)
 
