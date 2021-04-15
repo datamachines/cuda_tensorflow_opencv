@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20210211
+Revision: 20210414
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -41,16 +41,12 @@ Version history:
 - `20200803`: added PyTorch. Removal of `cudnn_` version for CUDA 9.2 with TensorFlow 2.3.0 (minimum needed was 10.1)
 - `20201204`: added support for Python 3.7 for TensorFlow 1 builds and Python 3.8 for Tensorflow 2 builds (makes use of the [`deadsnakes/ppa`](https://launchpad.net/~deadsnakes/+archive/ubuntu/ppa) and changes the default `python3`). Warning: only `pip3` installed packages will work, not `apt-get` installed ones (Python 3.6 is still the default for Ubuntu 18.04)
 - `20210211`: added support for CUDA 11 (using Nvidia's Ubuntu 20.04 based container). CUDA 9.2 and 10.2 versions are still created from Nvidia's Ubuntu 18.04 based containers. 
+- `20210414`: updated for OpenCV 3.4.14 and 4.5.2, removed `cuda_` from build target (and built containers)
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
-
-`cuda_tensorflow_opencv`:
-- Builds an Nvidia GPU optimized version of OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
-- Note that TensorFlow need CUDNN for GPU support.
-- Requires a Linux system with nvidia-docker (v2) and the Nvidia drivers installed to run. See https://github.com/NVIDIA/nvidia-docker for setup details
 
 `cudnn_tensorflow_opencv`:
 - Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
@@ -61,7 +57,7 @@ Version history:
 `jetsonnano-cuda_tensorflow_opencv` (see the `JetsonNano` directory):
 - Builds a Nvidia Jetson Nano `cuda_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .**
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
 This is useful for you to decide if you would benefit from re-compiling some container(s) for your specific hardware.
@@ -84,7 +80,6 @@ The tag for any image built will contain the `datamachines/` organization additi
 Use the provided `Makefile` by running `make` to get a list of targets to build:
 - `make build_all` will build all container images
 - `make tensorflow_opencv` to build all the `tensorflow_opencv` container images
-- `make cuda_tensorflow_opencv` will build all the `cuda_tensorflow_opencv` container images
 - `make cudnn_tensorflow_opencv` will build all the `cudnn_tensorflow_opencv` container images
 - use a direct tag to build a specific version (from the list provided by the call to `make`); for example `make cudnn_tensorflow_opencv-10.2_2.2.0_4.3.0`, will build the `datamachines/cudnn_tensorflow_opencv:10.2_2.2.0_4.3.0-20200615` container image  (if such a built is available, see the `Docker Image tag ending` and the list of `Available Docker images to be built` for accurate values).
 

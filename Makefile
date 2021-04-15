@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210211
+CTO_RELEASE=20210414
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -45,8 +45,8 @@ DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.13
-STABLE_OPENCV4=4.5.1
+STABLE_OPENCV3=3.4.14
+STABLE_OPENCV4=4.5.2
 
 # TF2 at minimum CUDA 10.1
 # TF2 is not going to support CUDA11 until 2.4.0, so not building those yet
@@ -78,25 +78,30 @@ TF1_NUMPY='numpy<1.19.0'
 TF2_NUMPY='numpy<1.20.0'
 
 # PyTorch (from pip) using instructions from https://pytorch.org/
-PT_CPU="torch==1.7.1+cpu torchvision==0.8.2+cpu torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
+# and https://pytorch.org/get-started/previous-versions/
+# 1.7.1 last version supported by 9.2
+PT_CPU="torch==1.8.0+cpu torchvision==0.9.0+cpu torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
-PT_CUDA10="torch torchvision"
-PT_CUDA11="torch==1.7.1+cu110 torchvision==0.8.2+cu110 torchaudio===0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CUDA10="torch torchvision torchaudio"
+PT_CUDA11="torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html"
+
+##########
 
 ##### CUDA _ Tensorflow _ OpenCV
-CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
-# Ubuntu 20.04 comes with Python 3.8, so unable to build TF1 support
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV4}
+## 20210414: No real interest from users in the cuda_ version of the built containers, not generating those anymore
+#CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+## Ubuntu 20.04 comes with Python 3.8, so unable to build TF1 support
+##CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
+##CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### CuDNN _ Tensorflow _ OpenCV
 DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
@@ -126,7 +131,7 @@ all:
 	@echo ""
 	@echo "** Available Docker images to be built (make targets):"
 	@echo "  tensorflow_opencv: "; echo -n "      "; echo ${TO_BUILDALL} | sed -e 's/ /\n      /g'
-	@echo "  cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
+#	@echo "  cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo "  cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
 	@echo "** To build all, use: make build_all"
@@ -136,14 +141,14 @@ all:
 ## special command to build all targets
 build_all:
 	@make ${TO_BUILDALL}
-	@make ${CTO_BUILDALL}
+#	@make ${CTO_BUILDALL}
 	@make ${DTO_BUILDALL}
 
 tensorflow_opencv:
 	@make ${TO_BUILDALL}
 
-cuda_tensorflow_opencv:
-	@make ${CTO_BUILDALL}
+#cuda_tensorflow_opencv:
+#	@make ${CTO_BUILDALL}
 
 cudnn_tensorflow_opencv:
 	@make ${DTO_BUILDALL}
@@ -151,8 +156,8 @@ cudnn_tensorflow_opencv:
 ${TO_BUILDALL}:
 	@CUDX="" CUDX_COMP="" BTARG="$@" make build_prep
 
-${CTO_BUILDALL}:
-	@CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
+#${CTO_BUILDALL}:
+#	@CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
 
 ${DTO_BUILDALL}:
 	@CUDX="cudnn" CUDX_COMP="-DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON" BTARG="$@" make build_prep
