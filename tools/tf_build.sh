@@ -43,6 +43,20 @@ if [ "A$1" == "Ayes" ]; then
     exit 1
   fi
 fi
+
+if [ "A$2" == "Av1" ]; then
+  export _TMP=`python -c 'import sys; version=sys.version_info[:3]; print("{0}.{1}".format(*version))'`
+  if [ "A${_TMP}" == "A3.8" ]; then
+    echo "[**] Patching TF1 & Python 3.8 issue"
+    # https://github.com/tensorflow/tensorflow/issues/34197
+    # https://github.com/tensorflow/tensorflow/issues/33543
+    perl -pi.bak -e 's%nullptr(,\s+/.\s+tp_print)%NULL$1%' tensorflow/python/lib/core/ndarray_tensor_bridge.cc tensorflow/python/lib/core/bfloat16.cc tensorflow/python/eager/pywrap_tfe_src.cc 
+    diff -u tensorflow/python/lib/core/ndarray_tensor_bridge.cc{.bak,} || true
+    diff -u tensorflow/python/lib/core/bfloat16.cc{.bak,} || true
+    diff -u tensorflow/python/eager/pywrap_tfe_src.cc{.bak,} || true
+  fi
+fi
+
 if [ "A$cudnn" == "A1" ]; then
   export TF_CUDNN_VERSION="$(sed -n 's/^#define CUDNN_MAJOR\s*\(.*\).*/\1/p' $cudnn_inc)"
   if [ "A$TF_CUDNN_VERSION" == "A" ]; then
@@ -56,6 +70,10 @@ if [ "A$cudnn" == "A1" ]; then
     export TF_CUDA_COMPUTE_CAPABILITIES="${CTO_DNN_ARCH}"
 
     nccl_inc="/usr/local/cuda/include/nccl.h"
+    nccl2_inc='/usr/include/nccl.h'
+    if [ -f $nccl2_inc ]; then
+      nccl_inc="${nccl2_inc}"
+    fi
     if [ -f $nccl_inc ]; then
       export TF_NCCL_VERSION="$(sed -n 's/^#define NCCL_MAJOR\s*\(.*\).*/\1/p' $nccl_inc)"
     fi
@@ -63,15 +81,26 @@ if [ "A$cudnn" == "A1" ]; then
     # cudnn build: TF 1.15.[345] with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/issues/34429
     if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
       if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '1.15.[345]' ; then
-        echo "-- Patching third_party/nccl/build_defs.bzl.tpl"
+        echo "[**] Patching third_party/nccl/build_defs.bzl.tpl"
         perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.x compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
+        diff -u third_party/nccl/build_defs.bzl.tpl{.bak,} || true
       fi
     fi
     
   fi
-fi
-if [ "A$cudnn" == "A1" ]; then
+
   config_add="$config_add --config=cuda"
+
+else
+# here: NOT CUDNN
+  if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '1.15.5' ; then
+#    echo "[**] Patching third_party/nccl/build_defs.bzl.tpl"
+#    perl -pi.bak -e 's/("--bin2c-path=%s")/## 1.15.x compilation ## $1/' third_party/nccl/build_defs.bzl.tpl
+    # https://github.com/tensorflow/tensorflow/issues/33758#issuecomment-547867642
+    echo "[**] Patching grpc dependencies"
+    curl -s -L https://github.com/tensorflow/tensorflow/compare/master...hi-ogawa:grpc-backport-pr-18950.patch | patch -p1
+  fi
+
 fi
 
 export GCC_HOST_COMPILER_PATH=$(which gcc)
@@ -123,4 +152,3 @@ $build_cmd
 end_time=$SECONDS
 elapsed=$(( end_time - start_time ))
 echo "-- TensorFlow building time (in seconds): $elapsed" | tee -a /tmp/tf_env.dump
-

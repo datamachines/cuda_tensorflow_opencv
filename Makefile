@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210414
+CTO_RELEASE=20210420
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -28,9 +28,10 @@ MLTK_CHECK="yes"
 # CUDA 11 came out in May 2020
 # Nivida released their CUDA11 containers only with Ubuntu 20.04 support
 # https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=20.04
+# 10.2 release now is available with cuddn8
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
-STABLE_CUDA11=11.2.0
+STABLE_CUDA11=11.2.2
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
 CUDA11_APT_XTRA=""
@@ -57,7 +58,7 @@ STABLE_TF2=2.4.1
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
-LATEST_BAZELISK=1.7.4
+LATEST_BAZELISK=1.7.5
 # https://github.com/bazelbuild/bazel
 # 20210211 Not using 4.0.0 just yet
 LATEST_BAZEL=3.7.2
@@ -68,7 +69,7 @@ TF2_KERAS="keras"
 # https://github.com/tensorflow/tensorflow/issues/39768
 # Only for Ubuntu 18.04
 # "use TF 1.15, you have to use Python 3.7 or lower. If you want to use Python 3.8 you have to use TF 2.2 or newer"
-TF1_PYTHON=3.7
+TF1_PYTHON=3.8
 TF2_PYTHON=3.8
 
 # 20200615: numpy 1.19.0 breaks TF build
@@ -87,22 +88,6 @@ PT_CUDA11="torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f http
 
 ##########
 
-##### CUDA _ Tensorflow _ OpenCV
-## 20210414: No real interest from users in the cuda_ version of the built containers, not generating those anymore
-#CTO_BUILDALL =cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
-## Ubuntu 20.04 comes with Python 3.8, so unable to build TF1 support
-##CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
-##CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cuda_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV4}
-
 ##### CuDNN _ Tensorflow _ OpenCV
 DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
@@ -113,7 +98,7 @@ DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OP
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
-# Ubuntu 20.04 comes with Python 3.8, so unable to build TF1 support
+# TF1 does not handle cudnn8 well, skipping
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF2}_${STABLE_OPENCV3}
@@ -131,7 +116,6 @@ all:
 	@echo ""
 	@echo "** Available Docker images to be built (make targets):"
 	@echo "  tensorflow_opencv: "; echo -n "      "; echo ${TO_BUILDALL} | sed -e 's/ /\n      /g'
-#	@echo "  cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo "  cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
 	@echo "** To build all, use: make build_all"
@@ -147,17 +131,11 @@ build_all:
 tensorflow_opencv:
 	@make ${TO_BUILDALL}
 
-#cuda_tensorflow_opencv:
-#	@make ${CTO_BUILDALL}
-
 cudnn_tensorflow_opencv:
 	@make ${DTO_BUILDALL}
 
 ${TO_BUILDALL}:
 	@CUDX="" CUDX_COMP="" BTARG="$@" make build_prep
-
-#${CTO_BUILDALL}:
-#	@CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
 
 ${DTO_BUILDALL}:
 	@CUDX="cudnn" CUDX_COMP="-DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON" BTARG="$@" make build_prep
@@ -174,8 +152,8 @@ build_prep:
 	@$(eval CTO_TENSORFLOW_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 2))
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
-# Nvidia's container requires Ubuntu 20.04 for CUDA11
-	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi))
+# Nvidia's container requires Ubuntu 20.04 for CUDA11 + CPU only now use Ubuntu 20.04, only CUDA9 and CUDA10 uses 18.04
+	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else if [ ${CTO_SC} == 1 ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
 	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
@@ -192,17 +170,21 @@ build_prep:
 
 # 18.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
 	@$(eval CTO_TMP18="cuda-npp-${CTO_CUDA_VERSION} cuda-cublas-${CTO_CUDA_PRIMEVERSION} cuda-cufft-${CTO_CUDA_VERSION} cuda-libraries-${CTO_CUDA_VERSION} cuda-npp-dev-${CTO_CUDA_VERSION} cuda-cublas-dev-${CTO_CUDA_PRIMEVERSION} cuda-cufft-dev-${CTO_CUDA_VERSION} cuda-libraries-dev-${CTO_CUDA_VERSION}")
-## 20.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/
+# 20.04: https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/
 	@$(eval CTO_TMP20=$(shell if [ "A${CUDA11_APT_XTRA}" == "A" ]; then echo ""; else echo "cuda-libraries-${CTO_CUDA_USEDVERSION} cuda-libraries-dev-${CTO_CUDA_USEDVERSION} cuda-tools-${CTO_CUDA_USEDVERSION} cuda-toolkit-${CTO_CUDA_USEDVERSION} libcublas-${CTO_CUDA_USEDVERSION} libcublas-dev-${CTO_CUDA_USEDVERSION} libcufft-${CTO_CUDA_USEDVERSION} libcufft-dev-${CTO_CUDA_USEDVERSION} libnccl2 libnccl-dev libnpp-${CTO_CUDA_USEDVERSION} libnpp-dev-${CTO_CUDA_USEDVERSION}"; fi))
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else if [ "A${CTO_UBUNTU}" == "Aubuntu18.04" ]; then echo ${CTO_TMP18}; else echo ${CTO_TMP20}; fi; fi))
 
 	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ]; then echo "${DNN_ARCH_CUDA10}"; else echo "${DNN_ARCH_CUDA11}"; fi; fi))
+	@$(eval CTO_DNN_ARCH=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${CTO_DNN_ARCH}"; fi))
 	@$(eval CUDX_COMP=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; fi))
 
-	@$(eval CTO_TMP=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "-cudnn8"; else echo "-cudnn7"; fi))
+# cuddn7 for 9.2 and 10.2 with TF1, cudnn8 otherwise
+	@$(eval CTO_TMP=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "-cudnn7"; else echo "-cudnn8"; fi))
+	@$(eval CTO_TMP=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ] && [ "A${CTO_TENSORFLOW_VERSION}" == "A${STABLE_TF1}" ]; then echo "-cudnn7"; else echo "${CTO_TMP}"; fi))
+
 	@$(eval CUDX_FROM=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "${CTO_TMP}"; else echo ""; fi))
 
-	@$(eval CTO_FROM=$(shell if [ ${CTO_SC} == 1 ]; then echo "ubuntu:18.04"; else echo "nvidia/cuda:${CTO_CUDA_VERSION}${CUDX_FROM}-devel-${CTO_UBUNTU}"; fi))
+	@$(eval CTO_FROM=$(shell if [ ${CTO_SC} == 1 ]; then echo "ubuntu:20.04"; else echo "nvidia/cuda:${CTO_CUDA_VERSION}${CUDX_FROM}-devel-${CTO_UBUNTU}"; fi))
 
 	@$(eval CTO_TMP="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 ${CUDX_COMP} -D WITH_NVCUVID=ON")
 	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))

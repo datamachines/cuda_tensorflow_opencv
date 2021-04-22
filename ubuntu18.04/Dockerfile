@@ -16,6 +16,7 @@ RUN apt-get update -y --fix-missing\
     apt-utils \
     locales \
     wget \
+    ca-certificates \
   && apt-get clean
 
 # UTF-8
@@ -69,19 +70,17 @@ RUN apt-get install -y --no-install-recommends \
 # Some TF tools expect a "python" binary
 RUN ln -s $(which python3) /usr/local/bin/python
 
-# /etc/ld.so.conf.d/nvidia.conf point to /usr/local/nvidia which seems to be missing, point to the cuda directory install for libraries
-RUN cd /usr/local && ln -s cuda nvidia
-
 # Additional specialized apt installs
 ARG CTO_CUDA_APT
 RUN apt-get install -y --no-install-recommends \
       time ${CTO_CUDA_APT} \
   && apt-get clean
 
-# CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
+# /usr/local/nvidia + CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
 COPY tools/cupti_helper.sh /tmp/
 RUN chmod +x /tmp/cupti_helper.sh \
-  && /tmp/cupti_helper.sh
+  && /tmp/cupti_helper.sh \
+  && rm /tmp/cupti_helper.sh
 
 # Install TF needed Python tools (for buiding) 
 ARG CTO_TF_NUMPY=numpy

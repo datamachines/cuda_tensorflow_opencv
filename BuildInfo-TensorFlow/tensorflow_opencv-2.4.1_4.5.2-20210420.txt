@@ -1,0 +1,233 @@
+  CTO_FROM               : ubuntu:20.04
+docker build  \
+  --build-arg CTO_FROM="ubuntu:20.04" \
+  --build-arg CTO_TENSORFLOW_VERSION="2.4.1" \
+  --build-arg CTO_OPENCV_VERSION="4.5.2" \
+  --build-arg CTO_NUMPROC="32" \
+  --build-arg CTO_CUDA_APT="" \
+  --build-arg CTO_CUDA_BUILD="" \
+  --build-arg LATEST_BAZELISK="1.7.5" \
+  --build-arg LATEST_BAZEL="3.7.2" \
+  --build-arg CTO_TF_CUDNN="no" \
+  --build-arg CTO_TF_OPT="v2" \
+  --build-arg CTO_TF_KERAS="keras" \
+  --build-arg CTO_TF_PYTHON="" \
+  --build-arg CTO_TF_NUMPY="numpy<1.20.0" \
+  --build-arg CTO_DNN_ARCH="" \
+  --build-arg CTO_CUDA11_APT_XTRA="" \
+  --build-arg CTO_PYTORCH="torch==1.8.0+cpu torchvision==0.9.0+cpu torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html" \
+  --tag="datamachines/tensorflow_opencv:2.4.1_4.5.2-20210420" \
+  -f ubuntu20.04/Dockerfile \
+  .
+[pip list]
+Package                 Version
+----------------------- ---------
+absl-py                 0.12.0
+argon2-cffi             20.1.0
+astunparse              1.6.3
+async-generator         1.10
+attrs                   20.3.0
+autovizwidget           0.18.0
+backcall                0.2.0
+bleach                  3.3.0
+cachetools              4.2.1
+certifi                 2020.12.5
+cffi                    1.14.5
+chardet                 4.0.0
+cycler                  0.10.0
+decorator               4.4.2
+defusedxml              0.7.1
+entrypoints             0.3
+flatbuffers             1.12
+future                  0.18.2
+gast                    0.3.3
+google-auth             1.29.0
+google-auth-oauthlib    0.4.4
+google-pasta            0.2.0
+grpcio                  1.32.0
+h5py                    2.10.0
+hdijupyterutils         0.18.0
+idna                    2.10
+imageio                 2.9.0
+imageio-ffmpeg          0.4.3
+ipykernel               5.5.3
+ipython                 7.22.0
+ipython-genutils        0.2.0
+ipywidgets              7.6.3
+jedi                    0.18.0
+Jinja2                  2.11.3
+joblib                  1.0.1
+jsonschema              3.2.0
+jupyter                 1.0.0
+jupyter-client          6.1.12
+jupyter-console         6.4.0
+jupyter-core            4.7.1
+jupyterlab-pygments     0.1.2
+jupyterlab-widgets      1.0.0
+Keras                   2.4.3
+Keras-Applications      1.0.8
+Keras-Preprocessing     1.1.2
+kiwisolver              1.3.1
+lxml                    4.6.3
+Markdown                3.3.4
+MarkupSafe              1.1.1
+matplotlib              3.4.1
+mistune                 0.8.4
+mock                    4.0.3
+moviepy                 1.0.3
+nbclient                0.5.3
+nbconvert               6.0.7
+nbformat                5.1.3
+nest-asyncio            1.5.1
+networkx                2.5.1
+nose                    1.3.7
+notebook                6.3.0
+numpy                   1.19.5
+oauthlib                3.1.0
+opt-einsum              3.3.0
+packaging               20.9
+pandas                  1.2.4
+pandocfilters           1.4.3
+parso                   0.8.2
+pexpect                 4.8.0
+pickleshare             0.7.5
+Pillow                  8.2.0
+pip                     21.0.1
+plotly                  4.14.3
+proglog                 0.1.9
+prometheus-client       0.10.1
+prompt-toolkit          3.0.18
+protobuf                3.15.8
+ptyprocess              0.7.0
+pyasn1                  0.4.8
+pyasn1-modules          0.2.8
+pycparser               2.20
+Pygments                2.8.1
+pyparsing               2.4.7
+pyrsistent              0.17.3
+python-dateutil         2.8.1
+pytz                    2021.1
+PyWavelets              1.1.1
+PyYAML                  5.4.1
+pyzmq                   22.0.3
+qtconsole               5.0.3
+QtPy                    1.9.0
+requests                2.25.1
+requests-oauthlib       1.3.0
+retrying                1.3.3
+rsa                     4.7.2
+scikit-image            0.18.1
+scikit-learn            0.24.1
+scipy                   1.6.2
+Send2Trash              1.5.0
+setuptools              56.0.0
+six                     1.15.0
+tensorboard             2.5.0
+tensorboard-data-server 0.6.0
+tensorboard-plugin-wit  1.8.0
+tensorflow              2.4.1
+tensorflow-estimator    2.4.0
+termcolor               1.1.0
+terminado               0.9.4
+testpath                0.4.4
+threadpoolctl           2.1.0
+tifffile                2021.4.8
+torch                   1.8.0+cpu
+torchaudio              0.8.0
+torchvision             0.9.0+cpu
+tornado                 6.1
+tqdm                    4.60.0
+traitlets               5.0.5
+typing-extensions       3.7.4.3
+urllib3                 1.26.4
+wcwidth                 0.2.5
+webencodings            0.5.1
+Werkzeug                1.0.1
+wheel                   0.36.2
+widgetsnbextension      3.5.1
+wrapt                   1.12.1
+
+-- Confirming OpenCV Python is installed. Version: 4.5.2
+
+-------------------------------------------------------
+
+[TensorFlow build information]
+--- Tensorflow Build --- 
+-- Environment variables set:
+TF_CUDA_CLANG=0
+TF_DOWNLOAD_CLANG=0
+TF_DOWNLOAD_MKL=0
+TF_ENABLE_XLA=0
+TF_NEED_AWS=0
+TF_NEED_COMPUTECPP=0
+TF_NEED_CUDA=0
+TF_NEED_GCP=0
+TF_NEED_GDR=0
+TF_NEED_HDFS=0
+TF_NEED_JEMALLOC=1
+TF_NEED_KAFKA=0
+TF_NEED_MKL=0
+TF_NEED_MPI=0
+TF_NEED_OPENCL=0
+TF_NEED_OPENCL_SYCL=0
+TF_NEED_ROCM=0
+TF_NEED_S3=0
+TF_NEED_VERBS=0
+TF_SET_ANDROID_WORKSPACE=0
+GCC_HOST_COMPILER_PATH=/usr/bin/gcc
+CC_OPT_FLAGS=
+PYTHON_BIN_PATH=/usr/local/bin/python
+PYTHON_LIB_PATH=/usr/local/lib/python3.8/dist-packages
+-- ./configure output:
+You have bazel 3.7.2 installed.
+Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -Wno-sign-compare]: 
+
+Preconfigured Bazel build configs. You can use any of the below by adding "--config=<>" to your build command. See .bazelrc for more details.
+	--config=mkl         	# Build with MKL support.
+	--config=mkl_aarch64 	# Build with oneDNN support for Aarch64.
+	--config=monolithic  	# Config for mostly static monolithic build.
+	--config=ngraph      	# Build with Intel nGraph support.
+	--config=numa        	# Build with NUMA support.
+	--config=dynamic_kernels	# (Experimental) Build kernels into separate shared objects.
+	--config=v2          	# Build TensorFlow 2.x instead of 1.x.
+Preconfigured Bazel build configs to DISABLE default on features:
+	--config=noaws       	# Disable AWS S3 filesystem support.
+	--config=nogcp       	# Disable GCP support.
+	--config=nohdfs      	# Disable HDFS support.
+	--config=nonccl      	# Disable NVIDIA NCCL support.
+Configuration finished
+-- bazel command to run:
+bazel build --verbose_failures --config=opt --config=v2 //tensorflow/tools/pip_package:build_pip_package
+-- TensorFlow building time (in seconds): 2489
+
+-------------------------------------------------------
+
+[Extra information]
+FOUND_UBUNTU: 20.04
+FOUND_CUDNN: Not_Available
+*** Tensorflow version   :  2.4.1
+*** Tensorflow Keras     :  2.4.0
+*** TF Builf with cuda   :  False
+*** TF compile flags     :  ['-I/usr/local/lib/python3.8/dist-packages/tensorflow/include', '-D_GLIBCXX_USE_CXX11_ABI=1']
+*** TF include           :  /usr/local/lib/python3.8/dist-packages/tensorflow/include
+*** TF lib               :  /usr/local/lib/python3.8/dist-packages/tensorflow
+*** TF link flags        :  ['-L/usr/local/lib/python3.8/dist-packages/tensorflow', '-l:libtensorflow_framework.so.2']
+*** OpenCV version       :  4.5.2
+*** Keras version        :  2.4.3
+*** PyTorch version      :  1.8.0+cpu
+   *** PyTorch Audio     :  0.8.0
+   *** PyTorch Vision    :  0.9.0+cpu
+*** pandas version       :  1.2.4
+*** scikit-learn version :  0.24.1
+
+(!! the following is build device specific, and here only to confirm hardware availability, ignore !!)
+--- All seen hardware    :
+ [name: "/device:CPU:0"
+device_type: "CPU"
+memory_limit: 268435456
+locality {
+}
+incarnation: 881679124304527912
+]
+--- TF GPU Available     :
+ []
