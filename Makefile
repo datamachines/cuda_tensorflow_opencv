@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210420
+CTO_RELEASE=20210601
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -31,7 +31,7 @@ MLTK_CHECK="yes"
 # 10.2 release now is available with cuddn8
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
-STABLE_CUDA11=11.2.2
+STABLE_CUDA11=11.3.0
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
 CUDA11_APT_XTRA=""
@@ -50,21 +50,21 @@ STABLE_OPENCV3=3.4.14
 STABLE_OPENCV4=4.5.2
 
 # TF2 at minimum CUDA 10.1
-# TF2 is not going to support CUDA11 until 2.4.0, so not building those yet
+# TF2 CUDA11 minimum is 2.4.0
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
 STABLE_TF1=1.15.5
-STABLE_TF2=2.4.1
+STABLE_TF2=2.5.0
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
-LATEST_BAZELISK=1.7.5
+LATEST_BAZELISK=1.9.0
 # https://github.com/bazelbuild/bazel
-# 20210211 Not using 4.0.0 just yet
 LATEST_BAZEL=3.7.2
 # https://github.com/keras-team/keras/releases
+# Note: skipping for TF2, built with it 
 TF1_KERAS="keras==2.3.1 tensorflow<2"
-TF2_KERAS="keras"
+TF2_KERAS=""
 
 # https://github.com/tensorflow/tensorflow/issues/39768
 # Only for Ubuntu 18.04
@@ -81,7 +81,7 @@ TF2_NUMPY='numpy<1.20.0'
 # PyTorch (from pip) using instructions from https://pytorch.org/
 # and https://pytorch.org/get-started/previous-versions/
 # 1.7.1 last version supported by 9.2
-PT_CPU="torch==1.8.0+cpu torchvision==0.9.0+cpu torchaudio==0.8.0 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CPU="torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA10="torch torchvision torchaudio"
 PT_CUDA11="torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html"
