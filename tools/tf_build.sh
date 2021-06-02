@@ -87,6 +87,15 @@ if [ "A$cudnn" == "A1" ]; then
       fi
     fi
     
+    # cudnn build: TF 2.5.0 with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/pull/48393
+    if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
+      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '2.5.0' ; then    
+        echo "[**] Patching third_party/cub.BUILD"
+        perl -pi.bak -e 's%\@local_cuda//%\@local_config_cuda//cuda%' third_party/cub.BUILD
+        diff -u third_party/cub.BUILD{.bak,} || true
+      fi
+    fi
+
   fi
 
   config_add="$config_add --config=cuda"
