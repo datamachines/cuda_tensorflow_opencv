@@ -10,7 +10,7 @@ FROM ${CTO_FROM}
 ##### Base
 
 # Install system packages
-ENV DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y --fix-missing\
   && apt-get install -y --no-install-recommends \
     apt-utils \
@@ -238,14 +238,10 @@ RUN pip3 install -U \
   && rm -rf /root/.cache/pip
 # Removed scipy: the version required by TF2 is already installed during the TF2 step (and it will be installed by Keras for TF1)
 
-# Installing a built-TF compatible keras
+# Installing a built-TF compatible keras (for TF1) and PyTorch
 ARG CTO_TF_KERAS
-RUN pip3 install ${CTO_TF_KERAS} \
-  && rm -rf /root/.cache/pip
-
-# Installing PyTorch
 ARG CTO_PYTORCH
-RUN pip3 install ${CTO_PYTORCH} \
+RUN pip3 install ${CTO_TF_KERAS} ${CTO_PYTORCH} \
   && rm -rf /root/.cache/pip
 
 # Add dataframe display widget
