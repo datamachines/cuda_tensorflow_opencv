@@ -18,15 +18,45 @@ open FILE, "<$infile"
 chomp(my @lines = <FILE>);
 close FILE;
 
-sub get_cto { my @x = ($_[0] =~ m%^\|.+?\|\s*([\d\.]+)\s*\|\s*([\d\.]+)\s*\|\s*([\d\.]+)\s*\|%); return(@x); }
-sub comp_v { my @x=split(m%\.%, $_[0]); return(1000000*$x[0]+1000*$x[1]+$x[2]); }
+sub __clean { 
+    my $t = $_[0]; 
+    $t=~s%^\s+%%; 
+    $t=~s%\s+$%%; 
+    return($t); 
+}
+
+sub get_cto { 
+    my ($x) = ($_[0] =~ m%^\|\s+([^\s]+)\s+\|%);
+    my @t = (split(m%[_-]%, $x));
+#    print scalar @t, " == ", join(" : ", @t), "\n";
+    return(&__clean($t[0]), &__clean($t[1]), &__clean($t[2]), &__clean($t[3]) )
+        if (scalar @t == 4);
+    return(999, &__clean($t[0]), &__clean($t[1]), &__clean($t[2]) )
+        if (scalar @t == 3);
+    error_quit("");
+}
+
+sub comp_v { 
+    my @x=split(m%\.%, $_[0]); 
+    $x[1] = 0
+        if (scalar @x == 1);
+    $x[2] = 0
+        if (scalar @x == 2);
+    my $v=1000000*$x[0]+1000*$x[1]+$x[2]; 
+#    print("\n$v  "); 
+    return($v); 
+}
+
 sub __sort {
     my @a_cto = &get_cto($a);
+#    print("\n%\%a%".join("/", @a_cto));
     my @b_cto = &get_cto($b);
+#    print("\n%\%b%".join("/", @b_cto));
     return (
             (&comp_v($a_cto[0]) <=> &comp_v($b_cto[0]))
             || (&comp_v($a_cto[1]) <=> &comp_v($b_cto[1]))
-            || (&comp_v($a_cto[2]) <=> &comp_v($b_cto[2]))
+            || (&comp_v($a_cto[2]) <=> &comp_v($b_cto[2])
+            || $a_cto[3] <=> $b_cto[3] )
     );
 }
 
