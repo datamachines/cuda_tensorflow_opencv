@@ -87,12 +87,21 @@ if [ "A$cudnn" == "A1" ]; then
       fi
     fi
     
-    # cudnn build: TF 2.5.0 with CUDA 10.2 fix -- see https://github.com/tensorflow/tensorflow/pull/48393
+    # cudnn build: TF 2.5.0 with CUDA 10.2 fix
     if [ "A${TF_CUDA_VERSION=}" == "A10.2" ]; then
-      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '2.5.0' ; then    
+      if grep VERSION /usr/local/src/tensorflow/tensorflow/tensorflow.bzl | grep -q '2.5.0' ; then
+        # https://github.com/tensorflow/tensorflow/pull/48393    
         echo "[**] Patching third_party/cub.BUILD"
         perl -pi.bak -e 's%\@local_cuda//%\@local_config_cuda//cuda%' third_party/cub.BUILD
         diff -u third_party/cub.BUILD{.bak,} || true
+        # https://github.com/tensorflow/tensorflow/issues/48468#issuecomment-819251527
+        echo "[**] Patching third_party/absl/workspace.bzl"
+        perl -pi.bak -e 's%(patch_file = "//third_party/absl:com_google_absl_fix_mac_and_nvcc_build.patch)%#$1%' third_party/absl/workspace.bzl
+        diff -u third_party/absl/workspace.bzl{.bak,} || true
+        # https://github.com/tensorflow/tensorflow/issues/48468#issuecomment-819378549
+        echo "[**] Patching tensorflow/core/platform/default/cord.h"
+        perl -pi.bak -e 's%^(\#include "absl/strings/cord.h")%#if \!defined\(__CUDACC__\)\n$1%;s%^(\#define TF_CORD_SUPPORT 1)%$1\n\#endif%' tensorflow/core/platform/default/cord.h
+        diff -u tensorflow/core/platform/default/cord.h{.bak,} || true
       fi
     fi
 
