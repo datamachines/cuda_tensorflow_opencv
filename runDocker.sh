@@ -7,13 +7,15 @@ SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 usage () {
   echo ""
   echo "$0 [-h] [-d dir] [-c cmd_full_path] [-N] [-X] [-e \"extra docker options\"] [-b] -- cmd_args"
-  echo " -h   this helps text"
+  echo " -h   this usage text"
   echo " -d   directory mounted in the container as /dmc (default: current directory)"
   echo " -c   Full path of the command to run (accessible from within container) (default: /bin/bash)"
   echo " -N   Non-interactive run (default is interactive)"
   echo " -X   Disable X11 support (default is enabled)"
   echo " -e   Extra docker command line options"
   echo " -b   Bypass any provided command and use the container built in one, if any (also disable any cmd_args provided"
+  echo " -g   Disable GPUs command line options (default is to enable the GPUs)"
+  echo " -s   Show commands run (preceded by a +). Useful if you are trying to repeat the steps later within a script, or are trying to debug. Warning: |-ep together lines will be displayed consecutively"
   echo ""
   echo "Run using: CONTAINER_ID=\"<name:tag>\" <PATH_TO_RUNDOCKER>/runDocker.sh <command_line_options>"
   exit 1
@@ -29,7 +31,9 @@ D_ARGS_INT="-it"
 D_ARGS_X11=""
 D_ARGS_XTRA=""
 D_ARGS_BYPASS=""
-while getopts ":hd:c:NXe:b" opt; do
+D_FORCE_GPUS="yes"
+D_SHOW_CMD=""
+while getopts ":hd:c:NXe:bgs" opt; do
   case "$opt" in
     h) usage ;;
     d) DMC=${OPTARG} ;;
@@ -38,6 +42,8 @@ while getopts ":hd:c:NXe:b" opt; do
     X) D_ARGS_X11="___" ;;
     e) D_ARGS_XTRA=${OPTARG} ;;
     b) D_ARGS_BYPASS="yes" ;;
+    g) D_FORCE_GPUS="no" ;;
+    s) D_SHOW_CMD="set -x" ;;
     \?) usage ;;
   esac
 done
@@ -67,14 +73,20 @@ if [ "A${D_ARGS_X11}" == "A___" ]; then
   D_ARGS_X11=""
 else
   if [ "A${D_ARGS_OS}" == "ALinux" ]; then
-    xhost +local:docker
+    ${D_SHOW_CMD}
+    xhost +local:docker 
+    { set +x; } 2>/dev/null
     XSOCK=/tmp/.X11-unix
     XAUTH=/tmp/.docker.xauth
     USER_UID=$(id -u)
     D_ARGS_X11="-e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH"
-    xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+    ${D_SHOW_CMD}
+    xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge - 
+    { set +x; } 2>/dev/null
   else # Darwin (macOS)
-    xhost + 127.0.0.1
+    ${D_SHOW_CMD} 
+    xhost + 127.0.0.1 
+    { set +x; } 2>/dev/null
     D_ARGS_X11="-e DISPLAY=host.docker.internal:0"
   fi
 fi
@@ -84,18 +96,21 @@ if [ "A${D_ARGS_OS}" == "ALinux" ]; then
 fi
 
 DOCKER_RUN="docker run"
-if [ "A${D_ARGS_OS}" == "ALinux" ]; then
-  if [[ ${CONTAINER_ID} =~ ^datamachines/cud.* ]]; then
-    DOCKER_RUN="docker run ${D_GPUS} --ipc host"
-  fi 
+if [ "A$D_FORCE_GPUS" == "Ayes" ]; then
+  DOCKER_RUN="docker run ${D_GPUS} --ipc host"
 fi
 
+${D_SHOW_CMD}
 ${DOCKER_RUN} ${D_ARGS_INT} --rm \
     -v ${DMC}:/dmc ${D_ARGS_X11} ${D_ARGS_XTRA} ${ARGS_ALWAYS} \
-    ${CONTAINER_ID} ${RCMD} ${RCMD_ARGS}
+    ${CONTAINER_ID} ${RCMD} ${RCMD_ARGS} 
+{ set +x; } 2>/dev/null
+
 
 if [ "A${D_ARGS_X11}" != "A" ]; then
   if [ "A${D_ARGS_OS}" == "ALinux" ]; then
+    ${D_SHOW_CMD}
     xhost -local:docker
+    { set +x; } 2>/dev/null
   fi
 fi
