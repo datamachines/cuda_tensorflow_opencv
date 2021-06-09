@@ -198,6 +198,8 @@ Using this url in a web browser will grant access to the running instance of Jup
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
+20210609: For an updated `Dockerfile`, using 2021-06-07 version of the Yolo v4 code, and RTX30 ready, see https://gist.github.com/mmartial/42ddce779c008ab3d8c8b0ca3a46ef7a
+
 Recently, Yolo v4 was announced. It is possible to easy run it using a custom container, building it from source.
 In this example we will build [YOLOv4 pre-release](https://github.com/AlexeyAB/darknet/releases/tag/darknet_yolo_v4_pre) from source, enabling GPU, CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example as well as building additional GPU support into the container (7.5).
 
