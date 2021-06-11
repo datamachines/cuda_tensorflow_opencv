@@ -52,6 +52,8 @@ If you follow the steps in the main `README.md` for the project, you will be abl
 - the container can not be built with CuDNN, so disable it from the build line,
 - the supported architecture needs to be adapted for the Jetson Nano.
 
+Note that the main `README.md` has been updated to use a later version of Yolov4 and this can be repeated here, you only need to adapt the `FROM` line as well as copy the JetsonNano's `perl -i.bak` line to build. 
+
 This reflects as follows:
 <pre>
 FROM datamachines/jetsonnano-cuda_tensorflow_opencv:10.2_2.3_4.5.1-20210218

@@ -14,7 +14,7 @@ Revision: 20210601
 	* 7.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
 	* 7.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
 	* 7.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
-		* 7.4.1. [Using PyYolo](#UsingPyYolo)
+		* 7.4.1. [ 7.4.1. Darknet Python bindings](#7.4.1.DarknetPythonbindings)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -198,20 +198,23 @@ Using this url in a web browser will grant access to the running instance of Jup
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
-20210609: For an updated `Dockerfile`, using 2021-06-07 version of the Yolo v4 code, and RTX30 ready, see https://gist.github.com/mmartial/42ddce779c008ab3d8c8b0ca3a46ef7a
+It is possible to run Yolov4 using a custom container and building it from source.
 
-Recently, Yolo v4 was announced. It is possible to easy run it using a custom container, building it from source.
-In this example we will build [YOLOv4 pre-release](https://github.com/AlexeyAB/darknet/releases/tag/darknet_yolo_v4_pre) from source, enabling GPU, CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example as well as building additional GPU support into the container (7.5).
+In this example we will build [YOLOv4](https://github.com/AlexeyAB/darknet) from the source copmmit dating 2021-06-07, enabling GPU, CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example as well as building additional GPU support into the container (8.6, ie RTX 30 series GPUs).
 
 Copy the following lines in a `Dockerfile`
 <pre>
-FROM datamachines/cudnn_tensorflow_opencv:10.2_2.2.0_4.3.0-20200615
+FROM datamachines/cudnn_tensorflow_opencv:11.2.2_2.5.0_4.5.2-20210601
 
+# Pull 20210607 code
 RUN mkdir -p /wrk/darknet \
-    && cd /wrk \
-    && wget -q -c https://github.com/AlexeyAB/darknet/archive/darknet_yolo_v4_pre.tar.gz -O - | tar --strip-components=1 -xz -C /wrk/darknet \
-    && cd darknet \
-    && perl -i.bak -pe 's%^(GPU|CUDNN|OPENCV|OPENMP|LIBSO)=0%$1=1%g;s%(compute\_61\])%$1 -gencode arch=compute_75,code=[sm_75,compute_75]%' Makefile \
+    && cd /wrk/darknet \
+    && git init \
+    && git config --global http.sslverify false \
+    && git remote add origin https://github.com/AlexeyAB/darknet \
+    && git fetch --depth 1 origin 83e377989d1a7b86249425dc1e025ad4acff7cb7 \
+    && git checkout FETCH_HEAD \
+    && perl -i.bak -pe 's%^(GPU|CUDNN|OPENCV|OPENMP|LIBSO)=0%$1=1%g;s%(compute\_61\])%$1 -gencode arch=compute_86,code=[sm_86,compute_86]%' Makefile \
     && make
 
 WORKDIR /wrk/darknet
@@ -220,7 +223,7 @@ CMD /bin/bash
 
 In the same directory where the `Dockerfile` is, build it using `docker build --tag "cto_darknet:local" .`
 
-Once build is completed, download from https://github.com/AlexeyAB/darknet/releases/tag/darknet_yolo_v4_pre the `cfg-file` and `weights-file`.
+Once build is completed, download from https://github.com/AlexeyAB/darknet#pre-trained-models the `cfg-file` and `weights-file` you intend to use, for our examples, we use `yolov4.cfg` and `yolov4.weights`.
 
 From the directory where both files are, run (adapt `RUNDOCKERDIR` with the location of the script):
 <pre>
@@ -236,21 +239,23 @@ Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be access
 
 For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
 
-####  7.4.1. <a name='UsingPyYolo'></a>Using PyYolo
+####  7.4.1. <a name='7.4.1.DarknetPythonbindings'></a> 7.4.1. Darknet Python bindings
 
-[PyYolo](https://github.com/goktug97/PyYOLO) was recently made Yolo v4 compatible and uses already installed OpenCV and Darknet, so it can easily be integrated within the container. Because we are using a _release_ for `AlexyeyAB/darknet` (instead of pulling the latest development code from github) we have to use a specific version of PyYolo that is compatible with it; namely `0.1.5` (ie the newly release `0.1.6` will not work)
+Darknet provides direct python bindings at this point in the form of [darknet_images.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_images.py) and [darknet_video.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_video.py). To test those, you have nothing to do but use the previously built container (`cto_darknet:local`) and run/adapt the following examples (in the default work directory, ie `/wrk/darknet`):
 
-- Edit the `Dockerfile` and add the folowing two lines after the darknet make
-<pre>
-RUN pip3 install pyyolo==0.1.5
-ENV LIB_DARKNET=/wrk/darknet/libdarknet.so
-</pre>
-- rebuild the container
-- copy PyYolo's [`sample.py`](https://github.com/goktug97/PyYOLO/blob/master/sample.py) code in the directory where the cfg/weights are and adapt the location (on line 5) to reflect their location as mounted in the soon to be started container:
-<pre>
-    detector = pyyolo.YOLO("/dmc/yolov4.cfg",
-                           "/dmc/yolov4.weights",
-                           "./cfg/coco.data",
-</pre>
-- run using the same `runDocker.sh` command line
-- from within the started container, run `python3 /dmc/sample.py`
+`darknet_images.py` example using one of the provided images:
+```
+python3 darknet_images.py --weights /dmc/yolov4.weights --config_file /dmc/yolov4.cfg --input data/horses.jpg
+```
+
+`darknet_video.py` example using webcam:
+```
+python3 darknet_video.py --weights /dmc/yolov4.weights --config_file /dmc/yolov4.cfg
+```
+
+`darknet_video.py` example using video file:
+```
+python3 darknet_video.py --weights /dmc/yolov4.weights --config_file /dmc/yolov4.cfg --input /dmc/video.mp4
+```
+
+Note: the `.py` source code takes additional options, run with `-h` to get the command line help
