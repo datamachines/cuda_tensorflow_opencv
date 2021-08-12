@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210601
+CTO_RELEASE=20210810
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -32,7 +32,7 @@ MLTK_CHECK="yes"
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
 STABLE_CUDA11p=11.2.2
-STABLE_CUDA11l=11.3.0
+STABLE_CUDA11l=11.3.1
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
 CUDA11_APT_XTRA=""
@@ -47,19 +47,19 @@ DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.14
-STABLE_OPENCV4=4.5.2
+STABLE_OPENCV3=3.4.15
+STABLE_OPENCV4=4.5.3
 
 # TF2 at minimum CUDA 10.1
 # TF2 CUDA11 minimum is 2.4.0
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
 STABLE_TF1=1.15.5
-STABLE_TF2=2.5.0
+STABLE_TF2=2.5.1
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
-LATEST_BAZELISK=1.9.0
+LATEST_BAZELISK=1.10.1
 # https://github.com/bazelbuild/bazel
 LATEST_BAZEL=3.7.2
 # https://github.com/keras-team/keras/releases
@@ -82,10 +82,10 @@ TF2_NUMPY='numpy<1.20.0'
 # PyTorch (from pip) using instructions from https://pytorch.org/
 # and https://pytorch.org/get-started/previous-versions/
 # 1.7.1 last version supported by 9.2
-PT_CPU="torch==1.8.1+cpu torchvision==0.9.1+cpu torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CPU="torch==1.9.0+cpu torchvision==0.10.0+cpu torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA10="torch torchvision torchaudio"
-PT_CUDA11="torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html"
+PT_CUDA11="torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html"
 
 ##########
 
