@@ -33,7 +33,7 @@ sub get_cto {
         if (scalar @t == 4);
     return(999, &__clean($t[0]), &__clean($t[1]), &__clean($t[2]) )
         if (scalar @t == 3);
-    error_quit("");
+    error_quit("Unable to extract CTO version from \"".$_[0]."\"");
 }
 
 sub comp_v { 
