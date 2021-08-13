@@ -1,0 +1,259 @@
+  CTO_FROM               : nvidia/cuda:11.2.2-cudnn8-devel-ubuntu20.04
+docker build  \
+  --build-arg CTO_FROM="nvidia/cuda:11.2.2-cudnn8-devel-ubuntu20.04" \
+  --build-arg CTO_TENSORFLOW_VERSION="2.6.0" \
+  --build-arg CTO_OPENCV_VERSION="3.4.15" \
+  --build-arg CTO_NUMPROC="32" \
+  --build-arg CTO_CUDA_APT="" \
+  --build-arg CTO_CUDA_BUILD="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 -DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON -DCUDA_ARCH_BIN=6.0,6.1,7.0,7.5,8.0,8.6 -D WITH_NVCUVID=ON" \
+  --build-arg LATEST_BAZELISK="1.10.1" \
+  --build-arg LATEST_BAZEL="3.7.2" \
+  --build-arg CTO_TF_CUDNN="yes" \
+  --build-arg CTO_TF_OPT="v2" \
+  --build-arg CTO_TF_KERAS="keras" \
+  --build-arg CTO_TF_PYTHON="" \
+  --build-arg CTO_TF_NUMPY="numpy<1.20.0" \
+  --build-arg CTO_DNN_ARCH="6.0,6.1,7.0,7.5,8.0,8.6" \
+  --build-arg CTO_CUDA11_APT_XTRA="" \
+  --build-arg CTO_PYTORCH="torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html" \
+  --tag="datamachines/cudnn_tensorflow_opencv:11.2.2_2.6.0_3.4.15-20210812" \
+  -f ubuntu20.04/Dockerfile \
+  .
+[pip list]
+Package                 Version
+----------------------- ------------
+absl-py                 0.13.0
+argon2-cffi             20.1.0
+astunparse              1.6.3
+async-generator         1.10
+attrs                   21.2.0
+autovizwidget           0.19.0
+backcall                0.2.0
+bleach                  4.0.0
+cachetools              4.2.2
+certifi                 2021.5.30
+cffi                    1.14.6
+charset-normalizer      2.0.4
+clang                   5.0
+cycler                  0.10.0
+debugpy                 1.4.1
+decorator               4.4.2
+defusedxml              0.7.1
+entrypoints             0.3
+flatbuffers             1.12
+future                  0.18.2
+gast                    0.4.0
+google-auth             1.34.0
+google-auth-oauthlib    0.4.5
+google-pasta            0.2.0
+grpcio                  1.39.0
+h5py                    3.1.0
+hdijupyterutils         0.19.0
+idna                    3.2
+imageio                 2.9.0
+imageio-ffmpeg          0.4.4
+ipykernel               6.1.0
+ipython                 7.26.0
+ipython-genutils        0.2.0
+ipywidgets              7.6.3
+jedi                    0.18.0
+Jinja2                  3.0.1
+joblib                  1.0.1
+jsonschema              3.2.0
+jupyter                 1.0.0
+jupyter-client          6.1.12
+jupyter-console         6.4.0
+jupyter-core            4.7.1
+jupyterlab-pygments     0.1.2
+jupyterlab-widgets      1.0.0
+keras                   2.6.0
+Keras-Applications      1.0.8
+Keras-Preprocessing     1.1.2
+kiwisolver              1.3.1
+lxml                    4.6.3
+Markdown                3.3.4
+MarkupSafe              2.0.1
+matplotlib              3.4.2
+matplotlib-inline       0.1.2
+mistune                 0.8.4
+mock                    4.0.3
+moviepy                 1.0.3
+nbclient                0.5.3
+nbconvert               6.1.0
+nbformat                5.1.3
+nest-asyncio            1.5.1
+networkx                2.6.2
+nose                    1.3.7
+notebook                6.4.3
+numpy                   1.19.5
+oauthlib                3.1.1
+opt-einsum              3.3.0
+packaging               21.0
+pandas                  1.3.1
+pandocfilters           1.4.3
+parso                   0.8.2
+pexpect                 4.8.0
+pickleshare             0.7.5
+Pillow                  8.3.1
+pip                     21.2.4
+plotly                  5.1.0
+proglog                 0.1.9
+prometheus-client       0.11.0
+prompt-toolkit          3.0.19
+protobuf                3.17.3
+ptyprocess              0.7.0
+pyasn1                  0.4.8
+pyasn1-modules          0.2.8
+pycparser               2.20
+Pygments                2.9.0
+pyparsing               2.4.7
+pyrsistent              0.18.0
+python-dateutil         2.8.2
+pytz                    2021.1
+PyWavelets              1.1.1
+pyzmq                   22.2.1
+qtconsole               5.1.1
+QtPy                    1.9.0
+requests                2.26.0
+requests-oauthlib       1.3.0
+rsa                     4.7.2
+scikit-image            0.18.2
+scikit-learn            0.24.2
+scipy                   1.7.1
+Send2Trash              1.8.0
+setuptools              57.4.0
+six                     1.15.0
+tenacity                8.0.1
+tensorboard             2.6.0
+tensorboard-data-server 0.6.1
+tensorboard-plugin-wit  1.8.0
+tensorflow              2.6.0
+tensorflow-estimator    2.6.0
+termcolor               1.1.0
+terminado               0.11.0
+testpath                0.5.0
+threadpoolctl           2.2.0
+tifffile                2021.8.8
+torch                   1.9.0+cu111
+torchaudio              0.9.0
+torchvision             0.10.0+cu111
+tornado                 6.1
+tqdm                    4.62.0
+traitlets               5.0.5
+typing-extensions       3.7.4.3
+urllib3                 1.26.6
+wcwidth                 0.2.5
+webencodings            0.5.1
+Werkzeug                2.0.1
+wheel                   0.37.0
+widgetsnbextension      3.5.1
+wrapt                   1.12.1
+
+-- Confirming OpenCV Python is installed. Version: 3.4.15
+
+-------------------------------------------------------
+
+[TensorFlow build information]
+--- Tensorflow Build --- 
+** CUDNN requested
+-- Environment variables set:
+TF_CUDA_CLANG=0
+TF_CUDA_COMPUTE_CAPABILITIES=6.0,6.1,7.0,7.5,8.0,8.6
+TF_CUDA_VERSION=11.2
+TF_CUDNN_VERSION=8
+TF_DOWNLOAD_CLANG=0
+TF_DOWNLOAD_MKL=0
+TF_ENABLE_XLA=0
+TF_NCCL_VERSION=2
+TF_NEED_AWS=0
+TF_NEED_COMPUTECPP=0
+TF_NEED_CUDA=1
+TF_NEED_GCP=0
+TF_NEED_GDR=0
+TF_NEED_HDFS=0
+TF_NEED_JEMALLOC=1
+TF_NEED_KAFKA=0
+TF_NEED_MKL=0
+TF_NEED_MPI=0
+TF_NEED_OPENCL=0
+TF_NEED_OPENCL_SYCL=0
+TF_NEED_ROCM=0
+TF_NEED_S3=0
+TF_NEED_TENSORRT=0
+TF_NEED_VERBS=0
+TF_SET_ANDROID_WORKSPACE=0
+GCC_HOST_COMPILER_PATH=/usr/bin/gcc
+CC_OPT_FLAGS=
+PYTHON_BIN_PATH=/usr/local/bin/python
+PYTHON_LIB_PATH=/usr/local/lib/python3.8/dist-packages
+-- ./configure output:
+You have bazel 3.7.2 installed.
+Found CUDA 11.2 in:
+    /usr/local/cuda-11.2/targets/x86_64-linux/lib
+    /usr/local/cuda-11.2/targets/x86_64-linux/include
+Found cuDNN 8 in:
+    /usr/lib/x86_64-linux-gnu
+    /usr/include
+Found NCCL 2 in:
+    /usr/lib/x86_64-linux-gnu
+    /usr/include
+
+
+Please specify optimization flags to use during compilation when bazel option "--config=opt" is specified [Default is -Wno-sign-compare]: 
+
+Preconfigured Bazel build configs. You can use any of the below by adding "--config=<>" to your build command. See .bazelrc for more details.
+	--config=mkl         	# Build with MKL support.
+	--config=mkl_aarch64 	# Build with oneDNN and Compute Library for the Arm Architecture (ACL).
+	--config=monolithic  	# Config for mostly static monolithic build.
+	--config=numa        	# Build with NUMA support.
+	--config=dynamic_kernels	# (Experimental) Build kernels into separate shared objects.
+	--config=v1          	# Build with TensorFlow 1 API instead of TF 2 API.
+Preconfigured Bazel build configs to DISABLE default on features:
+	--config=nogcp       	# Disable GCP support.
+	--config=nonccl      	# Disable NVIDIA NCCL support.
+Configuration finished
+-- bazel command to run:
+bazel build --verbose_failures --config=opt --config=v2 --config=cuda //tensorflow/tools/pip_package:build_pip_package
+-- TensorFlow building time (in seconds): 3020
+
+-------------------------------------------------------
+
+[Extra information]
+FOUND_UBUNTU: 20.04
+FOUND_CUDNN: 8.1.1
+*** Tensorflow version   :  2.6.0
+*** Tensorflow Keras     :  2.6.0
+*** TF Builf with cuda   :  True
+*** TF compile flags     :  ['-I/usr/local/lib/python3.8/dist-packages/tensorflow/include', '-D_GLIBCXX_USE_CXX11_ABI=1', '-DEIGEN_MAX_ALIGN_BYTES=64']
+*** TF include           :  /usr/local/lib/python3.8/dist-packages/tensorflow/include
+*** TF lib               :  /usr/local/lib/python3.8/dist-packages/tensorflow
+*** TF link flags        :  ['-L/usr/local/lib/python3.8/dist-packages/tensorflow', '-l:libtensorflow_framework.so.2']
+*** OpenCV version       :  3.4.15
+*** Keras version        :  2.6.0
+*** PyTorch version      :  1.9.0+cu111
+   *** PyTorch Audio     :  0.9.0
+   *** PyTorch Vision    :  0.10.0+cu111
+*** pandas version       :  1.3.1
+*** scikit-learn version :  0.24.2
+
+(!! the following is build device specific, and here only to confirm hardware availability, ignore !!)
+--- All seen hardware    :
+ [name: "/device:CPU:0"
+device_type: "CPU"
+memory_limit: 268435456
+locality {
+}
+incarnation: 5245133559231153418
+, name: "/device:GPU:0"
+device_type: "GPU"
+memory_limit: 22757441536
+locality {
+  bus_id: 1
+  links {
+  }
+}
+incarnation: 15417870536656137076
+physical_device_desc: "device: 0, name: NVIDIA GeForce RTX 3090, pci bus id: 0000:08:00.0, compute capability: 8.6"
+]
+--- TF GPU Available     :
+ [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]

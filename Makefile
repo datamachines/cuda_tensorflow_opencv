@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210810
+CTO_RELEASE=20210812
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -32,7 +32,7 @@ MLTK_CHECK="yes"
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
 STABLE_CUDA11p=11.2.2
-STABLE_CUDA11l=11.3.1
+STABLE_CUDA11l=11.4.1
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
 CUDA11_APT_XTRA=""
@@ -55,21 +55,21 @@ STABLE_OPENCV4=4.5.3
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
 STABLE_TF1=1.15.5
-STABLE_TF2=2.5.1
+STABLE_TF2=2.6.0
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
 LATEST_BAZELISK=1.10.1
-# https://github.com/bazelbuild/bazel
+# https://github.com/bazelbuild/bazel (4+ is out but keeping with 3.x for now)
 LATEST_BAZEL=3.7.2
 # https://github.com/keras-team/keras/releases
-# Note: skipping for TF2, built with it 
+# Note: skipping for TF2 < 2.6.0:  built with it
+# TF 2.6.0: Keras been split into a separate PIP package (keras), and its code has been moved to the GitHub repositorykeras-team/keras. The API endpoints for tf.keras stay unchanged, but are now backed by the keras PIP package 
 TF1_KERAS="keras==2.3.1 tensorflow<2"
-TF2_KERAS=""
+TF2_KERAS="keras"
 
 # https://github.com/tensorflow/tensorflow/issues/39768
 # Only for Ubuntu 18.04
-# "use TF 1.15, you have to use Python 3.7 or lower. If you want to use Python 3.8 you have to use TF 2.2 or newer"
 TF1_PYTHON=3.8
 TF2_PYTHON=3.8
 
