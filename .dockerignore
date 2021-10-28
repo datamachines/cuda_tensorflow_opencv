@@ -1,0 +1,12 @@
+# Core files
+.git*
+JetsonNano
+Builds-DockerHub.md
+LICENSE
+runDocker.sh
+test/
+# Build artifacts
+BuildInfo-*/
+*.log
+*.log.temp
+*.cmd
