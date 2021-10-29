@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20210812
+Revision: 20211027
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -46,6 +46,7 @@ Version history:
 - `20210601`: Added TF 2.5.0 builds for CUDA 11. Providing both CUDA 11.2 and 11.3 builds, as the Nvidia driver needed to run 11.3 is still in beta (465, with 460 as current stable). v2 tag (same release) includes TF2.5.0 with CUDA 10.2
 - `20210810`: Added TF 2.5.1 and OpenCV 3.4.15+4.5.3
 - `20210812`: Added TF 2.6.0 and updated CUDA to 11.4.1
+- `20211027`: Update OpenCV to 3.4.16+4.5.4
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
