@@ -12,7 +12,7 @@ FROM ${CTO_FROM}
 # Install system packages
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -y --fix-missing\
-  && apt-get install -y --no-install-recommends \
+  && apt-get install -y \
     apt-utils \
     locales \
     wget \
@@ -26,7 +26,7 @@ ENV LANG en_US.utf8
 ##### TensorFlow
 
 # Install system packages
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get install -y \
     build-essential \
     checkinstall \
     cmake \
@@ -105,7 +105,7 @@ RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/rele
 ##### OpenCV
 
 # Install system packages
-RUN apt-get install -y --no-install-recommends \
+RUN apt-get install -y \
     doxygen \
     file \
     gfortran \
@@ -142,8 +142,10 @@ RUN apt-get install -y --no-install-recommends \
     libopenblas-dev \
     libopencore-amrnb-dev \
     libopencore-amrwb-dev \
+    libopenjp2-7 \
     libopenjp2-7-dev \
     libopenjp2-tools \
+    libopenjpip-server \
     libpng-dev \
     libpostproc-dev \
     libprotobuf-dev \
