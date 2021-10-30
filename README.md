@@ -276,7 +276,7 @@ In the directory where the source for `cuda_tensorflow_opencv` is:
 ```
 # First, obtain a copy of the examples
 git clone --depth 1 https://github.com/pytorch/examples.git pytorch-examples
-# Start a recebt container (adapt the CONTAINER_ID for your test), this will mount the current working directory as /dmc
+# Start a recent container (adapt the CONTAINER_ID for your test), this will mount the current working directory as /dmc
 CONTAINER_ID="datamachines/cudnn_tensorflow_opencv:11.3.1_2.6.0_4.5.4-20211029" ./runDocker.sh
 # Go into the super resolution example directory
 cd pytorch-examples/super_resolution
