@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20211027
+Revision: 20211029
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -14,7 +14,8 @@ Revision: 20211027
 	* 7.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
 	* 7.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
 	* 7.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
-		* 7.4.1. [ 7.4.1. Darknet Python bindings](#7.4.1.DarknetPythonbindings)
+		* 7.4.1. [ Darknet Python bindings](#DarknetPythonbindings)
+	* 7.5. [Testing PyTorch with CUDA](#TestingPyTorchwithCUDA)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -47,6 +48,7 @@ Version history:
 - `20210810`: Added TF 2.5.1 and OpenCV 3.4.15+4.5.3
 - `20210812`: Added TF 2.6.0 and updated CUDA to 11.4.1
 - `20211027`: Update OpenCV to 3.4.16+4.5.4
+- `20211029`: Update min CUDA 11 version to 11.3 (to match PyTorch requirement), and added a README section about testing PyTorch on GPU
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
@@ -242,7 +244,7 @@ Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be access
 
 For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
 
-####  7.4.1. <a name='7.4.1.DarknetPythonbindings'></a> 7.4.1. Darknet Python bindings
+####  7.4.1. <a name='DarknetPythonbindings'></a> Darknet Python bindings
 
 Darknet provides direct python bindings at this point in the form of [darknet_images.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_images.py) and [darknet_video.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_video.py). To test those, you have nothing to do but use the previously built container (`cto_darknet:local`) and run/adapt the following examples (in the default work directory, ie `/wrk/darknet`):
 
@@ -262,3 +264,26 @@ python3 darknet_video.py --weights /dmc/yolov4.weights --config_file /dmc/yolov4
 ```
 
 Note: the `.py` source code takes additional options, run with `-h` to get the command line help
+
+###  7.5. <a name='TestingPyTorchwithCUDA'></a>Testing PyTorch with CUDA
+
+PyTorch provides examples to test it. Those can be found at https://github.com/pytorch/examples
+
+Here we will test the "Super Resolution" example (for more details, see https://github.com/pytorch/examples/tree/master/super_resolution)
+
+In the directory where the source for `cuda_tensorflow_opencv` is:
+
+```
+# First, obtain a copy of the examples
+git clone --depth 1 https://github.com/pytorch/examples.git pytorch-examples
+# Start a recebt container (adapt the CONTAINER_ID for your test), this will mount the current working directory as /dmc
+CONTAINER_ID="datamachines/cudnn_tensorflow_opencv:11.3.1_2.6.0_4.5.4-20211029" ./runDocker.sh
+# Go into the super resolution example directory
+cd pytorch-examples/super_resolution
+# Train the model (command line copied from the example README.md, will download the dataset the first time) on GPU (remove the --cuda to use CPU)
+python main.py --upscale_factor 3 --batchSize 4 --testBatchSize 100 --nEpochs 30 --lr 0.001 --cuda
+# Test the trained super resolver (also copied from example README.md) on GPU
+python super_resolve.py --input_image dataset/BSDS300/images/test/16077.jpg --model model_epoch_30.pth --output_filename out.png --cuda
+# Note1: If you train on GPU you need to test on GPU: ie make sure to use the --cuda in both command lines
+# Note2: You can "time python" to see the speedup from your GPU (using --cuda) versus your CPU (without the --cuda)
+```

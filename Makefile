@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20211027
+CTO_RELEASE=20211029
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -29,9 +29,11 @@ MLTK_CHECK="yes"
 # Nivida released their CUDA11 containers only with Ubuntu 20.04 support
 # https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=20.04
 # 10.2 release now is available with cuddn8
+#
+# Note: CUDA11 minimum version has to match the one used by PyTorch
 STABLE_CUDA9=9.2
 STABLE_CUDA10=10.2
-STABLE_CUDA11p=11.2.2
+STABLE_CUDA11p=11.3.1
 STABLE_CUDA11l=11.4.2
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
