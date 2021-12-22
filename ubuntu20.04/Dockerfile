@@ -102,6 +102,9 @@ RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/rele
   && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
   && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root /root/.cache/bazel /root/.cache/pip /root/.cache/bazelisk
 
+# Confirm TensorFlow python is built
+RUN python3 -c "import tensorflow"
+
 ##### OpenCV
 
 # Install system packages
@@ -200,6 +203,8 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
     -DINSTALL_PYTHON_EXAMPLES=OFF \
     -DOPENCV_EXTRA_MODULES_PATH=/usr/local/src/opencv_contrib/modules \
     -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DOPENCV_PC_FILE_NAME=opencv.pc \
+    -DOPENCV_PYTHON3_INSTALL_PATH=/usr/lib/python3/dist-packages \
     -DWITH_CSTRIPES=ON \
     -DWITH_EIGEN=ON \
     -DWITH_GDAL=ON \
@@ -223,6 +228,9 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
 # Comment the above line (and remove the \ in the line above) if you want to rerun cmake with additional/modified options. For example:
 # cd /usr/local/src/opencv/build
 # cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
+
+# Confirm OpenCV python is built
+RUN python3 -c "import cv2"
 
 ##### Additional tools
 

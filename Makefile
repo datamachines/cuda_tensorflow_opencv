@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20211029
+CTO_RELEASE=20211220
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -57,11 +57,11 @@ STABLE_OPENCV4=4.5.4
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
 STABLE_TF1=1.15.5
-STABLE_TF2=2.6.0
+STABLE_TF2=2.6.2
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
-LATEST_BAZELISK=1.10.1
+LATEST_BAZELISK=1.11.0
 # https://github.com/bazelbuild/bazel (4+ is out but keeping with 3.x for now)
 LATEST_BAZEL=3.7.2
 # https://github.com/keras-team/keras/releases
@@ -85,10 +85,10 @@ TF2_NUMPY='numpy<1.20.0'
 # PyTorch (from pip) using instructions from https://pytorch.org/
 # and https://pytorch.org/get-started/previous-versions/
 # 1.7.1 last version supported by 9.2
-PT_CPU="torch==1.10.0+cpu torchvision==0.11.1+cpu torchaudio==0.10.0+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html"
+PT_CPU="torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html"
 PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA10="torch torchvision torchaudio"
-PT_CUDA11="torch==1.10.0+cu113 torchvision==0.11.1+cu113 torchaudio==0.10.0+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
+PT_CUDA11="torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
 
 ##########
 
@@ -252,7 +252,7 @@ actual_build:
 
 ##### Force ML Toolkit checks
 force_mltk_check:
-	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
 
 ##### Various cleanup
 clean:
