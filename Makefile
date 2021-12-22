@@ -252,7 +252,7 @@ actual_build:
 
 ##### Force ML Toolkit checks
 force_mltk_check:
-	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
 
 ##### Various cleanup
 clean:
