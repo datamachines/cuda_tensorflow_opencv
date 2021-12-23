@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20211220
+CTO_RELEASE=20211222
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -31,8 +31,8 @@ MLTK_CHECK="yes"
 # 10.2 release now is available with cuddn8
 #
 # Note: CUDA11 minimum version has to match the one used by PyTorch
-STABLE_CUDA9=9.2
-STABLE_CUDA10=10.2
+#STABLE_CUDA9=9.2
+#STABLE_CUDA10=10.2
 STABLE_CUDA11p=11.3.1
 STABLE_CUDA11l=11.4.2
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
@@ -44,8 +44,8 @@ CUDA11_APT_XTRA=""
 # Skipping Tegra, Jetson, ... (ie not desktop/server GPUs) from this list
 # Keeping from Pascal and above
 # Also only installing cudnn7 for 18.04 based systems
-DNN_ARCH_CUDA9=6.0,6.1,7.0
-DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
+#DNN_ARCH_CUDA9=6.0,6.1,7.0
+#DNN_ARCH_CUDA10=6.0,6.1,7.0,7.5
 DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
@@ -56,8 +56,8 @@ STABLE_OPENCV4=4.5.4
 # TF2 CUDA11 minimum is 2.4.0
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
-STABLE_TF1=1.15.5
-STABLE_TF2=2.6.2
+#STABLE_TF1=1.15.5
+STABLE_TF2=2.7.0
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
@@ -67,43 +67,44 @@ LATEST_BAZEL=3.7.2
 # https://github.com/keras-team/keras/releases
 # Note: skipping for TF2 < 2.6.0:  built with it
 # TF 2.6.0: Keras been split into a separate PIP package (keras), and its code has been moved to the GitHub repositorykeras-team/keras. The API endpoints for tf.keras stay unchanged, but are now backed by the keras PIP package 
-TF1_KERAS="keras==2.3.1 tensorflow<2"
+#TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
 
 # https://github.com/tensorflow/tensorflow/issues/39768
 # Only for Ubuntu 18.04
-TF1_PYTHON=3.8
+#TF1_PYTHON=3.8
 TF2_PYTHON=3.8
 
 # 20200615: numpy 1.19.0 breaks TF build
 # 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
 # 20210211: numpy >= 1.19.0 breaks TF 1.15.5 + numpy >= 1.20 breaks TF 2.4.1
 # 20211027: TF 2.6.0 specifies TF 1.19 so keeping restriction
-TF1_NUMPY='numpy<1.19.0'
-TF2_NUMPY='numpy<1.20.0'
+#TF1_NUMPY='numpy<1.19.0'
+#TF2_NUMPY='numpy<1.20.0'
+TF2_NUMPY='numpy'
 
 # PyTorch (from pip) using instructions from https://pytorch.org/
 # and https://pytorch.org/get-started/previous-versions/
 # 1.7.1 last version supported by 9.2
 PT_CPU="torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html"
-PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
+#PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
 PT_CUDA10="torch torchvision torchaudio"
 PT_CUDA11="torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
 
 ##########
 
 ##### CuDNN _ Tensorflow _ OpenCV
-DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
+#DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 # TF > 2.1.0 requires CUDA >= 10.1 -- error when building 2.3.0, skipping CUDNN 9.2
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
 # Issues with building TF 2.5.0 with CUDA 10.2
 # Builld fixed https://github.com/tensorflow/tensorflow/issues/49983 
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+#DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 # TF1 does not handle cudnn8 well, skipping
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
 #DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
@@ -113,8 +114,8 @@ DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_O
 DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Tensorflow _ OpenCV
-TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
-TO_BUILDALL+=tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV4}
+#TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
+#TO_BUILDALL+=tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV4}
 TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV3}
 TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV4}
 
@@ -216,6 +217,7 @@ actual_build:
 	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt | tee BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
 	@echo ""
 	@echo "-- Docker command to be run:"
+#	@echo "docker buildx build --progress plain --allow network.host --platform linux/amd64 ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "docker build ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_FROM=\"${CTO_FROM}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TENSORFLOW_VERSION=\"${CTO_TENSORFLOW_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
