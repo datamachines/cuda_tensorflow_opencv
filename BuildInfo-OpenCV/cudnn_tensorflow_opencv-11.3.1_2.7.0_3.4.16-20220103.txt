@@ -1,0 +1,151 @@
+  CTO_FROM               : nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+docker build  \
+  --build-arg CTO_FROM="nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04" \
+  --build-arg CTO_TENSORFLOW_VERSION="2.7.0" \
+  --build-arg CTO_OPENCV_VERSION="3.4.16" \
+  --build-arg CTO_NUMPROC="32" \
+  --build-arg CTO_CUDA_APT="" \
+  --build-arg CTO_CUDA_BUILD="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 -DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON -DCUDA_ARCH_BIN=6.0,6.1,7.0,7.5,8.0,8.6 -D WITH_NVCUVID=ON" \
+  --build-arg LATEST_BAZELISK="1.11.0" \
+  --build-arg LATEST_BAZEL="3.7.2" \
+  --build-arg CTO_TF_CUDNN="yes" \
+  --build-arg CTO_TF_OPT="v2" \
+  --build-arg CTO_TF_KERAS="keras" \
+  --build-arg CTO_TF_PYTHON="" \
+  --build-arg CTO_TF_NUMPY="numpy" \
+  --build-arg CTO_DNN_ARCH="6.0,6.1,7.0,7.5,8.0,8.6" \
+  --build-arg CTO_CUDA11_APT_XTRA="" \
+  --build-arg CTO_PYTORCH="torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html" \
+  --tag="datamachines/cudnn_tensorflow_opencv:11.3.1_2.7.0_3.4.16-20220103" \
+  -f ubuntu20.04/Dockerfile \
+  .
+
+General configuration for OpenCV 3.4.16 =====================================
+  Version control:               unknown
+
+  Extra modules:
+    Location (extra):            /usr/local/src/opencv_contrib/modules
+    Version control (extra):     unknown
+
+  Platform:
+    Timestamp:                   2021-12-23T00:47:13Z
+    Host:                        Linux 5.11.0-43-generic x86_64
+    CMake:                       3.16.3
+    CMake generator:             Unix Makefiles
+    CMake build tool:            /usr/bin/make
+    Configuration:               Release
+
+  CPU/HW features:
+    Baseline:                    SSE SSE2 SSE3
+      requested:                 SSE3
+    Dispatched code generation:  SSE4_1 SSE4_2 FP16 AVX AVX2 AVX512_SKX
+      requested:                 SSE4_1 SSE4_2 AVX FP16 AVX2 AVX512_SKX
+      SSE4_1 (14 files):         + SSSE3 SSE4_1
+      SSE4_2 (1 files):          + SSSE3 SSE4_1 POPCNT SSE4_2
+      FP16 (0 files):            + SSSE3 SSE4_1 POPCNT SSE4_2 FP16 AVX
+      AVX (5 files):             + SSSE3 SSE4_1 POPCNT SSE4_2 AVX
+      AVX2 (28 files):           + SSSE3 SSE4_1 POPCNT SSE4_2 FP16 FMA3 AVX AVX2
+      AVX512_SKX (4 files):      + SSSE3 SSE4_1 POPCNT SSE4_2 FP16 FMA3 AVX AVX2 AVX_512F AVX512_COMMON AVX512_SKX
+
+  C/C++:
+    Built as dynamic libs?:      YES
+    C++11:                       YES
+    C++ Compiler:                /usr/bin/c++  (ver 9.3.0)
+    C++ flags (Release):         -fsigned-char -ffast-math -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -Wno-long-long -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -msse -msse2 -msse3 -fvisibility=hidden -fvisibility-inlines-hidden -fopenmp -O3 -DNDEBUG  -DNDEBUG
+    C++ flags (Debug):           -fsigned-char -ffast-math -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -Wno-long-long -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -msse -msse2 -msse3 -fvisibility=hidden -fvisibility-inlines-hidden -fopenmp -g  -O0 -DDEBUG -D_DEBUG
+    C Compiler:                  /usr/bin/cc
+    C flags (Release):           -fsigned-char -ffast-math -W -Wall -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wuninitialized -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -Wno-long-long -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -msse -msse2 -msse3 -fvisibility=hidden -fopenmp -O3 -DNDEBUG  -DNDEBUG
+    C flags (Debug):             -fsigned-char -ffast-math -W -Wall -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wuninitialized -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -Wno-long-long -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections  -msse -msse2 -msse3 -fvisibility=hidden -fopenmp -g  -O0 -DDEBUG -D_DEBUG
+    Linker flags (Release):      -Wl,--exclude-libs,libippicv.a -Wl,--exclude-libs,libippiw.a   -Wl,--gc-sections -Wl,--as-needed  
+    Linker flags (Debug):        -Wl,--exclude-libs,libippicv.a -Wl,--exclude-libs,libippiw.a   -Wl,--gc-sections -Wl,--as-needed  
+    ccache:                      NO
+    Precompiled headers:         NO
+    Extra dependencies:          m pthread cudart_static -lpthread dl rt nppc nppial nppicc nppidei nppif nppig nppim nppist nppisu nppitc npps cublas cufft -L/usr/local/cuda/lib64 -L/usr/lib/x86_64-linux-gnu
+    3rdparty dependencies:
+
+  OpenCV modules:
+    To be built:                 aruco bgsegm bioinspired calib3d ccalib core cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev datasets dnn dnn_objdetect dpm face features2d flann freetype fuzzy hdf hfs highgui img_hash imgcodecs imgproc line_descriptor ml objdetect optflow phase_unwrapping photo plot python3 reg rgbd saliency sfm shape stereo stitching structured_light superres surface_matching text tracking video videoio videostab xfeatures2d ximgproc xobjdetect xphoto
+    Disabled:                    world
+    Disabled by dependency:      -
+    Unavailable:                 cvv java matlab ovis python2 ts viz
+    Applications:                apps
+    Documentation:               NO
+    Non-free algorithms:         NO
+
+  GUI: 
+    GTK+:                        YES (ver 3.24.20)
+      GThread :                  YES (ver 2.64.6)
+      GtkGlExt:                  NO
+    VTK support:                 NO
+
+  Media I/O: 
+    ZLib:                        /usr/lib/x86_64-linux-gnu/libz.so (ver 1.2.11)
+    JPEG:                        /usr/lib/x86_64-linux-gnu/libjpeg.so (ver 80)
+    WEBP:                        build (ver encoder: 0x020f)
+    PNG:                         /usr/lib/x86_64-linux-gnu/libpng.so (ver 1.6.37)
+    TIFF:                        /usr/lib/x86_64-linux-gnu/libtiff.so (ver 42 / 4.1.0)
+    JPEG 2000:                   build (ver 1.900.1)
+    OpenEXR:                     build (ver 2.3.0)
+    GDAL:                        NO
+    HDR:                         YES
+    SUNRASTER:                   YES
+    PXM:                         YES
+
+  Video I/O:
+    DC1394:                      YES (ver 2.2.5)
+    FFMPEG:                      YES
+      avcodec:                   YES (ver 58.54.100)
+      avformat:                  YES (ver 58.29.100)
+      avutil:                    YES (ver 56.31.100)
+      swscale:                   YES (ver 5.5.100)
+      avresample:                NO
+    GStreamer:                   YES
+      base:                      YES (ver 1.16.2)
+      video:                     YES (ver 1.16.2)
+      app:                       YES (ver 1.16.2)
+      riff:                      YES (ver 1.16.2)
+      pbutils:                   YES (ver 1.16.2)
+    libv4l/libv4l2:              NO
+    v4l/v4l2:                    linux/videodev2.h
+    Xine:                        YES (ver 1.2.9)
+
+  Parallel framework:            TBB (ver 2020.1 interface 11101)
+
+  Trace:                         YES (with Intel ITT)
+
+  Other third-party libraries:
+    Intel IPP:                   2020.0.0 Gold [2020.0.0]
+           at:                   /usr/local/src/opencv/build/3rdparty/ippicv/ippicv_lnx/icv
+    Intel IPP IW:                sources (2020.0.0)
+              at:                /usr/local/src/opencv/build/3rdparty/ippicv/ippicv_lnx/iw
+    Lapack:                      NO
+    Eigen:                       YES (ver 3.3.7)
+    Custom HAL:                  NO
+    Protobuf:                    build (3.5.1)
+
+  NVIDIA CUDA:                   YES (ver 11.3, CUFFT CUBLAS FAST_MATH)
+    NVIDIA GPU arch:             60 61 70 75 80 86
+    NVIDIA PTX archs:
+
+  OpenCL:                        YES (no extra features)
+    Include path:                /usr/local/src/opencv/3rdparty/include/opencl/1.2
+    Link libraries:              Dynamic load
+
+  Python 3:
+    Interpreter:                 /usr/bin/python3 (ver 3.8.10)
+    Libraries:                   /usr/lib/x86_64-linux-gnu/libpython3.8.so (ver 3.8.10)
+    numpy:                       /usr/local/lib/python3.8/dist-packages/numpy/core/include (ver 1.21.5)
+    install path:                /usr/lib/python3/dist-packages/cv2/python-3.8
+
+  Python (for build):            /usr/bin/python3
+
+  Java:                          
+    ant:                         NO
+    JNI:                         NO
+    Java wrappers:               NO
+    Java tests:                  NO
+
+  Install to:                    /usr/local
+-----------------------------------------------------------------
+
+
