@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20211222
+CTO_RELEASE=20220103
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -50,7 +50,7 @@ DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
 STABLE_OPENCV3=3.4.16
-STABLE_OPENCV4=4.5.4
+STABLE_OPENCV4=4.5.5
 
 # TF2 at minimum CUDA 10.1
 # TF2 CUDA11 minimum is 2.4.0
@@ -88,7 +88,7 @@ TF2_NUMPY='numpy'
 # 1.7.1 last version supported by 9.2
 PT_CPU="torch==1.10.1+cpu torchvision==0.11.2+cpu torchaudio==0.10.1+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html"
 #PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
-PT_CUDA10="torch torchvision torchaudio"
+#PT_CUDA10="torch torchvision torchaudio"
 PT_CUDA11="torch==1.10.1+cu113 torchvision==0.11.2+cu113 torchaudio==0.10.1+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html"
 
 ##########
