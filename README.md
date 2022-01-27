@@ -208,24 +208,19 @@ Using this url in a web browser will grant access to the running instance of Jup
 
 It is possible to run Yolov4 using a custom container and building it from source.
 
-In this example we will build [YOLOv4](https://github.com/AlexeyAB/darknet) from the source copmmit dating 2021-06-07, enabling GPU, CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example as well as building additional GPU support into the container (8.6, ie RTX 30 series GPUs).
+In this example we will build [YOLOv4](https://github.com/AlexeyAB/darknet), enabling GPUs (61, 75 and 86 compute), CUDNN, OPENCV, OPENMP, the generation of the `libdarknet.so` which can be used by the `darknet.py` example.
 
 Copy the following lines in a `Dockerfile`
 <pre>
-FROM datamachines/cudnn_tensorflow_opencv:11.2.2_2.5.0_4.5.2-20210601
+FROM datamachines/cudnn_tensorflow_opencv:11.3.1_2.7.0_4.5.5-20220103
 
-# Pull 20210607 code
-RUN mkdir -p /wrk/darknet \
-    && cd /wrk/darknet \
-    && git init \
-    && git config --global http.sslverify false \
-    && git remote add origin https://github.com/AlexeyAB/darknet \
-    && git fetch --depth 1 origin 83e377989d1a7b86249425dc1e025ad4acff7cb7 \
-    && git checkout FETCH_HEAD \
-    && perl -i.bak -pe 's%^(GPU|CUDNN|OPENCV|OPENMP|LIBSO)=0%$1=1%g;s%(compute\_61\])%$1 -gencode arch=compute_86,code=[sm_86,compute_86]%' Makefile \
+RUN mkdir -p /darknet \
+    && wget -q --no-check-certificate -c https://github.com/AlexeyAB/darknet/archive/refs/tags/yolov4.tar.gz -O - | tar --strip-components=1 -xz -C /darknet \
+    && cd /darknet \
+    && perl -i.bak -pe 's%^(GPU|CUDNN|OPENCV|OPENMP|LIBSO)=0%$1=1%g;s%(compute\_61\])%$1 -gencode arch=compute_75,code=[sm_75,compute_75] -gencode arch=compute_86,code=[sm_86,compute_86]%' Makefile \
     && make
 
-WORKDIR /wrk/darknet
+WORKDIR /darknet
 CMD /bin/bash
 </pre>
 
@@ -240,16 +235,16 @@ CONTAINER_ID="cto_darknet:local" RUNDOCKERDIR/runDocker.sh -e "--privileged -v /
 , here we are telling the script to pass to the `docker` command line extra (`-e`) paramaters to run in `privileged` mode (for hardware access) and pass the webcam device (`/dev/video0`) to the container.
 By default, this command will also enable X11 display passthrough and mount the current directory (where the cfg and weights are) as `/dmc`.
 
-Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be accessed, running the following command within the newly started container (which started in `/wrk/darknet`) will start your webcam (`video0`) and run Yolo v4 on what it sees: 
+Because the cfg/weights are accesible in `/dmc` and X11 and webcam can be accessed, running the following command within the newly started container (which started in `/darknet`) will start your webcam (`video0`) and run Yolo v4 on what it sees: 
 <pre>
 ./darknet detector demo cfg/coco.data /dmc/yolov4.cfg /dmc/yolov4.weights
 </pre>
 
-For developers, in the `/wrk/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
+For developers, in `/darknet` you will also have the `libdarknet.so` which is needed to use `python3` with `darknet.py` and `darknet_video.py`.
 
 ####  7.4.1. <a name='DarknetPythonbindings'></a> Darknet Python bindings
 
-Darknet provides direct python bindings at this point in the form of [darknet_images.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_images.py) and [darknet_video.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_video.py). To test those, you have nothing to do but use the previously built container (`cto_darknet:local`) and run/adapt the following examples (in the default work directory, ie `/wrk/darknet`):
+Darknet provides direct python bindings at this point in the form of [darknet_images.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_images.py) and [darknet_video.py](https://github.com/AlexeyAB/darknet/blob/master/darknet_video.py). To test those, you have nothing to do but use the previously built container (`cto_darknet:local`) and run/adapt the following examples (in the default work directory, ie `/darknet`):
 
 `darknet_images.py` example using one of the provided images:
 ```
