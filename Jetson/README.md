@@ -46,7 +46,7 @@ Use the provided `Makefile` by running `make` to get a list of targets to build:
 
 ###  1.1. <a name='Tagnamingconvention'></a>Tag naming convention
 
-`jetson_tensorflow_opencv` follows the name of its `_` separated components: Jetson JetPack release number, Tensorflow version, OpenCV version, following by the revision date of this batch.
+`jetson_tensorflow_opencv` follows the name of its `_` separated components: Jetson JetPack release number, Tensorflow version, OpenCV version, followed by the revision date of this batch.
 
 For example, `datamachines/jetson_tensorflow_opencv:r32.6.1_2.5_4.5.5-20220308` is JetPack R32.6.1, Tensorflow 2.5 and OpenCV 4.5.5, from the 2022-03-08 revision.
 
