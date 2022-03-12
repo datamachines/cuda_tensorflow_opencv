@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20210218
+CTO_RELEASE=20220308
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -20,37 +20,37 @@ DOCKERPULL="no"
 MLTK_CHECK="yes"
 
 ##########
-JETPACK_RELEASE="32.5.0"
+JETPACK_RELEASE=32.6.1
 # not user modifiable: CUDA version in the container
 STABLE_CUDA10=10.2
-# Tegra is 5.3
-ARCH_CUDA10=5.3
+# Jetson series
+ARCH_CUDA10="5.3,6.2,7.2"
 
 # According to https://opencv.org/releases/
-STABLE_OPENCV3=3.4.13
-STABLE_OPENCV4=4.5.1
+STABLE_OPENCV3=3.4.16
+STABLE_OPENCV4=4.5.5
 
 # Following releases in https://ngc.nvidia.com/catalog/containers/nvidia:l4t-tensorflow
-# Not compiling TF on the nano, simply use the "ready" container
+# Not compiling TF on the , simply use the "ready" container
 STABLE_TF1=1.15
-STABLE_TF2=2.3
+STABLE_TF2=2.5
 
 # https://github.com/keras-team/keras/releases
 TF1_KERAS="keras==2.3.1 tensorflow<2"
-TF2_KERAS="keras"
+TF2_KERAS="six" # TF built, skip and install something already installed
 
-##### JetsonNano - CUDA _ Tensorflow _ OpenCV
-CTO_BUILDALL =jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-CTO_BUILDALL+=jetsonnano-cuda_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+##### Jetson _ Tensorflow _ OpenCV
+CTO_BUILDALL =jetson_tensorflow_opencv-r${JETPACK_RELEASE}_${STABLE_TF1}_${STABLE_OPENCV3}
+CTO_BUILDALL+=jetson_tensorflow_opencv-r${JETPACK_RELEASE}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=jetson_tensorflow_opencv-r${JETPACK_RELEASE}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=jetson_tensorflow_opencv-r${JETPACK_RELEASE}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ## By default, provide the list of build targets
 all:
 	@echo "** Docker Image tag ending: ${CTO_RELEASE}"
 	@echo ""
 	@echo "** Available Docker images to be built (make targets):"
-	@echo "  jetsonnano-cuda_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
+	@echo "  jetson_tensorflow_opencv: "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
 	@echo "** To build all, use: make build_all"
 
@@ -58,25 +58,25 @@ all:
 build_all:
 	@make ${CTO_BUILDALL}
 
-jetsonnano-cuda_tensorflow_opencv:
+jetson_tensorflow_opencv:
 	@make ${CTO_BUILDALL}
 
 ${CTO_BUILDALL}:
 	@CUDX="cuda" CUDX_COMP="" BTARG="$@" make build_prep
 
 build_prep:
-	@$(eval CTO_NAME=$(shell echo ${BTARG} | cut -d- -f 1-2))
-	@$(eval TARGET_VALUE=$(shell echo ${BTARG} | cut -d- -f 3))
+	@$(eval CTO_NAME=$(shell echo ${BTARG} | cut -d- -f 1))
+	@$(eval TARGET_VALUE=$(shell echo ${BTARG} | cut -d- -f 2))
 	@$(eval CTO_SC=$(shell echo ${TARGET_VALUE} | grep -o "_" | wc -l)) # where 2 means 3 components
 	@$(eval CTO_V=$(shell if [ ${CTO_SC} == 1 ]; then echo "0_${TARGET_VALUE}"; else echo "${TARGET_VALUE}"; fi))
-	@$(eval CTO_CUDA_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 1))
+	@$(eval CTO_CUDA_VERSION=$(shell echo ${STABLE_CUDA10} ))
 	@$(eval CTO_CUDA_PRIMEVERSION=$(shell echo ${CTO_CUDA_VERSION} | perl -pe 's/\.\d+/.0/'))
 	@$(eval CTO_TENSORFLOW_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 2))
 	@$(eval CTO_OPENCV_VERSION=$(shell echo ${CTO_V} | cut -d_ -f 3))
 
 	@$(eval CTO_FROM="nvcr.io/nvidia/l4t-tensorflow:r${JETPACK_RELEASE}-tf${CTO_TENSORFLOW_VERSION}-py3")
 
-	@$(eval CTO_TAG=$(shell echo "${CTO_CUDA_VERSION}_${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE}"))
+	@$(eval CTO_TAG=$(shell echo "r${JETPACK_RELEASE}_${CTO_TENSORFLOW_VERSION}_${CTO_OPENCV_VERSION}-${CTO_RELEASE}"))
 
 	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TENSORFLOW_VERSION}" == "A${STABLE_TF1}" ]; then echo ${TF1_KERAS}; else echo ${TF2_KERAS}; fi))
 
@@ -92,9 +92,9 @@ build_prep:
 
 
 actual_build:
-	@mkdir -p OpenCV_BuildConf
+	@mkdir -p BuildConf
 	@echo ""
-	@echo "  CTO_FROM               : ${CTO_FROM}" | tee OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@echo ""
 	@echo "-- Docker command to be run:"
 	@echo "docker build ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
@@ -105,22 +105,23 @@ actual_build:
 	@echo "  --build-arg CTO_TF_KERAS=\"${CTO_TF_KERAS}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --tag=\"datamachines/${CTO_NAME}:${CTO_TAG}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  ." >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@cat ${CTO_NAME}-${CTO_TAG}.cmd | tee ${CTO_NAME}-${CTO_TAG}.log.temp | tee -a OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@cat ${CTO_NAME}-${CTO_TAG}.cmd | tee ${CTO_NAME}-${CTO_TAG}.log.temp | tee -a BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@echo "" | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp
 	@echo "Press Ctl+c within 5 seconds to cancel"
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
 # Actual build
 	@chmod +x ./${CTO_NAME}-${CTO_TAG}.cmd
 	@./${CTO_NAME}-${CTO_TAG}.cmd | tee ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
-	@docker run --rm -it -v `pwd`/..:/dmc --gpus all --runtime nvidia datamachines/${CTO_NAME}:${CTO_TAG} /dmc/tools/tf_info.sh >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm -it -v `pwd`/..:/dmc --gpus all --runtime nvidia datamachines/${CTO_NAME}:${CTO_TAG} /dmc/tools/tf_info.sh >> BuildConf/${CTO_NAME}-${CTO_TAG}.txt
 	@if [ "A${MLTK_CHECK}" == "Ayes" ]; then CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} make force_mltk_check; fi
 	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
 	@rm -f ./${CTO_NAME}-${CTO_TAG}.cmd
 
+
 ##### Force ML Toolkit checks
 force_mltk_check:
-	@docker run --rm -it -v `pwd`/..:/dmc --gpus all --runtime nvidia datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py >> OpenCV_BuildConf/${CTO_NAME}-${CTO_TAG}.txt
+	@docker run --rm -it -v `pwd`:/dmc --gpus all --runtime nvidia datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/tf_hw.py | tee -a BuildConf/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
 
 
 ##### Various cleanup
