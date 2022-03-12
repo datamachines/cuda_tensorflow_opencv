@@ -24,7 +24,7 @@ Please refer to the following for further details https://github.com/NVIDIA/nvid
 Because the `L4T BSP EULA` includes redistribution rights, we are able provide pre-compiled builds.
 In particular, please note that "By downloading these images, you agree to the terms of the license agreements for NVIDIA software included in the images"
 
-Publicly available builds can be found at https://hub.docker.com/r/datamachines/jetson-cuda_tensorflow_opencv
+Publicly available builds can be found at https://hub.docker.com/r/datamachines/jetson_tensorflow_opencv
 
 Most of the `README.md` in the parent directory explains the logic behind this tool, including the changes to said versions, such as:
 - Docker images tag naming
