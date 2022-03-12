@@ -1,8 +1,17 @@
 ARG CTO_FROM
 FROM ${CTO_FROM}
 
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CUDA_HOME="/usr/local/cuda"
+ENV PATH="/usr/local/cuda/bin:${PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+ENV LLVM_CONFIG="/usr/bin/llvm-config-9"
+ARG MAKEFLAGS=-j$(nproc) 
+
+# Confirm TensorFlow python is working
+RUN python3 -c "import tensorflow"
+
 # Install system packages
-ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update -y \
   && apt-get install -y --no-install-recommends apt-utils \
   && apt-get install -y \ 
@@ -13,13 +22,16 @@ RUN apt-get update -y \
     curl \
     doxygen \
     file \
+    gfortran \
     git \
+    hdf5-tools \
     imagemagick \
     libatk-adaptor \
     libatlas-base-dev \
     libavcodec-dev \
     libavformat-dev \
     libavutil-dev \
+    libblas-dev \
     libblosc-dev \
     libboost-all-dev \
     libbrotli-dev \
@@ -29,6 +41,7 @@ RUN apt-get update -y \
     libdc1394-22-dev \
     libeigen3-dev \
     libfaac-dev \
+    libffi-dev \
     libfreetype6-dev \
     libgflags-dev \
     libgif-dev \
@@ -40,25 +53,32 @@ RUN apt-get update -y \
     libgstreamer1.0-dev \
     libgtk-3-dev \
     libgtk2.0-dev \
-    libjpeg-dev \
+    libhdf5-dev \
+    libhdf5-serial-dev \
+    libjpeg8-dev \
     libjpeg-turbo8-dev \
     libjxr-dev \
+    liblapack-dev \
     liblcms2-dev \
     liblz4-dev \
     liblzma-dev \
     libmp3lame-dev \
+    libomp-dev \
     libopenblas-base \
     libopenblas-dev \
     libopencore-amrnb-dev \
     libopencore-amrwb-dev \
     libopenjp2-7-dev \
     libopenjp2-tools \
+    libopenmpi2 \
     libopenmpi-dev \
     libpng-dev \
     libpostproc-dev \
     libprotobuf-dev \
+    libprotoc-dev \
     libpython3-dev \
     libsnappy-dev \
+    libsndfile1 \
     libsox-dev \
     libsox-fmt-all \ 
     libswscale-dev \
@@ -77,11 +97,17 @@ RUN apt-get update -y \
     libzmq3-dev \
     libzopfli-dev \
     libzstd-dev \
+    llvm-9 \
+		llvm-9-dev \
+    openmpi-bin \
+    openmpi-common \
     pkg-config \
     protobuf-compiler \
+    python3-dev \
     python-imaging-tk \
-    python-lxml \
-    python-pil \
+    python3-lxml \
+    python3-matplotlib \
+    python3-pil \
     python3-tk \
     software-properties-common \
     time \
@@ -90,7 +116,17 @@ RUN apt-get update -y \
     x11-apps \
     x264 \
     yasm \
-    zip
+    zip \
+    zlib1g-dev \
+  && apt-get clean
+
+# More recent cmake
+RUN apt-get update -y  \
+  && apt-get install -y build-essential libssl-dev gpg wget \
+  && wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor - | tee /usr/share/keyrings/kitware-archive-keyring.gpg >/dev/null \
+  && echo 'deb [signed-by=/usr/share/keyrings/kitware-archive-keyring.gpg] https://apt.kitware.com/ubuntu/ bionic main' | tee /etc/apt/sources.list.d/kitware.list >/dev/null\
+  && apt-get update \
+  && apt-get install -y --only-upgrade cmake
 
 # Set locale to UTF-8; seems to be ANSI_X3.4-1968 by default (to allow scikit-image to compile)
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
@@ -103,7 +139,7 @@ ENV CFLAGS="-I/usr/include/openjpeg-2.3 -I/usr/include/jxrlib"
 
 # Building libtiff (to allow imagecodecs to compile)
 RUN mkdir -p /usr/local/src/libtiff \
-  && wget -q --no-check-certificate -c https://gitlab.com/libtiff/libtiff/-/archive/v4.2.0/libtiff-v4.2.0.tar.bz2 -O - | tar --strip-components=1 -xj -C /usr/local/src/libtiff \
+  && wget -q --no-check-certificate -c https://gitlab.com/libtiff/libtiff/-/archive/v4.3.0/libtiff-v4.3.0.tar.bz2 -O - | tar --strip-components=1 -xj -C /usr/local/src/libtiff \
   && cd /usr/local/src/libtiff \
   && ./autogen.sh \
   && ./configure \
@@ -119,54 +155,56 @@ RUN cd /tmp \
   && make install
 
 # Setup pip
-RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
-  && python3 /tmp/get-pip.py \
-  && pip3 install -U pip
-RUN pip3 install -U testresources setuptools
+RUN pip3 install --no-cache-dir -U pip
+RUN pip3 install --no-cache-dir -U testresources setuptools
 
-# Install Python tools (split install for Nano)
-RUN pip3 install -U Cython
-RUN pip3 install -U pillow
-RUN pip3 install -U matplotlib
-RUN pip3 install -U PyWavelets
-RUN pip3 install -U kiwisolver
-RUN pip3 install -U imagecodecs
-RUN pip3 install -U scikit-image
-RUN pip3 install -U scikit-learn
-RUN pip3 install -U ipython
-RUN pip3 install -U notebook
-RUN pip3 install -U pandas
-RUN pip3 install -U moviepy
-RUN pip3 install -U autovizwidget
-RUN pip3 install -U jupyter
+# Install Python tools (split install for Jetson)
+RUN pip3 install --no-cache-dir -U Cython
+RUN pip3 install --no-cache-dir --ignore-installed pybind11 
+RUN pip3 install --no-cache-dir onnx
+RUN pip3 install --no-cache-dir scipy
+RUN pip3 install --no-cache-dir pycuda six
+RUN pip3 install --no-cache-dir pillow
+RUN pip3 install --no-cache-dir numba==0.47
+RUN pip3 install --no-cache-dir matplotlib
+RUN pip3 install --no-cache-dir PyWavelets
+RUN pip3 install --no-cache-dir kiwisolver
+RUN pip3 install --no-cache-dir imagecodecs
+RUN pip3 install --no-cache-dir scikit-image
+RUN pip3 install --no-cache-dir scikit-learn
+RUN pip3 install --no-cache-dir ipython
+RUN pip3 install --no-cache-dir notebook
+RUN pip3 install --no-cache-dir pandas
+RUN pip3 install --no-cache-dir moviepy
+RUN pip3 install --no-cache-dir autovizwidget
+RUN pip3 install --no-cache-dir jupyter
+RUN pip3 install --no-cache-dir scikit-build
+RUN pip3 install --no-cache-dir ninja
+RUN pip3 install --no-cache-dir pysoundfile
+
+# CuPy
+ARG CUPY_VERSION=v9.2.0
+ARG CUPY_NVCC_GENERATE_CODE="arch=compute_53,code=sm_53;arch=compute_62,code=sm_62;arch=compute_72,code=sm_72"
+RUN git clone -b ${CUPY_VERSION} --recursive https://github.com/cupy/cupy cupy && \
+    cd cupy && \
+    pip3 install --no-cache-dir fastrlock && \
+    python3 setup.py install --verbose && \
+    cd ../ && \
+    rm -rf cupy
 
 # Installing PyTorch
-# https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-7-0-now-available/72048
-# Manual installation for audio and vision components of known releases
+# https://github.com/dusty-nv/jetson-containers/blob/master/scripts/docker_build_ml.sh
 RUN cd /tmp \
-  && wget -q --no-check-certificate https://nvidia.box.com/shared/static/cs3xn3td6sfgtene6jdvsxlr366m2dhq.whl -O torch-1.7.0-cp36-cp36m-linux_aarch64.whl \
-  && pip3 install torch-1.7.0-cp36-cp36m-linux_aarch64.whl \
-  && rm -rf /root/.cache/pip torch-1.7.0-cp36-cp36m-linux_aarch64.whl
-RUN mkdir -p /usr/local/src/torchvision \
-  && wget -q --no-check-certificate https://github.com/pytorch/vision/archive/v0.8.2.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/torchvision \
-  && cd /usr/local/src/torchvision \
-  && python3 setup.py install  \
-  && rm -rf /root/.cache/pip /usr/local/src/torchvision
-RUN mkdir -p /usr/local/src/torchaudio \
-  && wget -q --no-check-certificate https://github.com/pytorch/audio/archive/v0.7.2.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/torchaudio \
-  && cd /usr/local/src/torchaudio \
-  && python3 setup.py install  \
-  && rm -rf /root/.cache/pip /usr/local/src/torchaudio
-
-# Installing a built-TF compatible keras
-ARG CTO_TF_KERAS
-RUN pip3 install ${CTO_TF_KERAS} \
-  && rm -rf /root/.cache/pip
+  && wget -q --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl -O torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
+  && pip3 install torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
+  && rm -rf /root/.cache/pip torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl
+RUN python3 -c "import torch"
 
 # Download OpenCV
 ARG CTO_OPENCV_VERSION
 ARG CTO_NUMPROC=1
 ARG CTO_CUDA_BUILD
+RUN if [ -f /usr/include/aarch64-linux-gnu/cudnn_v8.h ]; then ln -s /usr/include/aarch64-linux-gnu/cudnn_v8.h /usr/include/aarch64-linux-gnu/cudnn.h; fi
 RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/opencv/opencv/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv \
@@ -178,12 +216,12 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_PERF_TESTS=OFF \
     -DBUILD_TESTS=OFF \
+    -DBUILD_opencv_java=OFF \
     -DBUILD_opencv_python2=OFF \
     -DBUILD_opencv_python3=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr/local/ \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_TYPE=Release \
-    -DENABLE_FAST_MATH=1 \
     -DFORCE_VTK=ON \
     -DINSTALL_C_EXAMPLES=OFF \
     -DINSTALL_PYTHON_EXAMPLES=OFF \
@@ -197,12 +235,20 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
     -DWITH_GSTREAMER_0_10=OFF \
     -DWITH_GTK=ON \
     -DWITH_IPP=OFF \
-    -DWITH_OPENCL=ON \
+    -DWITH_OPENCL=OFF \
+    -DWITH_OPENGL=ON \
     -DWITH_OPENMP=ON \
     -DWITH_TBB=ON \
+	  -DBUILD_TIFF=ON \
     -DWITH_V4L=ON \
+    -DWITH_LIBV4L=ON \
     -DWITH_WEBP=ON \
     -DWITH_XINE=ON \
+    -DCUDNN_INCLUDE_DIR=/usr/include/aarch64-linux-gnu \
+    -DEIGEN_INCLUDE_PATH=/usr/include/eigen3 \
+    -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DOPENCV_PC_FILE_NAME=opencv.pc \
+    -DOPENCV_PYTHON3_INSTALL_PATH=/usr/lib/python3/dist-packages \
     ${CTO_CUDA_BUILD} \
     .. \
   && make -j${CTO_NUMPROC} install \
@@ -214,6 +260,34 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
 #  rerun cmake with additional/modified options AFTER it was built; for example:
 # cd /usr/local/src/opencv/build
 # cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
+
+# Confirm OpenCV python is built
+RUN python3 -c "import cv2; print(cv2.__version__);"
+
+# Skipping torchaudio and torchvision in this build
+# https://github.com/dusty-nv/jetson-containers/blob/master/Dockerfile.pytorch
+#ARG TORCH_CUDA_ARCH_LIST="5.3;6.2;7.2"
+
+#ARG TORCHVISION_VERSION="0.11.3"
+#RUN pip3 install --no-cache-dir torchvision==${TORCHVISION_VERSION}
+#RUN git clone -b v${TORCHVISION_VERSION} https://github.com/pytorch/vision torchvision && \
+#    cd torchvision && \
+#    CC=/usr/bin/clang CXX=/usr/bin/clang++ python3 setup.py install && \
+#    cd ../ && \
+#    rm -rf torchvision && rm -rf /root/.cache/pip
+
+#ARG TORCHAUDIO_VERSION="0.10.2"
+#RUN pip3 install --no-cache-dir torchaudio==${TORCHAUDIO_VERSION}
+#RUN git clone --recursive -b v${TORCHAUDIO_VERSION} https://github.com/pytorch/audio torchaudio && \
+#    cd torchaudio && \
+#    BUILD_SOX=1 python3 setup.py install && \
+#    cd ../ && \
+#    rm -rf torchaudio && rm -rf /root/.cache/pip
+
+# Installing a built-TF compatible keras
+ARG CTO_TF_KERAS
+RUN pip3 install ${CTO_TF_KERAS} \
+  && rm -rf /root/.cache/pip
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
