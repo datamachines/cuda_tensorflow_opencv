@@ -52,6 +52,7 @@ Version history:
 - `20211220`: Added TF 2.6.2 and updated PyTorch. Expected to be last release to built TF1 or Ubuntu 18.04 based images.
 - `20211222`: Added TF 2.7.0 with CUDA 11 only, which removed Ubuntu 18.04 base images.
 - `20220103`: Updated OpenCV to 4.5.5.
+- `20220308`: Updated `Jetson` directory (renamed from `JetsonNano`)
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
@@ -64,10 +65,10 @@ Version history:
 - OpenCV integrated additional CUDNN support after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827).
 - For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher.
 
-`jetsonnano-cuda_tensorflow_opencv` (see the `JetsonNano` directory):
-- Builds a Nvidia Jetson Nano `cuda_tensorflow_opencv` container image based on Nvidia's provided `l4t-base` container and adapted from the `Makefile` and `Dockerfile` used for the other builds.
+`jetson_tensorflow_opencv` (see the `Jetson` directory):
+- Builds a Nvidia Jetson `cudnn_tensorflow_opencv` container image based on Nvidia's provided `l4t` containers and adapted from the `Makefile` and `Dockerfile` used for the other builds.
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv .**
+**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetsonn_tensorflow_opencv .**
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
 This is useful for you to decide if you would benefit from re-compiling some container(s) for your specific hardware.
