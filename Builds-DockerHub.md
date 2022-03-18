@@ -10,8 +10,10 @@ Sorted by subtag components splits, ie 10.0_1.15.0_4.1.2-20191108 = 10.0 / 1.15.
 <!-- vscode-markdown-toc -->
 * 1. [cudnn_tensorflow_opencv](#cudnn_tensorflow_opencv)
 * 2. [tensorflow_opencv](#tensorflow_opencv)
-* 3. [jetsonnano-cuda_tensorflow_opencv](#jetsonnano-cuda_tensorflow_opencv)
-* 4. [cuda_tensorflow_opencv (Obsolted as of 20210414 release)](#cuda_tensorflow_opencvObsoltedasof20210414release)
+* 3. [jetson_tensorflow_opencv](#jetson_tensorflow_opencv)
+* 4. [Deprecated releases](#Deprecatedreleases)
+	* 4.1. [jetsonnano-cuda_tensorflow_opencv (Replaced by Jetson release as of 20220308)](#jetsonnano-cuda_tensorflow_opencvReplacedbyJetsonreleaseasof20220308)
+	* 4.2. [cuda_tensorflow_opencv (Deprecated as of 20210414 release)](#cuda_tensorflow_opencvDeprecatedasof20210414release)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -166,6 +168,8 @@ URL: https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv
 | 11.3.1_2.7.0_3.4.16-20220103 | 11.3.1 | 8.2.0 | 2.7.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.3.1_2.7.0_3.4.16-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.3.1_2.7.0_3.4.16-20220103.txt) |
 | 11.3.1_2.7.0_4.5.4-20211222 | 11.3.1 | 8.2.0 | 2.7.0 | 4.5.4 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20211222) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.3.1_2.7.0_4.5.4-20211222.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.3.1_2.7.0_4.5.4-20211222.txt) |
 | 11.3.1_2.7.0_4.5.5-20220103 | 11.3.1 | 8.2.0 | 2.7.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.3.1_2.7.0_4.5.5-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.3.1_2.7.0_4.5.5-20220103.txt) |
+| 11.3.1_2.8.0_3.4.16-20220318 | 11.3.1 | 8.2.0 | 2.8.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.3.1_2.8.0_3.4.16-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.3.1_2.8.0_3.4.16-20220318.txt) |
+| 11.3.1_2.8.0_4.5.5-20220318 | 11.3.1 | 8.2.0 | 2.8.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.3.1_2.8.0_4.5.5-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.3.1_2.8.0_4.5.5-20220318.txt) |
 | 11.4.1_2.6.0_3.4.15-20210812 | 11.4.1 | 8.2.2 | 2.6.0 | 3.4.15 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20210812) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.1_2.6.0_3.4.15-20210812.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.1_2.6.0_3.4.15-20210812.txt) |
 | 11.4.1_2.6.0_4.5.3-20210812 | 11.4.1 | 8.2.2 | 2.6.0 | 4.5.3 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20210812) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.1_2.6.0_4.5.3-20210812.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.1_2.6.0_4.5.3-20210812.txt) |
 | 11.4.2_2.6.0_3.4.16-20211027 | 11.4.2 | 8.2.4 | 2.6.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20211027) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.2_2.6.0_3.4.16-20211027.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.2_2.6.0_3.4.16-20211027.txt) |
@@ -178,6 +182,8 @@ URL: https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv
 | 11.4.2_2.7.0_3.4.16-20220103 | 11.4.2 | 8.2.4 | 2.7.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.2_2.7.0_3.4.16-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.2_2.7.0_3.4.16-20220103.txt) |
 | 11.4.2_2.7.0_4.5.4-20211222 | 11.4.2 | 8.2.4 | 2.7.0 | 4.5.4 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20211222) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.2_2.7.0_4.5.4-20211222.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.2_2.7.0_4.5.4-20211222.txt) |
 | 11.4.2_2.7.0_4.5.5-20220103 | 11.4.2 | 8.2.4 | 2.7.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.4.2_2.7.0_4.5.5-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.4.2_2.7.0_4.5.5-20220103.txt) |
+| 11.5.1_2.8.0_3.4.16-20220318 | 11.5.1 | 8.3.1 | 2.8.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.5.1_2.8.0_3.4.16-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.5.1_2.8.0_3.4.16-20220318.txt) |
+| 11.5.1_2.8.0_4.5.5-20220318 | 11.5.1 | 8.3.1 | 2.8.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/cudnn_tensorflow_opencv-11.5.1_2.8.0_4.5.5-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/cudnn_tensorflow_opencv-11.5.1_2.8.0_4.5.5-20220318.txt) |
 
 
 ##  2. <a name='tensorflow_opencv'></a>tensorflow_opencv
@@ -266,9 +272,23 @@ URL: https://hub.docker.com/r/datamachines/tensorflow_opencv
 | 2.7.0_3.4.16-20220103 | 2.7.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/tensorflow_opencv-2.7.0_3.4.16-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/tensorflow_opencv-2.7.0_3.4.16-20220103.txt) |
 | 2.7.0_4.5.4-20211222 | 2.7.0 | 4.5.4 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20211222) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/tensorflow_opencv-2.7.0_4.5.4-20211222.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/tensorflow_opencv-2.7.0_4.5.4-20211222.txt) |
 | 2.7.0_4.5.5-20220103 | 2.7.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220103) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/tensorflow_opencv-2.7.0_4.5.5-20220103.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/tensorflow_opencv-2.7.0_4.5.5-20220103.txt) |
+| 2.8.0_3.4.16-20220318 | 2.8.0 | 3.4.16 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/tensorflow_opencv-2.8.0_3.4.16-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/tensorflow_opencv-2.8.0_3.4.16-20220318.txt) |
+| 2.8.0_4.5.5-20220318 | 2.8.0 | 4.5.5 | 20.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20220318) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-OpenCV/tensorflow_opencv-2.8.0_4.5.5-20220318.txt) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/BuildInfo-TensorFlow/tensorflow_opencv-2.8.0_4.5.5-20220318.txt) |
+
+##  3. <a name='jetson_tensorflow_opencv'></a>jetson_tensorflow_opencv
+
+URL: https://hub.docker.com/r/datamachines/jetson_tensorflow_opencv
+
+Available tags:
+- `datamachines/jetson_tensorflow_opencv:r32.6.1_1.15_3.4.16-20220308`
+- `datamachines/jetson_tensorflow_opencv:r32.6.1_1.15_4.5.5-20220308`
+- `datamachines/jetson_tensorflow_opencv:r32.6.1_2.5_3.4.16-20220308`
+- `datamachines/jetson_tensorflow_opencv:r32.6.1_2.5_4.5.5-20220308`
 
 
-##  3. <a name='jetsonnano-cuda_tensorflow_opencv'></a>jetsonnano-cuda_tensorflow_opencv
+##  4. <a name='Deprecatedreleases'></a>Deprecated releases
+
+###  4.1. <a name='jetsonnano-cuda_tensorflow_opencvReplacedbyJetsonreleaseasof20220308'></a>jetsonnano-cuda_tensorflow_opencv (Replaced by Jetson release as of 20220308)
 
 URL: https://hub.docker.com/r/datamachines/jetsonnano-cuda_tensorflow_opencv
 
@@ -290,7 +310,7 @@ For the Jetson Nano version, make sure you JetPack matches the container used; m
 | 10.2_2.3_4.5.1-20210218 | r32.5.0 | 10.2 | 8.0.0 | 2.3 | 4.5.1 | 18.04 | [link](https://github.com/datamachines/cuda_tensorflow_opencv/tree/20210218) | [link](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/JetsonNano/OpenCV_BuildConf/jetsonnano-cuda_tensorflow_opencv-10.2_2.3_4.5.1-20210218.txt) |
 
 
-##  4. <a name='cuda_tensorflow_opencvObsoltedasof20210414release'></a>cuda_tensorflow_opencv (Obsolted as of 20210414 release)
+###  4.2. <a name='cuda_tensorflow_opencvDeprecatedasof20210414release'></a>cuda_tensorflow_opencv (Deprecated as of 20210414 release)
 
 URL: https://hub.docker.com/r/datamachines/cuda_tensorflow_opencv
 
