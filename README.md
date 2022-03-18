@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20220103
+Revision: 20220318
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -53,6 +53,7 @@ Version history:
 - `20211222`: Added TF 2.7.0 with CUDA 11 only, which removed Ubuntu 18.04 base images.
 - `20220103`: Updated OpenCV to 4.5.5.
 - `20220308`: Updated `Jetson` directory (renamed from `JetsonNano`)
+- `20220318`: Added TF 2.8.0 and updated PyTorch
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
