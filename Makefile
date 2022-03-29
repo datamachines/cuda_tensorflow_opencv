@@ -93,60 +93,68 @@ PT_CUDA11="torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0+cu11
 
 ##########
 
-##### CuDNN _ Tensorflow _ OpenCV
-#DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
+##### CuDNN _ Tensorflow _ OpenCV (aka CTO)
+#CTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
 # TF > 2.1.0 requires CUDA >= 10.1 -- error when building 2.3.0, skipping CUDNN 9.2
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
 # Issues with building TF 2.5.0 with CUDA 10.2
 # Builld fixed https://github.com/tensorflow/tensorflow/issues/49983 
-#DTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
+#CTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
 # TF1 does not handle cudnn8 well, skipping
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
-#DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV4}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV3}
-DTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV4}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
+#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV4}
 
-##### Tensorflow _ OpenCV
+##### Tensorflow _ OpenCV (aka TO)
 #TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
 #TO_BUILDALL+=tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV4}
 TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV3}
 TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV4}
 
+##### Jupyter Notebook ready based on TO & CTO
+TO_JUP=jupyter_to-${STABLE_TF2}_${STABLE_OPENCV4}
+CTO_JUP=jupyter_cto-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV4}
+
 ## By default, provide the list of build targets
 all:
-	@echo "** Docker Image tag ending: ${CTO_RELEASE}"
+	@echo "**** Docker Image tag ending: ${CTO_RELEASE}"
 	@echo ""
-	@echo "** Available Docker images to be built (make targets):"
-	@echo "  tensorflow_opencv: "; echo -n "      "; echo ${TO_BUILDALL} | sed -e 's/ /\n      /g'
-	@echo "  cudnn_tensorflow_opencv: "; echo -n "      "; echo ${DTO_BUILDALL} | sed -e 's/ /\n      /g'
+	@echo "*** Available Docker images to be built (make targets):"
+	@echo "  tensorflow_opencv (aka TO): "; echo -n "      "; echo ${TO_BUILDALL} | sed -e 's/ /\n      /g'
+	@echo "  cudnn_tensorflow_opencv (aka CTO): "; echo -n "      "; echo ${CTO_BUILDALL} | sed -e 's/ /\n      /g'
 	@echo ""
-	@echo "** To build all, use: make build_all"
+	@echo "** To build all TO & CTO, use: make build_all"
+	@echo ""
+	@echo "*** Jupyter Notebook ready containers (requires the base TO & CTO container to be built, will pull otherwise)"
+	@echo "  jupyter_to: "; echo -n "      "; echo ${TO_JUP}
+	@echo "  jupyter_cto: "; echo -n "      "; echo ${CTO_JUP}
+	@echo "  jupyter_all: jupyter_to jupyter_cto"
 	@echo ""
 	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers"
 
 ## special command to build all targets
 build_all:
 	@make ${TO_BUILDALL}
-#	@make ${CTO_BUILDALL}
-	@make ${DTO_BUILDALL}
+	@make ${CTO_BUILDALL}
 
 tensorflow_opencv:
 	@make ${TO_BUILDALL}
 
 cudnn_tensorflow_opencv:
-	@make ${DTO_BUILDALL}
+	@make ${CTO_BUILDALL}
 
 ${TO_BUILDALL}:
 	@CUDX="" CUDX_COMP="" BTARG="$@" make build_prep
 
-${DTO_BUILDALL}:
+${CTO_BUILDALL}:
 	@CUDX="cudnn" CUDX_COMP="-DWITH_CUDNN=ON -DOPENCV_DNN_CUDA=ON" BTARG="$@" make build_prep
 # CUDA_ARCH_BIN and CUDX_FROM are set in build_prep now 
 
@@ -255,6 +263,27 @@ actual_build:
 ##### Force ML Toolkit checks
 force_mltk_check:
 	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
+
+##### Jupyter Notebook
+jupyter_all:
+	@make jupyter_to
+	@make jupyter_cto
+
+jupyter_to:
+	@make ${TO_JUP}
+
+jupyter_cto:
+	@make ${CTO_JUP}
+
+${TO_JUP}:
+	@$(eval JN=$(shell echo ${TO_JUP} | sed 's/-/:/'))
+	@$(eval JT=$(shell echo ${JN} | cut -d : -f 2))
+	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/tensorflow_opencv:${JT}-${CTO_RELEASE}" --tag="datamachines/${JN}-${CTO_RELEASE}" .
+
+${CTO_JUP}:
+	@$(eval JN=$(shell echo ${CTO_JUP} | sed 's/-/:/'))
+	@$(eval JT=$(shell echo ${JN} | cut -d : -f 2))
+	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/cudnn_tensorflow_opencv:${JT}-${CTO_RELEASE}" --tag="datamachines/${JN}-${CTO_RELEASE}" .
 
 ##### Various cleanup
 clean:

@@ -76,6 +76,8 @@ This is useful for you to decide if you would benefit from re-compiling some con
 
 It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15.3_3.4.10-20200615`
 
+**For example, Jupyter Notebook ready container images are now made available, and built FROM the `tensorflow_opencv` base at https://hub.docker.com/r/datamachines/jupyter_to and FROM the `cudnn_tensorflow_opencv` base at https://hub.docker.com/r/datamachines/jupyter_cto .**
+
 ##  2. <a name='Dockerimagestagnaming'></a>Docker images tag naming
 
 The image tags follow the `cuda_tensorflow_opencv` naming order.
@@ -205,6 +207,12 @@ CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 
 When starting it using `docker run -p 8888:8888 jupnb:local` to publish the container's port `8888` to the local system's port `8888`, an `http://127.0.0.1:8888/` based URL will shown with the access token.
 Using this url in a web browser will grant access to the running instance of Jupyter Notebook.
+
+In order to mount weights within the container, or other persistant location for code and such, use one or more `-v /local/directory:/container/mount` to mount your "local directory" inside the running instance at "container mount" location.
+
+To exit Jupyter Notebook, you can either docker kill the running instance of press the Quit button within the URL.
+
+Because this feature has been asked a few times, we have added a means to build those and are releasing those on DockerHub.
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
