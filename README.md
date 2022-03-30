@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20220318
+Revision: 20220329
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -54,29 +54,37 @@ Version history:
 - `20220103`: Updated OpenCV to 4.5.5.
 - `20220308`: Updated `Jetson` directory (renamed from `JetsonNano`)
 - `20220318`: Added TF 2.8.0 and updated PyTorch
+- `20220329`: Added `jupyter_to` and `jupyter_cto` builds to DockerHub
 
 `tensorflow_opencv`:
-- Builds containers with TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
+- Builds containers with TensorFlow and OpenCV. **Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support**.
 - Can be used on systems without a Nvidia GPU, and the `runDocker.sh` script will setup proper X11 passthrough
 - for MacOS X11 passthrough, install the latest XQuartz server and activate the `Security -> Allow connections from network clients` (must logout for it to take effect)
+- **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/tensorflow_opencv
 
 `cudnn_tensorflow_opencv`:
-- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support.
+- Builds an Nvidia GPU optimized version of TensorFlow and OpenCV. **Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support**.
 - As of the 20200615 version, both OpenCV and TensorFlow are compiled within the container.
 - OpenCV integrated additional CUDNN support after October 2019, see [CUDA backend for the DNN module](https://github.com/opencv/opencv/pull/14827).
 - For CUDNN, the CUDA backend for DNN module requires CC 5.3 or higher.
+- **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv 
 
 `jetson_tensorflow_opencv` (see the `Jetson` directory):
 - Builds a Nvidia Jetson `cudnn_tensorflow_opencv` container image based on Nvidia's provided `l4t` containers and adapted from the `Makefile` and `Dockerfile` used for the other builds.
+- **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/jetson_tensorflow_opencv
 
-**Docker Images built from this repository are publicly available at https://hub.docker.com/r/datamachines/tensorflow_opencv / https://hub.docker.com/r/datamachines/cudnn_tensorflow_opencv / https://hub.docker.com/r/datamachines/jetson_tensorflow_opencv .**
+`juypter_to`:
+- Jupyter Notebook container built `FROM` the `tensorflow_opencv` (`to`) container.
+- **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/jupyter_to
+
+`jupyter_cto`:
+- Jupyter Notebook container built `FROM` the `cudnn_tensorflow_opencv` (`cto`) container.
+- **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/jupyter_cto
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
 This is useful for you to decide if you would benefit from re-compiling some container(s) for your specific hardware.
 
-It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cuda_tensorflow_opencv:10.2_1.15.3_3.4.10-20200615`
-
-**For example, Jupyter Notebook ready container images are now made available, and built FROM the `tensorflow_opencv` base at https://hub.docker.com/r/datamachines/jupyter_to and FROM the `cudnn_tensorflow_opencv` base at https://hub.docker.com/r/datamachines/jupyter_cto .**
+It is possible to use those as `FROM` for your `Dockerfile`; for example: `FROM datamachines/cudnn_tensorflow_opencv:11.3.1_2.8.0_4.5.5-2022031`
 
 ##  2. <a name='Dockerimagestagnaming'></a>Docker images tag naming
 
@@ -195,7 +203,9 @@ For example:
 
 ###  7.3. <a name='UsingJupyter-NotebookAnoteonexposingports'></a>Using Jupyter-Notebook (A note on exposing ports)
 
-By choice, the containers built do not expose any ports, or start any services. This is left to the end-user. To start any, the simpler solution is to base a new container `FROM` one of those containers, expose a port and start said service to be able to access it.
+**Note:** As of 20220329, `jupyter_to` (`FROM` `tensorflow_opencv`) and `jupyter_cto` (`FROM` `cudnn_tensorflow_opencv`) containers following the method listed below are published on DockerHub.
+
+By choice, the core containers built do not expose any ports, or start any services. This is left to the end-user. To start any, the simpler solution is to base a new container `FROM` one of those containers, expose a port and start said service to be able to access it.
 
 For example, the start and expose Jupyter Notebook (on port `8888`) from the `tensorflow_opencv` container, one could write the following `Dockerfile` and tag it as `jupnb:local`:
 <pre>
@@ -211,8 +221,6 @@ Using this url in a web browser will grant access to the running instance of Jup
 In order to mount weights within the container, or other persistant location for code and such, use one or more `-v /local/directory:/container/mount` to mount your "local directory" inside the running instance at "container mount" location.
 
 To exit Jupyter Notebook, you can either docker kill the running instance of press the Quit button within the URL.
-
-Because this feature has been asked a few times, we have added a means to build those and are releasing those on DockerHub.
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
