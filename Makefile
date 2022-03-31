@@ -265,6 +265,10 @@ force_mltk_check:
 	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
 
 ##### Jupyter Notebook
+JN_MODE=""
+JN_UID=$(shell id -u)
+JN_GID=$(shell id -g)
+
 jupyter_all:
 	@make jupyter_to
 	@make jupyter_cto
@@ -277,13 +281,17 @@ jupyter_cto:
 
 ${TO_JUP}:
 	@$(eval JN=$(shell echo ${TO_JUP} | sed 's/-/:/'))
+	@$(eval JB=$(shell echo ${JN} | cut -d : -f 1))
 	@$(eval JT=$(shell echo ${JN} | cut -d : -f 2))
-	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/tensorflow_opencv:${JT}-${CTO_RELEASE}" --tag="datamachines/${JN}-${CTO_RELEASE}" .
+	@$(eval JN="${JB}${JN_MODE}:${JT}")
+	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/tensorflow_opencv:${JT}-${CTO_RELEASE}" --build-arg JUID=${JN_UID} --build-arg JGID=${JN_GID} -f Dockerfile${JN_MODE} --tag="datamachines/${JN}-${CTO_RELEASE}" .
 
 ${CTO_JUP}:
 	@$(eval JN=$(shell echo ${CTO_JUP} | sed 's/-/:/'))
+	@$(eval JB=$(shell echo ${JN} | cut -d : -f 1))
 	@$(eval JT=$(shell echo ${JN} | cut -d : -f 2))
-	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/cudnn_tensorflow_opencv:${JT}-${CTO_RELEASE}" --tag="datamachines/${JN}-${CTO_RELEASE}" .
+	@$(eval JN="${JB}${JN_MODE}:${JT}")
+	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/cudnn_tensorflow_opencv:${JT}-${CTO_RELEASE}" --build-arg JUID=${JN_UID} --build-arg JGID=${JN_GID} -f Dockerfile${JN_MODE} --tag="datamachines/${JN}${JN_MODE}-${CTO_RELEASE}" .
 
 ##### Various cleanup
 clean:

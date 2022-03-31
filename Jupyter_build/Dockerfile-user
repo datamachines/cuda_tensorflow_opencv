@@ -1,0 +1,20 @@
+ARG JUPBC
+FROM ${JUPBC}
+
+ARG JUID=1000
+ARG JGID=1000
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    (addgroup --group --gid ${JGID} jupyter || true) && \
+    adduser --force-badname --disabled-password --gecos '' --uid ${JUID} --gid ${JGID} --shell /bin/bash jupyter && \
+    adduser jupyter sudo 
+
+USER jupyter
+RUN sudo chown -R jupyter /home/jupyter /dmc
+
+WORKDIR /dmc
+
+EXPOSE 8888
+
+CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser 

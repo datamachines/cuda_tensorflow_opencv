@@ -13,6 +13,8 @@ Revision: 20220329
 		* 7.1.1. [Using OpenCV DNN](#UsingOpenCVDNN)
 	* 7.2. [Using GPU TensorFlow in your code (only for cudnn- versions)](#UsingGPUTensorFlowinyourcodeonlyforcudnn-versions)
 	* 7.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
+		* 7.3.1. [Build of an allow-root Jupyter Notebook container](#Buildofanallow-rootJupyterNotebookcontainer)
+		* 7.3.2. [Build of a user permission Jupyter Notebook container](#BuildofauserpermissionJupyterNotebookcontainer)
 	* 7.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
 		* 7.4.1. [ Darknet Python bindings](#DarknetPythonbindings)
 	* 7.5. [Testing PyTorch with CUDA](#TestingPyTorchwithCUDA)
@@ -203,24 +205,52 @@ For example:
 
 ###  7.3. <a name='UsingJupyter-NotebookAnoteonexposingports'></a>Using Jupyter-Notebook (A note on exposing ports)
 
-**Note:** As of 20220329, `jupyter_to` (`FROM` `tensorflow_opencv`) and `jupyter_cto` (`FROM` `cudnn_tensorflow_opencv`) containers following the method listed below are published on DockerHub.
+**Note:** As of 20220329, `jupyter_to` (`FROM` `tensorflow_opencv`) and `jupyter_cto` (`FROM` `cudnn_tensorflow_opencv`) containers (using the `root` user) following the method listed below are published on DockerHub.
 
 By choice, the core containers built do not expose any ports, or start any services. This is left to the end-user. To start any, the simpler solution is to base a new container `FROM` one of those containers, expose a port and start said service to be able to access it.
 
-For example, the start and expose Jupyter Notebook (on port `8888`) from the `tensorflow_opencv` container, one could write the following `Dockerfile` and tag it as `jupnb:local`:
+For example, the start and expose Jupyter Notebook (on port `8888`) from the `cudnn_tensorflow_opencv` container, one could write the following `Dockerfile` and tag it as `jupnb:local`:
 <pre>
-FROM datamachines/tensorflow_opencv:2.2.0_4.3.0-20200615
+FROM datamachines/cudnn_tensorflow_opencv:11.3.1_2.8.0_4.5.5-20220318
 EXPOSE 8888
 CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
 </pre>
 , using `docker build --tag jupnb:local .`
 
-When starting it using `docker run -p 8888:8888 jupnb:local` to publish the container's port `8888` to the local system's port `8888`, an `http://127.0.0.1:8888/` based URL will shown with the access token.
+In order to mount weights within the container, or other persistant location for code and such, use one or more `-v /local/directory:/container/mount` to mount your "local directory" inside the running instance at "container mount" location. In particular, the base `FROM` container uses `/dmc` as its `WORKDIR`, the started notebook will therefore be in this directory. Use `-v /path/to/mount:/dmc` to make it available as default in the Jupyter Notebook.
+
+Start the built container using a similar command to `docker run --gpus all -p 8888:8888 -v /path:/dmc jupnb:local` to: 1) use the GPUs (only availble in the `to` build), 2) publish the container's port `8888` to the local system's port `8888`, 3) mount `/path` as `/dmc` within the container. When the container is started, an `http://127.0.0.1:8888/` based URL will shown with the access token.
 Using this url in a web browser will grant access to the running instance of Jupyter Notebook.
 
-In order to mount weights within the container, or other persistant location for code and such, use one or more `-v /local/directory:/container/mount` to mount your "local directory" inside the running instance at "container mount" location.
+To exit Jupyter Notebook, you can either `docker kill` the running instance of press the `Quit` button within the WebUI.
 
-To exit Jupyter Notebook, you can either docker kill the running instance of press the Quit button within the URL.
+####  7.3.1. <a name='Buildofanallow-rootJupyterNotebookcontainer'></a>Build of an allow-root Jupyter Notebook container
+
+An `--allow-root` container is what the `make jupyter_to` or `make jupyter_cto` command lines are designed to do. They will `docker build` the `Jupyter_build/Dockerfile` using a recent `FROM` (as listed on the output of `make`). This is an `--allow-root` ran Jupyter Notebook ran within the container. This is the container we have started building and releasing on DockerHub as of 20220329.
+
+####  7.3.2. <a name='BuildofauserpermissionJupyterNotebookcontainer'></a>Build of a user permission Jupyter Notebook container
+
+Note: this is mostly for Linux builds, volumes mounted on MacOS's Docker Desktop are done so using the user's permissions.
+
+We support the build of user permission Jupyter Notebook; ie a build where a `sudo`-capable `jupyter` user with specific `uid` and `gid` is used within the container to use the Jupyter Notebook.
+To support this, we created a `Jupyter_build/Dockerfile-user`.
+
+This container will be named `jupyter_to-user` and requires a manual build which is started using (similar process for the `_cto` version)
+
+     make jupyter_to JN_MODE="-user"
+
+By default, the build will obtain the `make` user's `uid` and `gid` and use those when creating the `jupyter` user within the container. This is to support easy permission management of data mounted within the container at runtime.
+
+If you prefer to control the `jupyter` user's `uid` and `gid`, specify those on the command line at build time:
+
+    make jupyter_to JN_MODE="-user" JN_UID="1001" JN_GID="1002"
+
+Please note that the tool will not check if the `uid` or `gid` are valid or compatible with the container's base image (Ubuntu).
+
+It is also possible to manually control the `FROM` image to be another `to` or `cto` release by replacing the `JUPBC` `docker build` argument; the `Makefile` is here as a convenience to build versions for the same release.
+For example to build a `jupyter_to-user:2.8.0_3.4.16` image, with `1003` as the `jupyter` user's `uid` and `gid`:
+
+    cd Jupyter_build; docker build --build-arg JUPBC="datamachines/tensorflow_opencv:2.8.0_3.4.16-20220318" --build-arg JUID=1003 --build-arg JGID=1003 -f Dockerfile-user --tag="jupyter_to-user:2.8.0_3.4.16" .
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
