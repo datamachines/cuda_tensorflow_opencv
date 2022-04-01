@@ -291,7 +291,7 @@ ${CTO_JUP}:
 	@$(eval JB=$(shell echo ${JN} | cut -d : -f 1))
 	@$(eval JT=$(shell echo ${JN} | cut -d : -f 2))
 	@$(eval JN="${JB}${JN_MODE}:${JT}")
-	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/cudnn_tensorflow_opencv:${JT}-${CTO_RELEASE}" --build-arg JUID=${JN_UID} --build-arg JGID=${JN_GID} -f Dockerfile${JN_MODE} --tag="datamachines/${JN}${JN_MODE}-${CTO_RELEASE}" .
+	@cd Jupyter_build; docker build --build-arg JUPBC="datamachines/cudnn_tensorflow_opencv:${JT}-${CTO_RELEASE}" --build-arg JUID=${JN_UID} --build-arg JGID=${JN_GID} -f Dockerfile${JN_MODE} --tag="datamachines/${JN}-${CTO_RELEASE}" .
 
 ##### Various cleanup
 clean:

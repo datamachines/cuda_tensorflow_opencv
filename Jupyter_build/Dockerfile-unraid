@@ -1,0 +1,23 @@
+ARG JUPBC
+FROM ${JUPBC}
+
+# bypassing ARG for JUID/JGID for Unraid, to use its default user
+USER root
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    (addgroup --group --gid 100 jupyter || true) && \
+    adduser --force-badname --disabled-password --gecos '' --uid 99 --gid 100 --shell /bin/bash jupyter && \
+    adduser jupyter sudo 
+
+USER jupyter
+RUN sudo chown -R jupyter /home/jupyter /dmc
+
+# Adding a default password to the running instance 
+RUN jupyter notebook --generate-config
+COPY jupyter_notebook_config.json /home/jupyter/.jupyter/jupyter_notebook_config.json
+
+WORKDIR /dmc
+
+EXPOSE 8888
+
+CMD jupyter-notebook --ip=0.0.0.0 --port=8888 --no-browser 
