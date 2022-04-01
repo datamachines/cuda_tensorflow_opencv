@@ -15,6 +15,7 @@ Revision: 20220329
 	* 7.3. [Using Jupyter-Notebook (A note on exposing ports)](#UsingJupyter-NotebookAnoteonexposingports)
 		* 7.3.1. [Build of an allow-root Jupyter Notebook container](#Buildofanallow-rootJupyterNotebookcontainer)
 		* 7.3.2. [Build of a user permission Jupyter Notebook container](#BuildofauserpermissionJupyterNotebookcontainer)
+		* 7.3.3. [Build of an Unraid specific Jupyter Notebook container](#BuildofanUnraidspecificJupyterNotebookcontainer)
 	* 7.4. [Testing Yolo v4 on your webcam (Linux and GPU only)](#TestingYolov4onyourwebcamLinuxandGPUonly)
 		* 7.4.1. [ Darknet Python bindings](#DarknetPythonbindings)
 	* 7.5. [Testing PyTorch with CUDA](#TestingPyTorchwithCUDA)
@@ -251,6 +252,17 @@ It is also possible to manually control the `FROM` image to be another `to` or `
 For example to build a `jupyter_to-user:2.8.0_3.4.16` image, with `1003` as the `jupyter` user's `uid` and `gid`:
 
     cd Jupyter_build; docker build --build-arg JUPBC="datamachines/tensorflow_opencv:2.8.0_3.4.16-20220318" --build-arg JUID=1003 --build-arg JGID=1003 -f Dockerfile-user --tag="jupyter_to-user:2.8.0_3.4.16" .
+
+####  7.3.3. <a name='BuildofanUnraidspecificJupyterNotebookcontainer'></a>Build of an Unraid specific Jupyter Notebook container
+
+Note: this build is designed to run on an unraid.net server, it specialized the "user" build by using Unraid's specific `uid` and `gid` and uses a default password for the WebUI.
+
+Build the `to` and `cto` versions using one of:
+
+    make jupyter_to JN_MODE="-unraid"
+    make jupyter_cto JN_MODE="-unraid"
+
+This version uses a default user password (`dmc`) when started.
 
 ###  7.4. <a name='TestingYolov4onyourwebcamLinuxandGPUonly'></a>Testing Yolo v4 on your webcam (Linux and GPU only)
 
