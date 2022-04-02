@@ -7,7 +7,7 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://forums.unraid.net/topic/121930-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv-support-thread/</Support>
+  <Support>https://forums.unraid.net/topic/121930-support-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv/</Support>
   <Project>https://github.com/datamachines/cuda_tensorflow_opencv</Project>
   <Overview>Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
 &#xD;
