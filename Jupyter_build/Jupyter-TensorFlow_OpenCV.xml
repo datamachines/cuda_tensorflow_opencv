@@ -7,13 +7,13 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://hub.docker.com/r/datamachines/jupyter_to-unraid/</Support>
+  <Support>https://forums.unraid.net/topic/121930-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv-support-thread/</Support>
   <Project>https://github.com/datamachines/cuda_tensorflow_opencv</Project>
   <Overview>Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
 &#xD;
 The default password to access Jupyter is dmc&#xD;
 &#xD;
-This is the CPU-bound container's version. The GPU equivalent container is named Jupyter-cudnn_tensorflow_opencv&#xD;
+This is the CPU-bound container's version. The GPU equivalent container is named Jupyter-CuDNN_TensorFlow_OpenCV&#xD;
 Please note that the container images is large at over 4GB and its GPU counterpart runs over 16GB. &#xD;
 &#xD;
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;

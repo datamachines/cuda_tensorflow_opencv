@@ -7,7 +7,7 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://hub.docker.com/r/datamachines/jupyter_cto-unraid/</Support>
+  <Support>https://forums.unraid.net/topic/121930-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv-support-thread/</Support>
   <Project>https://github.com/datamachines/cuda_tensorflow_opencv</Project>
   <Overview>Unraid compatible Jupyter Notebook (Python kernel) container with GPU-optimized Tensorflow and OpenCV, and installations of Pandas, PyTorch -- based on datamachines/cudnn_tensorflow_opencv&#xD;
 &#xD;
@@ -18,7 +18,7 @@ Please note that the container images is large at over 16GB &#xD;
 To use it requires the Nvidia driver installation on your Unraid server for support of Docker. &#xD;
 This installation needs to support the version of CUDA installed to use with this container.&#xD;
 &#xD;
-A CPU equivalent container is also available and named Jupyter-tensorflow_opencv and is over 4GB&#xD;
+A CPU equivalent container is also available and named Jupyter-TensorFlow_OpenCV and is over 4GB&#xD;
 &#xD;
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
