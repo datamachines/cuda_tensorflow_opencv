@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20220329
+Revision: 20220331
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -58,6 +58,7 @@ Version history:
 - `20220308`: Updated `Jetson` directory (renamed from `JetsonNano`)
 - `20220318`: Added TF 2.8.0 and updated PyTorch
 - `20220329`: Added `jupyter_to` and `jupyter_cto` builds to DockerHub
+- `20220331`: Added Unraid specific releases
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. **Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support**.
@@ -83,6 +84,11 @@ Version history:
 `jupyter_cto`:
 - Jupyter Notebook container built `FROM` the `cudnn_tensorflow_opencv` (`cto`) container.
 - **Pre-built containers available on DockerHub**: https://hub.docker.com/r/datamachines/jupyter_cto
+
+`juypter_to-unraid` and `jupyter_cto-unraid`:
+- Jupyter Notebook containers built `FROM` the `tensorflow_opencv` (`to`) and `cudnn_tensorflow_opencv` (`cto`) containera with a `sudo`-capable `jupyter` user using unraid specific `uid` and `gid`. Comes preconfigured with a password for the UI (`dmc`)
+- Pre-built containers available on DockerHub: https://hub.docker.com/r/datamachines/jupyter_to-unraid and https://hub.docker.com/r/datamachines/jupyter_cto-unraid
+- Unraid's templates published and containers available in Unraid's "Community Applications" as "Jupyter-TensorFlow_OpenCV" and "Jupyter-CuDNN_TensorFlow_OpenCV"
 
 The [Builds-DockerHub.md](https://github.com/datamachines/cuda_tensorflow_opencv/blob/master/Builds-DockerHub.md) file is a quick way of seeing the list of pre-built container images. When available, a "BuiidInfo" will give the end user a deeper look of the capabilities of said container and installed version. In particular the compiled GPU architecture (see https://en.wikipedia.org/wiki/CUDA#GPUs_supported ).
 This is useful for you to decide if you would benefit from re-compiling some container(s) for your specific hardware.
