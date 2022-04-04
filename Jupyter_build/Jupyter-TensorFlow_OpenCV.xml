@@ -9,7 +9,8 @@
   <Privileged>false</Privileged>
   <Support>https://forums.unraid.net/topic/121930-support-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv/</Support>
   <Project>https://github.com/datamachines/cuda_tensorflow_opencv</Project>
-  <Overview>Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
+  <Overview>
+Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
 &#xD;
 The default password to access Jupyter is dmc&#xD;
 &#xD;
@@ -18,8 +19,32 @@ Please note that the container images is large at over 4GB and its GPU counterpa
 &#xD;
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
-VERSION (match datamachines/tensorflow_opencv releases date)&#xD;
-20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5</Overview>
+VERSION(s) (match datamachines/tensorflow_opencv releases date)&#xD;
+- 20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
+&#xD;
+Changelog:&#xD;
+- 20220403: Updated unraid template&#xD;
+- 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
+- 20220331: Unraid initial release: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
+  </Overview>
+  <Description>
+Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
+&#xD;
+The default password to access Jupyter is dmc&#xD;
+&#xD;
+This is the CPU-bound container's version. The GPU equivalent container is named Jupyter-CuDNN_TensorFlow_OpenCV&#xD;
+Please note that the container images is large at over 4GB and its GPU counterpart runs over 16GB. &#xD;
+&#xD;
+The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
+&#xD;
+VERSION(s) (match datamachines/tensorflow_opencv releases date)&#xD;
+- 20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
+&#xD;
+Changelog:&#xD;
+- 20220403: Updated unraid template&#xD;
+- 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
+- 20220331: Unraid initial release: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
+  </Description>
   <Category>Productivity:</Category>
   <WebUI>http://[IP]:[PORT:8888]</WebUI>
   <TemplateURL/>
@@ -27,20 +52,9 @@ VERSION (match datamachines/tensorflow_opencv releases date)&#xD;
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
-  <DateInstalled>1648788069</DateInstalled>
+  <DateInstalled/>
   <DonateText/>
   <DonateLink/>
-  <Description>Unraid compatible Jupyter Notebook (Python kernel) container with CPU-ready Tensorflow, OpenCV, Pandas, PyTorch -- based on datamachines/tensorflow_opencv&#xD;
-&#xD;
-The default password to access Jupyter is dmc&#xD;
-&#xD;
-This is the CPU-bound container's version. The GPU equivalent container is named Jupyter-cudnn_tensorflow_opencv&#xD;
-Please note that the container images is large at over 4GB and its GPU counterpart runs over 16GB. &#xD;
-&#xD;
-The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
-&#xD;
-VERSION (match datamachines/tensorflow_opencv releases date)&#xD;
-20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5</Description>
   <Networking>
     <Mode>bridge</Mode>
     <Publish>

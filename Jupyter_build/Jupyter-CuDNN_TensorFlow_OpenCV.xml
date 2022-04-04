@@ -7,9 +7,10 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://forums.unraid.net/topic/121930-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv-support-thread/</Support>
+  <Support>https://forums.unraid.net/topic/121930-support-jupyter-tensorflow_opencv-and-jupyter-cudnn_tensorflow_opencv/</Support>
   <Project>https://github.com/datamachines/cuda_tensorflow_opencv</Project>
-  <Overview>Unraid compatible Jupyter Notebook (Python kernel) container with GPU-optimized Tensorflow and OpenCV, and installations of Pandas, PyTorch -- based on datamachines/cudnn_tensorflow_opencv&#xD;
+  <Overview>
+Unraid compatible Jupyter Notebook (Python kernel) container with GPU-optimized Tensorflow and OpenCV, and installations of Pandas, PyTorch -- based on datamachines/cudnn_tensorflow_opencv&#xD;
 &#xD;
 The default password to access Jupyter is dmc&#xD;
 &#xD;
@@ -22,19 +23,16 @@ A CPU equivalent container is also available and named Jupyter-TensorFlow_OpenCV
 &#xD;
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
-VERSION (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
-20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5</Overview>
-  <Category>Productivity:</Category>
-  <WebUI>http://[IP]:[PORT:8888]</WebUI>
-  <TemplateURL/>
-  <Icon>https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Jupyter_logo.svg/207px-Jupyter_logo.svg.png</Icon>
-  <ExtraParams>--gpus all</ExtraParams>
-  <PostArgs/>
-  <CPUset/>
-  <DateInstalled>1648789415</DateInstalled>
-  <DonateText/>
-  <DonateLink/>
-  <Description>Unraid compatible Jupyter Notebook (Python kernel) container with GPU-optimized Tensorflow and OpenCV, and installations of Pandas, PyTorch -- based on datamachines/cudnn_tensorflow_opencv&#xD;
+VERSION(s) (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
+- 20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
+&#xD;
+Changelog:&#xD;
+- 20220403: Updated unraid template&#xD;
+- 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
+- 20220331: Unraid initial release: latest is CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
+  </Overview>
+  <Description>
+Unraid compatible Jupyter Notebook (Python kernel) container with GPU-optimized Tensorflow and OpenCV, and installations of Pandas, PyTorch -- based on datamachines/cudnn_tensorflow_opencv&#xD;
 &#xD;
 The default password to access Jupyter is dmc&#xD;
 &#xD;
@@ -43,12 +41,28 @@ Please note that the container images is large at over 16GB &#xD;
 To use it requires the Nvidia driver installation on your Unraid server for support of Docker. &#xD;
 This installation needs to support the version of CUDA installed to use with this container.&#xD;
 &#xD;
-A CPU equivalent container is also available and named Jupyter-tensorflow_opencv and is over 4GB&#xD;
+A CPU equivalent container is also available and named Jupyter-TensorFlow_OpenCV and is over 4GB&#xD;
 &#xD;
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
-VERSION (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
-20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5</Description>
+VERSION(s) (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
+- 20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
+&#xD;
+Changelog:&#xD;
+- 20220403: Updated unraid template&#xD;
+- 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
+- 20220331: Unraid initial release: latest is CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
+</Description>
+  <Category>Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:8888]</WebUI>
+  <TemplateURL/>
+  <Icon>https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Jupyter_logo.svg/207px-Jupyter_logo.svg.png</Icon>
+  <ExtraParams>--gpus all</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
   <Networking>
     <Mode>bridge</Mode>
     <Publish>
