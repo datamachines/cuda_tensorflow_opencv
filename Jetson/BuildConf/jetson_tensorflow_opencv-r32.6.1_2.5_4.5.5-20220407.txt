@@ -1,0 +1,349 @@
+  CTO_FROM               : nvcr.io/nvidia/l4t-tensorflow:r32.6.1-tf2.5-py3
+docker build  \
+  --build-arg CTO_FROM="nvcr.io/nvidia/l4t-tensorflow:r32.6.1-tf2.5-py3" \
+  --build-arg CTO_OPENCV_VERSION=4.5.5 \
+  --build-arg CTO_NUMPROC=4 \
+  --build-arg CTO_CUDA_BUILD="-DWITH_CUDA=ON -DCUDA_FAST_MATH=1 -DWITH_CUBLAS=1 -DCUDA_ARCH_BIN=5.3,6.2,7.2 -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-10.2 -DCUDA_ARCH_PTX=" \
+  --build-arg CTO_TF_KERAS="six" \
+  --tag="datamachines/jetson_tensorflow_opencv:r32.6.1_2.5_4.5.5-20220407" \
+  .
+
+General configuration for OpenCV 4.5.5 =====================================
+  Version control:               unknown
+
+  Extra modules:
+    Location (extra):            /usr/local/src/opencv_contrib/modules
+    Version control (extra):     unknown
+
+  Platform:
+    Timestamp:                   2022-04-08T03:13:00Z
+    Host:                        Linux 4.9.253-tegra aarch64
+    CMake:                       3.22.2
+    CMake generator:             Unix Makefiles
+    CMake build tool:            /usr/bin/make
+    Configuration:               Release
+
+  CPU/HW features:
+    Baseline:                    NEON FP16
+
+  C/C++:
+    Built as dynamic libs?:      YES
+    C++ standard:                11
+    C++ Compiler:                /usr/bin/c++  (ver 7.5.0)
+    C++ flags (Release):         -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections    -fvisibility=hidden -fvisibility-inlines-hidden -fopenmp -O3 -DNDEBUG  -DNDEBUG
+    C++ flags (Debug):           -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections    -fvisibility=hidden -fvisibility-inlines-hidden -fopenmp -g  -O0 -DDEBUG -D_DEBUG
+    C Compiler:                  /usr/bin/cc
+    C flags (Release):           -I/usr/include/openjpeg-2.3 -I/usr/include/jxrlib   -fsigned-char -W -Wall -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wuninitialized -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections    -fvisibility=hidden -fopenmp -O3 -DNDEBUG  -DNDEBUG
+    C flags (Debug):             -I/usr/include/openjpeg-2.3 -I/usr/include/jxrlib   -fsigned-char -W -Wall -Werror=return-type -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes -Wundef -Winit-self -Wpointer-arith -Wshadow -Wuninitialized -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -pthread -fomit-frame-pointer -ffunction-sections -fdata-sections    -fvisibility=hidden -fopenmp -g  -O0 -DDEBUG -D_DEBUG
+    Linker flags (Release):      -Wl,--gc-sections -Wl,--as-needed  
+    Linker flags (Debug):        -Wl,--gc-sections -Wl,--as-needed  
+    ccache:                      NO
+    Precompiled headers:         NO
+    Extra dependencies:          m pthread cudart_static dl rt nppc nppial nppicc nppicom nppidei nppif nppig nppim nppist nppisu nppitc npps cublas cufft -L/usr/local/cuda-10.2/lib64 -L/usr/lib/aarch64-linux-gnu
+    3rdparty dependencies:
+
+  OpenCV modules:
+    To be built:                 alphamat aruco barcode bgsegm bioinspired calib3d ccalib core cudaarithm cudabgsegm cudacodec cudafeatures2d cudafilters cudaimgproc cudalegacy cudaobjdetect cudaoptflow cudastereo cudawarping cudev datasets dnn dnn_objdetect dnn_superres dpm face features2d flann freetype fuzzy gapi hdf hfs highgui img_hash imgcodecs imgproc intensity_transform line_descriptor mcc ml objdetect optflow phase_unwrapping photo plot python3 quality rapid reg rgbd saliency sfm shape stereo stitching structured_light superres surface_matching text tracking video videoio videostab wechat_qrcode xfeatures2d ximgproc xobjdetect xphoto
+    Disabled:                    world
+    Disabled by dependency:      -
+    Unavailable:                 cvv java julia matlab ovis python2 ts viz
+    Applications:                apps
+    Documentation:               NO
+    Non-free algorithms:         NO
+
+  GUI:                           GTK3
+    GTK+:                        YES (ver 3.22.30)
+      GThread :                  YES (ver 2.56.4)
+      GtkGlExt:                  NO
+    OpenGL support:              NO
+    VTK support:                 NO
+
+  Media I/O: 
+    ZLib:                        /usr/lib/aarch64-linux-gnu/libz.so (ver 1.2.11)
+    JPEG:                        /usr/lib/aarch64-linux-gnu/libjpeg.so (ver 80)
+    WEBP:                        /usr/lib/aarch64-linux-gnu/libwebp.so (ver encoder: 0x020e)
+    PNG:                         /usr/lib/aarch64-linux-gnu/libpng.so (ver 1.6.34)
+    TIFF:                        build (ver 42 - 4.2.0)
+    JPEG 2000:                   OpenJPEG (ver 2.3.0)
+    OpenEXR:                     build (ver 2.3.0)
+    GDAL:                        NO
+    HDR:                         YES
+    SUNRASTER:                   YES
+    PXM:                         YES
+    PFM:                         YES
+
+  Video I/O:
+    DC1394:                      YES (2.2.5)
+    FFMPEG:                      YES
+      avcodec:                   YES (57.107.100)
+      avformat:                  YES (57.83.100)
+      avutil:                    YES (55.78.100)
+      swscale:                   YES (4.8.100)
+      avresample:                NO
+    GStreamer:                   YES (1.14.5)
+    v4l/v4l2:                    YES (linux/videodev2.h)
+    Xine:                        YES (ver 1.2.8)
+
+  Parallel framework:            TBB (ver 2017.0 interface 9107)
+
+  Trace:                         YES (with Intel ITT)
+
+  Other third-party libraries:
+    Lapack:                      NO
+    Eigen:                       YES (ver 3.3.4)
+    Custom HAL:                  YES (carotene (ver 0.0.1))
+    Protobuf:                    build (3.19.1)
+
+  NVIDIA CUDA:                   YES (ver 10.2, CUFFT CUBLAS FAST_MATH)
+    NVIDIA GPU arch:             53 62 72
+    NVIDIA PTX archs:
+
+  cuDNN:                         NO
+
+  Python 3:
+    Interpreter:                 /usr/bin/python3 (ver 3.6.9)
+    Libraries:                   /usr/lib/aarch64-linux-gnu/libpython3.6m.so (ver 3.6.9)
+    numpy:                       /usr/local/lib/python3.6/dist-packages/numpy/core/include (ver 1.19.5)
+    install path:                /usr/lib/python3/dist-packages/cv2/python-3.6
+
+  Python (for build):            /usr/bin/python2.7
+
+  Java:                          
+    ant:                         NO
+    JNI:                         NO
+    Java wrappers:               NO
+    Java tests:                  NO
+
+  Install to:                    /usr/local
+-----------------------------------------------------------------
+
+
+[pip list]
+Package                 Version
+----------------------- -------------------
+absl-py                 0.13.0
+appdirs                 1.4.4
+argon2-cffi             21.3.0
+argon2-cffi-bindings    21.2.0
+astunparse              1.6.3
+async-generator         1.10
+attrs                   21.4.0
+autovizwidget           0.19.1
+backcall                0.2.0
+beautifulsoup4          4.6.0
+bleach                  4.1.0
+cachetools              4.2.2
+certifi                 2021.5.30
+cffi                    1.15.0
+chardet                 3.0.4
+charset-normalizer      2.0.4
+cupy                    9.2.0
+cycler                  0.10.0
+Cython                  0.29.28
+dataclasses             0.8
+decorator               4.4.2
+defusedxml              0.7.1
+distro                  1.7.0
+entrypoints             0.4
+fastrlock               0.8
+flatbuffers             1.12
+future                  0.18.2
+futures                 3.1.1
+gast                    0.4.0
+google-auth             1.34.0
+google-auth-oauthlib    0.4.5
+google-pasta            0.2.0
+grpcio                  1.34.1
+h5py                    2.10.0
+hdijupyterutils         0.19.1
+html5lib                0.999999999
+idna                    3.2
+imagecodecs             2020.5.30
+imageio                 2.15.0
+imageio-ffmpeg          0.4.5
+importlib-metadata      4.6.3
+importlib-resources     5.4.0
+ipykernel               5.5.6
+ipython                 7.16.3
+ipython-genutils        0.2.0
+ipywidgets              7.6.5
+jedi                    0.17.2
+Jinja2                  3.0.3
+joblib                  1.1.0
+jsonschema              3.2.0
+jupyter                 1.0.0
+jupyter-client          7.1.2
+jupyter-console         6.4.3
+jupyter-core            4.9.2
+jupyterlab-pygments     0.1.2
+jupyterlab-widgets      1.0.2
+Keras-Applications      1.0.8
+keras-nightly           2.5.0.dev2021032900
+Keras-Preprocessing     1.1.2
+kiwisolver              1.3.1
+llvmlite                0.36.0
+lxml                    4.2.1
+Mako                    1.1.4
+Markdown                3.3.4
+MarkupSafe              2.0.1
+matplotlib              2.1.1
+mistune                 0.8.4
+mock                    3.0.5
+moviepy                 1.0.3
+nbclient                0.5.9
+nbconvert               6.0.7
+nbformat                5.1.3
+nest-asyncio            1.5.4
+networkx                2.5.1
+ninja                   1.10.2.3
+nose                    1.3.7
+notebook                6.4.8
+numba                   0.47.0
+numpy                   1.19.5
+oauthlib                3.1.1
+olefile                 0.45.1
+onnx                    1.11.0
+opt-einsum              3.3.0
+packaging               21.3
+pandas                  1.1.5
+pandocfilters           1.5.0
+parso                   0.7.1
+pbr                     5.8.1
+pexpect                 4.8.0
+pickleshare             0.7.5
+Pillow                  8.4.0
+pip                     21.3.1
+plotly                  5.6.0
+proglog                 0.1.9
+prometheus-client       0.13.1
+prompt-toolkit          3.0.28
+protobuf                3.17.3
+ptyprocess              0.7.0
+pyasn1                  0.4.8
+pyasn1-modules          0.2.8
+pybind11                2.9.1
+pycparser               2.21
+pycuda                  2021.1
+Pygments                2.11.2
+PyGObject               3.26.1
+pyparsing               2.2.0
+pyrsistent              0.18.0
+PySoundFile             0.9.0.post1
+python-apt              1.6.5+ubuntu0.7
+python-dateutil         2.8.2
+pytools                 2021.2.7
+pytz                    2018.3
+PyWavelets              1.1.1
+PyYAML                  3.12
+pyzmq                   22.3.0
+qtconsole               5.2.2
+QtPy                    2.0.1
+requests                2.26.0
+requests-oauthlib       1.3.0
+rsa                     4.7.2
+scikit-build            0.13.1
+scikit-image            0.17.2
+scikit-learn            0.24.2
+scipy                   1.5.4
+Send2Trash              1.8.0
+setuptools              59.6.0
+six                     1.15.0
+tenacity                8.0.1
+tensorboard             2.5.0
+tensorboard-data-server 0.6.1
+tensorboard-plugin-wit  1.8.0
+tensorflow              2.5.0+nv
+tensorflow-estimator    2.5.0
+termcolor               1.1.0
+terminado               0.12.1
+testpath                0.6.0
+testresources           2.0.1
+threadpoolctl           3.1.0
+tifffile                2020.9.3
+torch                   1.10.0
+tornado                 6.1
+tqdm                    4.63.0
+traitlets               4.3.3
+typing-extensions       3.7.4.3
+unattended-upgrades     0.1
+urllib3                 1.26.6
+wcwidth                 0.2.5
+webencodings            0.5
+Werkzeug                2.0.1
+wheel                   0.36.2
+widgetsnbextension      3.5.2
+wrapt                   1.12.1
+zipp                    3.5.0
+
+-- Confirming OpenCV Python is installed. Version: 4.5.5
+
+-------------------------------------------------------
+
+[Extra information]
+FOUND_UBUNTU: 18.04
+FOUND_CUDNN: 8.2.1
+2022-04-08 05:28:04.898027: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.10.2
+*** Tensorflow version   :  2.5.0
+*** Tensorflow Keras     :  2.5.0
+*** TF Builf with cuda   :  True
+*** TF compile flags     :  ['-I/usr/local/lib/python3.6/dist-packages/tensorflow/include', '-D_GLIBCXX_USE_CXX11_ABI=1']
+*** TF include           :  /usr/local/lib/python3.6/dist-packages/tensorflow/include
+*** TF lib               :  /usr/local/lib/python3.6/dist-packages/tensorflow
+*** TF link flags        :  ['-L/usr/local/lib/python3.6/dist-packages/tensorflow', '-l:libtensorflow_framework.so.2']
+*** OpenCV version       :  4.5.5
+*** Keras version        :  2.5.0
+*** PyTorch version      :  1.10.0
+*** pandas version       :  1.1.5
+
+(!! the following is build device specific, and here only to confirm hardware availability, ignore !!)
+2022-04-08 05:28:47.616362: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcuda.so.1
+2022-04-08 05:28:47.640348: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:28:47.640558: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1734] Found device 0 with properties: 
+pciBusID: 0000:00:00.0 name: NVIDIA Tegra X1 computeCapability: 5.3
+coreClock: 0.9216GHz coreCount: 1 deviceMemorySize: 3.87GiB deviceMemoryBandwidth: 194.55MiB/s
+2022-04-08 05:28:47.640656: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.10.2
+2022-04-08 05:28:47.640975: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcublas.so.10
+2022-04-08 05:28:47.641182: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcublasLt.so.10
+2022-04-08 05:28:47.641350: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcufft.so.10
+2022-04-08 05:28:47.641554: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcurand.so.10
+2022-04-08 05:28:47.641751: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcusolver.so.10
+2022-04-08 05:28:47.641943: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcusparse.so.10
+2022-04-08 05:28:47.642124: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudnn.so.8
+2022-04-08 05:28:47.642526: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:28:47.642932: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:28:47.643148: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1872] Adding visible gpu devices: 0
+2022-04-08 05:28:47.643278: I tensorflow/stream_executor/platform/default/dso_loader.cc:53] Successfully opened dynamic library libcudart.so.10.2
+2022-04-08 05:29:09.900231: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1258] Device interconnect StreamExecutor with strength 1 edge matrix:
+2022-04-08 05:29:10.312570: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1264]      0 
+2022-04-08 05:29:10.312679: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1277] 0:   N 
+2022-04-08 05:29:10.486096: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.489025: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.503343: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.583603: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1418] Created TensorFlow device (/device:GPU:0 with 81 MB memory) -> physical GPU (device: 0, name: NVIDIA Tegra X1, pci bus id: 0000:00:00.0, compute capability: 5.3)
+--- All seen hardware    :
+ [name: "/device:CPU:0"
+device_type: "CPU"
+memory_limit: 268435456
+locality {
+}
+incarnation: 6909480115142365018
+, name: "/device:GPU:0"
+device_type: "GPU"
+memory_limit: 85225472
+locality {
+  bus_id: 1
+  links {
+  }
+}
+incarnation: 4063376229157407851
+physical_device_desc: "device: 0, name: NVIDIA Tegra X1, pci bus id: 0000:00:00.0, compute capability: 5.3"
+]
+2022-04-08 05:29:10.703938: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.704636: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1734] Found device 0 with properties: 
+pciBusID: 0000:00:00.0 name: NVIDIA Tegra X1 computeCapability: 5.3
+coreClock: 0.9216GHz coreCount: 1 deviceMemorySize: 3.87GiB deviceMemoryBandwidth: 194.55MiB/s
+2022-04-08 05:29:10.706553: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.707891: I tensorflow/stream_executor/cuda/cuda_gpu_executor.cc:1001] ARM64 does not support NUMA - returning NUMA node zero
+2022-04-08 05:29:10.708259: I tensorflow/core/common_runtime/gpu/gpu_device.cc:1872] Adding visible gpu devices: 0
+--- TF GPU Available     :
+ [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]

@@ -1,5 +1,5 @@
 # DockerFile for Nvidia Jetson with GPU support for TensorFlow and OpenCV
-Revision: 20220308
+Revision: 20220407
 
 <!-- vscode-markdown-toc -->
 * 1. [Building the images (on a Jetson)](#BuildingtheimagesonaJetson)
@@ -19,6 +19,7 @@ Changelog:
 - 20210218: Changed the base image from https://ngc.nvidia.com/catalog/containers/nvidia:l4t-base to https://ngc.nvidia.com/catalog/containers/nvidia:l4t-tensorflow
 Important: the base image is based on JetPack 4.5 (L4T R32.5.0), if this is not the JetPack version that you are using, please see "Building the images"
 - 20220308: Making use of JetPack 4.6 (L4T R32.6.1) base image, and building for 5.3, 6.2 and 7.2 to support more than just the Jetson Nano
+- 20220407: Jetson Nano specific re-release: same build as 202203078 but downgrading PyToch from 1.11 to 1.10, as 5.3 is not supported by 1.11
 
 Please refer to the following for further details https://github.com/NVIDIA/nvidia-docker/wiki/NVIDIA-Container-Runtime-on-Jetson
 Because the `L4T BSP EULA` includes redistribution rights, we are able provide pre-compiled builds.
