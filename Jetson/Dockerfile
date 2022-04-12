@@ -194,10 +194,14 @@ RUN git clone -b ${CUPY_VERSION} --recursive https://github.com/cupy/cupy cupy &
 
 # Installing PyTorch
 # https://github.com/dusty-nv/jetson-containers/blob/master/scripts/docker_build_ml.sh
+#RUN cd /tmp \
+#  && wget -q --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl -O torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
+#  && pip3 install torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
+#  && rm -rf /root/.cache/pip torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl
+# https://forums.developer.nvidia.com/t/pytorch-for-jetson-version-1-10-now-available/72048
 RUN cd /tmp \
-  && wget -q --no-check-certificate https://developer.download.nvidia.com/compute/redist/jp/v461/pytorch/torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl -O torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
-  && pip3 install torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl \
-  && rm -rf /root/.cache/pip torch-1.11.0a0+17540c5-cp36-cp36m-linux_aarch64.whl
+  && wget -q --no-check-certificate https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl \
+  && pip3 install --no-cache-dir torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 RUN python3 -c "import torch"
 
 # Download OpenCV
