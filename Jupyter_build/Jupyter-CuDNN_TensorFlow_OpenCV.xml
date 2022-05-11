@@ -25,9 +25,11 @@ A CPU equivalent container is also available and named Jupyter-TensorFlow_OpenCV
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
 VERSION(s) (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
+- 20220510 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
 - 20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
 &#xD;
 Changelog:&#xD;
+- 20220510: latest is CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220510) with updated base images including Nvidia's new package signing key
 - 20220422: Multiple GPUs note&#xD;
 - 20220403: Updated unraid template&#xD;
 - 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
@@ -49,9 +51,11 @@ A CPU equivalent container is also available and named Jupyter-TensorFlow_OpenCV
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
 VERSION(s) (match datamachines/cudnn_tensorflow_opencv releases date)&#xD;
+- 20220510 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
 - 20220318 with support for CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5&#xD;
 &#xD;
 Changelog:&#xD;
+- 20220510: latest is CUDA 11.3.1, TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220510) with updated base images including Nvidia's new package signing key
 - 20220422: Multiple GPUs note&#xD;
 - 20220403: Updated unraid template&#xD;
 - 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;

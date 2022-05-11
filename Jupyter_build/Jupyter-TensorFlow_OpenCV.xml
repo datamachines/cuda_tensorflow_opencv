@@ -20,9 +20,11 @@ Please note that the container images is large at over 4GB and its GPU counterpa
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
 VERSION(s) (match datamachines/tensorflow_opencv releases date)&#xD;
+- 20220510 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
 - 20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
 &#xD;
 Changelog:&#xD;
+- 20220510: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220510) with updated base images
 - 20220403: Updated unraid template&#xD;
 - 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
 - 20220331: Unraid initial release: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
@@ -38,9 +40,11 @@ Please note that the container images is large at over 4GB and its GPU counterpa
 The system is ran as the jupyter user (has sudo privileges) and /dmc is where you can place your weights and other files to support your development.&#xD;
 &#xD;
 VERSION(s) (match datamachines/tensorflow_opencv releases date)&#xD;
+- 20220510 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
 - 20220318 with support for TensorFlow 2.8.0 and OpenCV 4.5.5
 &#xD;
 Changelog:&#xD;
+- 20220510: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220510) with updated base images
 - 20220403: Updated unraid template&#xD;
 - 20220402: Container updated to fix issue preventing change of default password (same components)&#xD;
 - 20220331: Unraid initial release: latest is TensorFlow 2.8.0 and OpenCV 4.5.5 (match version: 20220318)
