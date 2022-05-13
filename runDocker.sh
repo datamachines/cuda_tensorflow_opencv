@@ -18,6 +18,7 @@ usage () {
   echo " -s   Show commands run (preceded by a +). Useful if you are trying to repeat the steps later within a script, or are trying to debug. Warning: |-ep together lines will be displayed consecutively"
   echo ""
   echo "Run using: CONTAINER_ID=\"<name:tag>\" <PATH_TO_RUNDOCKER>/runDocker.sh <command_line_options>"
+  echo "Bypass an ENTRYPOINT: ./runDocker.sh -c \" \" -e \"--entrypoint /bin/bash\""
   exit 1
 }
 
