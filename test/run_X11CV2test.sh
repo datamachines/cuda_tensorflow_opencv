@@ -1,7 +1,7 @@
 #!/bin/bash
 
 tag=`make -f ../Makefile | grep tag | cut -d ':' -f 2`
-list=`make -f ../Makefile| grep '-' | tr -s ' ' | cut -d ' ' -f 2`
+list=`make -f ../Makefile| grep -v jupyter | grep '-' | tr -s ' ' | cut -d ' ' -f 2`
 
 for i in $list;
 do
