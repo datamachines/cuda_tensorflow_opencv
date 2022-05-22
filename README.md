@@ -1,5 +1,5 @@
 # DockerFile with Nvidia GPU support for TensorFlow and OpenCV
-Revision: 20220510
+Revision: 20220521
 
 <!-- vscode-markdown-toc -->
 * 1. [About](#About)
@@ -60,6 +60,7 @@ Version history:
 - `20220329`: Added `jupyter_to` and `jupyter_cto` builds to DockerHub
 - `20220331`: Added Unraid specific releases
 - `20220510`: Updated base containers, including Nvidia's new package signing key
+- `20220521`: Update to TF 2.9.0
 
 `tensorflow_opencv`:
 - Builds containers with TensorFlow and OpenCV. **Also install, Jupyter, Keras, numpy, pandas, PyTorch and X11 support**.
