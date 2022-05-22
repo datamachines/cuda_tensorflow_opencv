@@ -76,6 +76,7 @@ RUN pip3 install -U \
   six \
   wheel \
   future \
+  packaging \
   && pip3 install -U keras_applications --no-deps \
   && pip3 install -U keras_preprocessing --no-deps \
   && rm -rf /root/.cache/pip
