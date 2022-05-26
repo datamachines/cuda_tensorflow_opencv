@@ -1,5 +1,16 @@
 #!/bin/bash
 
+xtra=$1
+if [ "A${xtra}" == "Aunraid" ]; then
+  xtra="-unraid"
+elif [ "A${xtra}" == "A" ]; then
+  xtra=""
+else
+  echo "$0 [unraid]"
+  echo "  Push regular or unraid version to DockerHub"
+  exit 1
+fi
+
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 tag=`make -f ${SCRIPTPATH}/../Makefile | grep tag | cut -d ':' -f 2`
@@ -16,7 +27,7 @@ do
 
   jb=`echo $v | cut -d : -f 1`
   jt=`echo $v | cut -d : -f 2`
-  jn="${jb}-unraid:${jt}"
+  jn="${jb}${xtra}:${jt}"
 
   cid="datamachines/${jn}-$t"
   echo " - $cid"

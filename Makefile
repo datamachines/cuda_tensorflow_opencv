@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20220521
+CTO_RELEASE=20220525
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -34,7 +34,7 @@ MLTK_CHECK="yes"
 #STABLE_CUDA9=9.2
 #STABLE_CUDA10=10.2
 STABLE_CUDA11p=11.3.1
-STABLE_CUDA11l=11.5.2
+STABLE_CUDA11l=11.6.2
 # For CUDA11 it might be possible to upgrade some of the pre-installed libraries to their latest version, this will add significant space to the container
 # to do, uncomment the line below the empty string set
 CUDA11_APT_XTRA=""
@@ -57,7 +57,7 @@ STABLE_OPENCV4=4.5.5
 ##
 # According to https://github.com/tensorflow/tensorflow/tags
 #STABLE_TF1=1.15.5
-STABLE_TF2=2.9.0
+STABLE_TF2=2.9.1
 
 ## Information for build
 # https://github.com/bazelbuild/bazelisk
