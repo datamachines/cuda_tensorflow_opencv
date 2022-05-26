@@ -3,7 +3,7 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 tag=`make -f ${SCRIPTPATH}/../Makefile | grep tag | cut -d ':' -f 2`
-list=`make -f ${SCRIPTPATH}/../Makefile| grep '-' | tr -s ' ' | cut -d ' ' -f 2`
+list=`make -f ${SCRIPTPATH}/../Makefile| grep -v jupyter | grep '-' | tr -s ' ' | cut -d ' ' -f 2`
 
 # Link to the Github released tag (do not forget to tag, push the tag and do the release)
 gh="https://github.com/datamachines/cuda_tensorflow_opencv/tree/"

@@ -3,7 +3,7 @@
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 tag=`make -f ${SCRIPTPATH}/../Makefile | grep tag | cut -d ':' -f 2`
-list=`make -f ${SCRIPTPATH}/../Makefile| grep '-' | tr -s ' ' | cut -d ' ' -f 2`
+list=`make -f ${SCRIPTPATH}/../Makefile| grep -v jupyter | grep '-' | tr -s ' ' | cut -d ' ' -f 2`
 
 # Make sure to be `docker login`-ed
 
