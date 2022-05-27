@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20220525
+CTO_RELEASE=pytorch
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -90,6 +90,12 @@ PT_CPU="torch torchvision torchaudio --extra-index-url https://download.pytorch.
 #PT_CUDA9="torch==1.7.1+cu92 torchvision==0.8.2+cu92 torchaudio==0.7.2 -f https://download.pytorch.org/whl/torch_stable.html"
 #PT_CUDA10="torch torchvision torchaudio"
 PT_CUDA11="torch torchvision torchaudio --extra-index-url https://download.pytorch.org/whl/cu113"
+
+CTO_MAGMA="2.6.2"
+CTO_TORCH_VERSION="1.11.0"
+CTO_TORCH_CPU="USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1"
+CTO_TORCH_GPU="USE_CUDA=1 USE_CUDNN=1 USE_MKLDNN=1"
+CTO_TORCH_VISION="0.12.0"
 
 ##########
 

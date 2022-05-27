@@ -251,9 +251,76 @@ RUN pip3 install -U \
 
 # Installing a built-TF compatible keras (for TF1) and PyTorch
 ARG CTO_TF_KERAS
-ARG CTO_PYTORCH
-RUN pip3 install ${CTO_TF_KERAS} ${CTO_PYTORCH} \
+RUN pip3 install ${CTO_TF_KERAS}  \
   && rm -rf /root/.cache/pip
+
+RUN apt-get install -y \
+  libomp-dev \
+  && apt-get clean
+
+RUN pip3 install -U \
+  pyyaml \
+  mkl \
+  mkl-include \
+  cmake \
+  cffi \
+  typing \
+  && rm -rf /root/.cache/pip
+
+
+#ARG CTO_MAGMA=2.6.2
+#RUN mkdir -p /usr/local/src/magma \
+#  && cd /usr/local/src \
+#  && wget -q --no-check-certificate http://icl.utk.edu/projectsfiles/magma/downloads/magma-${CTO_MAGMA}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/magma \
+#  && cd /usr/local/src/magma \
+#  && time make -j${CTO_NUMPROC} install \
+#  && rm -rf /usr/local/src/magma
+
+ARG CTO_TORCH_VERSION=1.11.0
+ARG CTO_TORCH_BUILD="USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1"
+RUN mkdir -p /usr/local/src/builder \
+  && cd /usr/local/src \
+  && wget -q --no-check-certificate https://github.com/pytorch/pytorch/releases/download/v${CTO_TORCH_VERSION}/pytorch-v${CTO_TORCH_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
+  && cd /usr/local/src/builder \
+  && time env ${CTO_TORCH_BUILD} python3 ./setup.py bdist_wheel \
+  && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && rm -rf /root/.cache/pip /usr/local/src/builder
+RUN python3 -c "import torch"
+
+ARG CTO_TORCHVISION=0.12.0
+RUN mkdir -p /usr/local/src/builder \
+  && cd /usr/local/src \
+  && wget -q --no-check-certificate https://github.com/pytorch/vision/archive/refs/tags/v${CTO_TORCHVISION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
+  && cd /usr/local/src/builder \
+  && time python3 ./setup.py bdist_wheel \
+  && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && rm -rf /root/.cache/pip /usr/local/src/builder
+RUN python3 -c "import torchvision"
+
+RUN apt-get install -y \
+    libsox-dev \
+    libsox-fmt-all \
+  && apt-get clean
+
+RUN apt-get install -y \
+    zlib1g zlib1g-dev \
+  && apt-get clean
+
+RUN pip3 install -U \
+    ninja \
+  && rm -rf /root/.cache/pip
+
+ARG CTO_TORCHAUDIO=0.11
+# should be   && git clone --depth 1 --branch v${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
+# but because of https://github.com/pytorch/audio/issues/2405
+RUN mkdir -p /usr/local/src/builder \
+  && cd /usr/local/src \
+  && git clone --depth 1 --branch release/${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
+  && cd /usr/local/src/audio \
+  && time python3 ./setup.py bdist_wheel \
+  && time pip3 install /usr/local/src/audio/dist/*.whl \
+  && rm -rf /root/.cache/pip /usr/local/src/builder
+RUN python3 -c "import torchaudio"
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
