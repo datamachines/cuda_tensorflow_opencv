@@ -256,7 +256,30 @@ RUN pip3 install ${CTO_TF_KERAS}  \
 
 RUN apt-get install -y \
   libomp-dev \
+  sphinxbase-utils \
+  libsphinxbase-dev \
   && apt-get clean
+
+# FFMPEG
+RUN apt-get install -y \
+  libass-dev \
+  libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev \
+  libxvidcore-dev libx264-dev libx265-dev libnuma-dev libatlas-base-dev libopus-dev libvpx-dev \
+  && apt-get clean 
+
+ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-5.0.1.tar.gz"
+ARG CTO_FFMPEG_CUDA='--enable-cuda --enable-cuvid --enable-nvenc --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic"'
+RUN mkdir -p /usr/local/src/builder \
+  && cd /usr/local/src \
+  && wget -q --no-check-certificate ${CTO_FFMPEG_URL} -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
+  && cd /usr/local/src/builder \
+  && time script -c "./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265" /tmp/ffmpeg_config.txt \
+  && make -j${CTO_NUMPROC} install \
+  && rm -rf /usr/local/src/builder
+
+#RUN apt-get install -y \
+#  libffmpeg-nvenc-dev \
+#  && apt-get clean
 
 RUN pip3 install -U \
   pyyaml \
@@ -277,12 +300,12 @@ RUN pip3 install -U \
 #  && rm -rf /usr/local/src/magma
 
 ARG CTO_TORCH_VERSION=1.11.0
-ARG CTO_TORCH_BUILD="USE_CUDA=0 USE_CUDNN=0 USE_MKLDNN=1"
+ARG CTO_TORCH_BUILD="USE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON"
 RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/pytorch/pytorch/releases/download/v${CTO_TORCH_VERSION}/pytorch-v${CTO_TORCH_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time env ${CTO_TORCH_BUILD} python3 ./setup.py bdist_wheel \
+  && time script -c "env ${CTO_TORCH_BUILD} USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel" /tmp/torch_build.txt \
   && time pip3 install /usr/local/src/builder/dist/*.whl \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torch"
@@ -292,7 +315,7 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/pytorch/vision/archive/refs/tags/v${CTO_TORCHVISION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time python3 ./setup.py bdist_wheel \
+  && time script -c "python3 ./setup.py bdist_wheel" /tmp/torchvision_build.txt \
   && time pip3 install /usr/local/src/builder/dist/*.whl \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchvision"
@@ -317,7 +340,7 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && git clone --depth 1 --branch release/${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
   && cd /usr/local/src/audio \
-  && time python3 ./setup.py bdist_wheel \
+  && time script -c "python3 ./setup.py bdist_wheel" /tmp/torchaudio_build.txt \
   && time pip3 install /usr/local/src/audio/dist/*.whl \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchaudio"
