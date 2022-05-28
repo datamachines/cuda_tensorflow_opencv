@@ -2,10 +2,14 @@ ARG CTO_FROM
 FROM ${CTO_FROM}
 
 ##### Splitting installation into controlled parts:
-## - base container setup
+## - base container setup (all apt-get + system + ldd extension)
+## - Python pip3 preparation + First batch of python tools installs
+## - Magma build and install (GPU only)
 ## - Tensorflow build and install
-## - OpenCV build and install
-## - additional setup
+## - FFmpeg build and install
+## - OpenCV build and install (using FFmpeg)
+## - Additional python tools installs
+## - PyTorch (+ vison + audio) build and install (using FFmpeg + OpenCV)
 
 ##### Base
 
@@ -23,10 +27,9 @@ RUN apt-get update -y --fix-missing\
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
 ENV LANG en_US.utf8
 
-##### TensorFlow
-
 # Install system packages
 RUN apt-get install -y \
+  # Base (min for TensorFlow)
     build-essential \
     checkinstall \
     cmake \
@@ -43,73 +46,7 @@ RUN apt-get install -y \
     wget \
     zip \
     zlib1g-dev \
-  && apt-get clean
-
-# Setup pip
-RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
-  && python3 /tmp/get-pip.py \
-  && pip3 install -U pip \
-  && rm /tmp/get-pip.py
-
-# Some TF tools expect a "python" binary
-RUN ln -s $(which python3) /usr/local/bin/python
-
-# Additional specialized apt installs
-ARG CTO_CUDA_APT
-ARG CTO_CUDA11_APT_XTRA
-RUN apt-get install -y --no-install-recommends ${CTO_CUDA11_APT_XTRA} \
-      time ${CTO_CUDA_APT} \
-  && apt-get clean
-
-# CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
-COPY tools/cupti_helper.sh /tmp/
-RUN chmod +x /tmp/cupti_helper.sh \
-  && /tmp/cupti_helper.sh \
-  && rm /tmp/cupti_helper.sh
-
-# Install TF needed Python tools (for buiding) 
-ARG CTO_TF_NUMPY=numpy
-RUN pip3 install -U \
-  mock \
-  ${CTO_TF_NUMPY} \
-  setuptools \
-  six \
-  wheel \
-  future \
-  packaging \
-  && pip3 install -U keras_applications --no-deps \
-  && pip3 install -U keras_preprocessing --no-deps \
-  && rm -rf /root/.cache/pip
-
-## Download & Building TensorFlow from source in same RUN
-ARG LATEST_BAZELISK=1.5.0
-ARG LATEST_BAZEL=3.4.1
-ARG CTO_TENSORFLOW_VERSION
-ARG CTO_TF_CUDNN="no"
-ARG CTO_TF_OPT=""
-ARG CTO_DNN_ARCH=""
-COPY tools/tf_build.sh /tmp/
-RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v${LATEST_BAZELISK}/bazelisk-linux-amd64 \
-  && chmod +x /usr/local/bin/bazel \
-  && mkdir -p /usr/local/src/tensorflow \
-  && cd /usr/local/src \
-  && wget -q --no-check-certificate -c https://github.com/tensorflow/tensorflow/archive/v${CTO_TENSORFLOW_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/tensorflow \
-  && cd /usr/local/src/tensorflow \
-  && fgrep _TF_MAX_BAZEL configure.py | grep '=' | perl -ne '$lb="'${LATEST_BAZEL}'";$brv=$1 if (m%\=\s+.([\d\.]+).$+%); sub numit{@g=split(m%\.%,$_[0]);return(1000000*$g[0]+1000*$g[1]+$g[2]);}; if (&numit($brv) > &numit($lb)) { print "$lb" } else {print "$brv"};' > .bazelversion \
-  && bazel clean \
-  && chmod +x /tmp/tf_build.sh \
-  && time /tmp/tf_build.sh ${CTO_TF_CUDNN} ${CTO_TF_OPT} \
-  && time ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg \
-  && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
-  && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root /root/.cache/bazel /root/.cache/pip /root/.cache/bazelisk
-
-# Confirm TensorFlow python is built
-RUN python3 -c "import tensorflow"
-
-##### OpenCV
-
-# Install system packages
-RUN apt-get install -y \
+  # OpenCV
     doxygen \
     file \
     gfortran \
@@ -118,9 +55,6 @@ RUN apt-get install -y \
     imagemagick \
     libatk-adaptor \
     libatlas-base-dev \
-    libavcodec-dev \
-    libavformat-dev \
-    libavutil-dev \
     libboost-all-dev \
     libcanberra-gtk-module \
     libdc1394-22-dev \
@@ -153,7 +87,6 @@ RUN apt-get install -y \
     libpng-dev \
     libpostproc-dev \
     libprotobuf-dev \
-    libswscale-dev \
     libtbb2 \
     libtbb-dev \
     libtheora-dev \
@@ -161,6 +94,7 @@ RUN apt-get install -y \
     libv4l-dev \
     libvorbis-dev \
     libx264-dev \
+    libx265-dev \
     libxi-dev \
     libxine2-dev \
     libxmu-dev \
@@ -170,23 +104,137 @@ RUN apt-get install -y \
     x11-apps \
     x264 \
     yasm \
+  # Torch
+    libomp-dev \
+    libsox-dev \
+    libsox-fmt-all \
+    libsphinxbase-dev \
+    sphinxbase-utils \
+    zlib1g \
+  # FFMpeg (source install, do not install packages: libavcodec-dev libavformat-dev libavresample-dev libavutil-dev libswscale-dev)
+    libass-dev \
+    libnuma-dev \
+    libopus-dev \
+    libvpx-dev \
   && apt-get clean
 
-# Python
+# Additional specialized apt installs
+ARG CTO_CUDA_APT
+ARG CTO_CUDA11_APT_XTRA
+RUN apt-get install -y --no-install-recommends ${CTO_CUDA11_APT_XTRA} \
+      time ${CTO_CUDA_APT} \
+  && apt-get clean
+
+# CUPTI library needed by TensorFlow1 but sometimes not in default path, adding if at unconventional location
+# Also set the /tmp/.{CPU,GPU}_build file
+ARG CTO_BUILD
+COPY tools/cupti_helper.sh /tmp/
+RUN chmod +x /tmp/cupti_helper.sh \
+  && /tmp/cupti_helper.sh ${CTO_BUILD} \
+  && rm /tmp/cupti_helper.sh
+
+# Prepare ldconfig
+RUN mkdir -p /usr/local/lib \
+  && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/usrlocallib.conf' \
+  && ldconfig
+
+# Setup pip
+RUN wget -q -O /tmp/get-pip.py --no-check-certificate https://bootstrap.pypa.io/get-pip.py \
+  && python3 /tmp/get-pip.py \
+  && pip3 install -U pip \
+  && rm /tmp/get-pip.py
+
+# Some TF tools expect a "python" binary
+RUN ln -s $(which python3) /usr/local/bin/python
+
+# Install Python tools (for buiding) 
+ARG CTO_TF_NUMPY=numpy
 RUN pip3 install -U \
-  Pillow \
-  lxml \
+# TensorFlow
+    mock \
+    ${CTO_TF_NUMPY} \
+    setuptools \
+    six \
+    wheel \
+    future \
+    packaging \
+  # OpenCV
+    Pillow \
+    lxml \
+  # Torch
+    pyyaml \
+    mkl \
+    mkl-include \
+    cmake \
+    cffi \
+    typing \
+    ninja \
+  # Extra
+    scikit-image \
+    scikit-learn \
+  && pip3 install -U keras_applications --no-deps \
+  && pip3 install -U keras_preprocessing --no-deps \
   && rm -rf /root/.cache/pip
 
+##### TensorFlow
+
+## Download & Building TensorFlow from source in same RUN
+ARG LATEST_BAZELISK=1.5.0
+ARG LATEST_BAZEL=3.4.1
+ARG CTO_TENSORFLOW_VERSION
+ARG CTO_TF_OPT=""
+ARG CTO_DNN_ARCH=""
+COPY tools/tf_build.sh /tmp/
+RUN curl -s -Lo /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v${LATEST_BAZELISK}/bazelisk-linux-amd64 \
+  && chmod +x /usr/local/bin/bazel \
+  && mkdir -p /usr/local/src/tensorflow \
+  && cd /usr/local/src \
+  && wget -q --no-check-certificate -c https://github.com/tensorflow/tensorflow/archive/v${CTO_TENSORFLOW_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/tensorflow \
+  && cd /usr/local/src/tensorflow \
+  && fgrep _TF_MAX_BAZEL configure.py | grep '=' | perl -ne '$lb="'${LATEST_BAZEL}'";$brv=$1 if (m%\=\s+.([\d\.]+).$+%); sub numit{@g=split(m%\.%,$_[0]);return(1000000*$g[0]+1000*$g[1]+$g[2]);}; if (&numit($brv) > &numit($lb)) { print "$lb" } else {print "$brv"};' > .bazelversion \
+  && bazel clean \
+  && chmod +x /tmp/tf_build.sh \
+  && time /tmp/tf_build.sh ${CTO_TF_OPT} \
+  && time ./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg \
+  && time pip3 install /tmp/tensorflow_pkg/tensorflow-*.whl \
+  && rm -rf /usr/local/src/tensorflow /tmp/tensorflow_pkg /tmp/bazel_check.pl /tmp/tf_build.sh /tmp/hsperfdata_root /root/.cache/bazel /root/.cache/pip /root/.cache/bazelisk
+RUN python3 -c "import tensorflow"
+
+
+##### FFMPEG
+
+RUN if [ -f /tmp/.GPU_build ]; \
+  then \
+    apt-get install -y libffmpeg-nvenc-dev; \
+    apt-get clean; \
+  fi
+
+# FFMpeg < 5 because https://github.com/pytorch/vision/issues/5928
+ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-4.4.2.tar.gz"
+ARG CTO_FFMPEG_CUDA='--enable-cuda --enable-cuvid --enable-nvenc --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic"'
+RUN mkdir -p /usr/local/src/builder \
+  && cd /usr/local/src \
+  && wget -q --no-check-certificate ${CTO_FFMPEG_URL} -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
+  && cd /usr/local/src/builder \
+  && time ./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265 | tee /tmp/ffmpeg_config.txt \
+  && make -j${CTO_NUMPROC} install \
+  && ldconfig \
+  && rm -rf /usr/local/src/builder
+
+##### OpenCV
+
 # Download & Build OpenCV in same RUN
+## FYI: We are removing the OpenCV source and build directory in /usr/local/src to attempt to save additional disk space
+# Comment the last line if you want to rerun cmake with additional/modified options. For example:
+# cd /usr/local/src/opencv/build
+# cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
 ARG CTO_OPENCV_VERSION
 ARG CTO_NUMPROC=1
 ARG CTO_CUDA_BUILD
-RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
+RUN mkdir -p /usr/local/src/opencv/build /usr/local/src/opencv_contrib \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/opencv/opencv/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv \
   && wget -q --no-check-certificate https://github.com/opencv/opencv_contrib/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv_contrib \
-  && mkdir -p /usr/local/src/opencv/build \
   && cd /usr/local/src/opencv/build \
   && time cmake \
     -DBUILD_DOCS=OFF \
@@ -222,18 +270,12 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
     ${CTO_CUDA_BUILD} \
     .. \
   && time make -j${CTO_NUMPROC} install \
-  && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/usr-local-lib.conf' \
   && ldconfig \
   && rm -rf /usr/local/src/opencv /usr/local/src/opencv_contrib
-## FYI: We are removing the OpenCV source and build directory in /usr/local/src to attempt to save additional disk space
-# Comment the above line (and remove the \ in the line above) if you want to rerun cmake with additional/modified options. For example:
-# cd /usr/local/src/opencv/build
-# cmake -DOPENCV_ENABLE_NONFREE=ON -DBUILD_EXAMPLES=ON -DBUILD_DOCS=ON -DBUILD_TESTS=ON -DBUILD_PERF_TESTS=ON .. && make install
-
-# Confirm OpenCV python is built
 RUN python3 -c "import cv2"
 
-##### Additional tools
+
+##### Additional Python tools
 
 # Install additional Python tools 
 RUN pip3 install -U \
@@ -244,8 +286,6 @@ RUN pip3 install -U \
   moviepy \
   notebook \
   pandas \
-  scikit-image \
-  scikit-learn \
   && rm -rf /root/.cache/pip
 # Removed scipy: the version required by TF2 is already installed during the TF2 step (and it will be installed by Keras for TF1)
 
@@ -254,52 +294,23 @@ ARG CTO_TF_KERAS
 RUN pip3 install ${CTO_TF_KERAS}  \
   && rm -rf /root/.cache/pip
 
-RUN apt-get install -y \
-  libomp-dev \
-  sphinxbase-utils \
-  libsphinxbase-dev \
-  && apt-get clean
+##### Magma (for PyTorch GPU only)
 
-# FFMPEG
-RUN apt-get install -y \
-  libass-dev \
-  libjpeg-dev libpng-dev libtiff-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev \
-  libxvidcore-dev libx264-dev libx265-dev libnuma-dev libatlas-base-dev libopus-dev libvpx-dev \
-  && apt-get clean 
+ARG CTO_MAGMA=2.6.2
+ARG CTO_MAGMA_BUILD='-DGPU_TARGET="Pascal Volta Ampere"'
+RUN if [ -f /tmp/.GPU_build ]; \
+  then \
+    mkdir -p /usr/local/src/builder/build; \
+    cd /usr/local/src; \
+    wget -q --no-check-certificate http://icl.utk.edu/projectsfiles/magma/downloads/magma-${CTO_MAGMA}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder; \
+    cd /usr/local/src/builder/build; \
+    time cmake ${CTO_MAGMA_BUILD} .. | tee /tmp/magma_build.txt; \
+    time make -j${CTO_NUMPROC} install; \
+    rm -rf /usr/local/src/magma; \
+  fi
 
-# FFMpeg < 5 because https://github.com/pytorch/vision/issues/5928
-ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-4.4.2.tar.gz"
-ARG CTO_FFMPEG_CUDA='--enable-cuda --enable-cuvid --enable-nvenc --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic"'
-RUN mkdir -p /usr/local/src/builder \
-  && cd /usr/local/src \
-  && wget -q --no-check-certificate ${CTO_FFMPEG_URL} -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
-  && cd /usr/local/src/builder \
-  && time ./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265 | tee /tmp/ffmpeg_config.txt \
-  && make -j${CTO_NUMPROC} install \
-  && ldconfig \
-  && rm -rf /usr/local/src/builder
 
-#RUN apt-get install -y \
-#  libffmpeg-nvenc-dev \
-#  && apt-get clean
-
-RUN pip3 install -U \
-  pyyaml \
-  mkl \
-  mkl-include \
-  cmake \
-  cffi \
-  typing \
-  ninja \
-  && rm -rf /root/.cache/pip
-
-#ARG CTO_MAGMA=2.6.2
-#RUN mkdir -p /usr/local/src/magma \
-#  && cd /usr/local/src \
-#  && wget -q --no-check-certificate http://icl.utk.edu/projectsfiles/magma/downloads/magma-${CTO_MAGMA}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/magma \
-#  && cd /usr/local/src/magma \
-#  && time make -j${CTO_NUMPROC} install \
-#  && rm -rf /usr/local/src/magma
+##### Torch (using FFMpeg + OpenCV + Magma)
 
 ARG CTO_TORCH_VERSION=1.11.0
 ARG CTO_TORCH_BUILD="USE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON"
@@ -329,15 +340,6 @@ RUN mkdir -p /usr/local/src/builder \
   && ldconfig \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchvision"
-
-RUN apt-get install -y \
-    libsox-dev \
-    libsox-fmt-all \
-  && apt-get clean
-
-RUN apt-get install -y \
-    zlib1g zlib1g-dev \
-  && apt-get clean
 
 ARG CTO_TORCHAUDIO=0.11
 # should be   && git clone --depth 1 --branch v${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
