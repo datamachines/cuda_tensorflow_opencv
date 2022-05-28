@@ -222,7 +222,7 @@ RUN mkdir -p /usr/local/src/opencv /usr/local/src/opencv_contrib \
     ${CTO_CUDA_BUILD} \
     .. \
   && time make -j${CTO_NUMPROC} install \
-  && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf' \
+  && sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/usr-local-lib.conf' \
   && ldconfig \
   && rm -rf /usr/local/src/opencv /usr/local/src/opencv_contrib
 ## FYI: We are removing the OpenCV source and build directory in /usr/local/src to attempt to save additional disk space
@@ -267,14 +267,16 @@ RUN apt-get install -y \
   libxvidcore-dev libx264-dev libx265-dev libnuma-dev libatlas-base-dev libopus-dev libvpx-dev \
   && apt-get clean 
 
-ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-5.0.1.tar.gz"
+# FFMpeg < 5 because https://github.com/pytorch/vision/issues/5928
+ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-4.4.2.tar.gz"
 ARG CTO_FFMPEG_CUDA='--enable-cuda --enable-cuvid --enable-nvenc --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic"'
 RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && wget -q --no-check-certificate ${CTO_FFMPEG_URL} -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time script -c "./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265" /tmp/ffmpeg_config.txt \
+  && time ./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265 | tee /tmp/ffmpeg_config.txt \
   && make -j${CTO_NUMPROC} install \
+  && ldconfig \
   && rm -rf /usr/local/src/builder
 
 #RUN apt-get install -y \
@@ -288,8 +290,8 @@ RUN pip3 install -U \
   cmake \
   cffi \
   typing \
+  ninja \
   && rm -rf /root/.cache/pip
-
 
 #ARG CTO_MAGMA=2.6.2
 #RUN mkdir -p /usr/local/src/magma \
@@ -305,8 +307,12 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/pytorch/pytorch/releases/download/v${CTO_TORCH_VERSION}/pytorch-v${CTO_TORCH_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time script -c "env ${CTO_TORCH_BUILD} USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel" /tmp/torch_build.txt \
+  && time env ${CTO_TORCH_BUILD} USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torch_config.txt \
   && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && cd /tmp \
+  && perl -i.bak -pe 'exit if m%^-- Configuring done%' torch_config.txt \
+  && sh -c "cmp --silent torch_config.txt torch_config.txt.bak && exit 1 || rm torch_config.txt.bak" \
+  && ldconfig \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torch"
 
@@ -315,8 +321,12 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/pytorch/vision/archive/refs/tags/v${CTO_TORCHVISION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time script -c "python3 ./setup.py bdist_wheel" /tmp/torchvision_build.txt \
+  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt" \
   && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && cd /tmp \
+  && perl -i.bak -pe 'exit if m%^running bdist_wheel%' torchvision_config.txt \
+  && sh -c "cmp --silent torchvision_config.txt torchvision_config.txt.bak && exit 1 || rm torchvision_config.txt.bak" \
+  && ldconfig \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchvision"
 
@@ -329,10 +339,6 @@ RUN apt-get install -y \
     zlib1g zlib1g-dev \
   && apt-get clean
 
-RUN pip3 install -U \
-    ninja \
-  && rm -rf /root/.cache/pip
-
 ARG CTO_TORCHAUDIO=0.11
 # should be   && git clone --depth 1 --branch v${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
 # but because of https://github.com/pytorch/audio/issues/2405
@@ -340,8 +346,12 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && git clone --depth 1 --branch release/${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
   && cd /usr/local/src/audio \
-  && time script -c "python3 ./setup.py bdist_wheel" /tmp/torchaudio_build.txt \
+  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchaudio_config.txt" \
   && time pip3 install /usr/local/src/audio/dist/*.whl \
+  && cd /tmp \
+  && perl -i.bak -pe 'exit if m%^-- Configuring done%' torchaudio_config.txt \
+  && sh -c "cmp --silent torchaudio_config.txt torchaudio_config.txt.bak && exit 1 || rm torchaudio_config.txt.bak" \
+  && ldconfig \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchaudio"
 
