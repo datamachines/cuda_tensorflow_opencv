@@ -93,6 +93,7 @@ RUN apt-get install -y \
     libtiff5-dev \
     libv4l-dev \
     libvorbis-dev \
+    libwebp-dev \
     libx264-dev \
     libx265-dev \
     libxi-dev \
@@ -202,24 +203,32 @@ RUN python3 -c "import tensorflow"
 
 
 ##### FFMPEG
-
+ARG CTO_FFMPEG_VERSION="4.4.2"
+ARG CTO_FFMPEG_NVCODEC="11.1.5.1"
 RUN if [ -f /tmp/.GPU_build ]; \
   then \
-    apt-get install -y libffmpeg-nvenc-dev; \
-    apt-get clean; \
+    mkdir -p /usr/local/src/builder; \
+    cd /usr/local/src; \
+    wget -q --no-check-certificate https://github.com/FFmpeg/nv-codec-headers/archive/refs/tags/n${CTO_FFMPEG_NVCODEC}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder; \
+    cd /usr/local/src/builder; \
+    make install; \
+    rm -rf /usr/local/src/builder; \
   fi
-
-# FFMpeg < 5 because https://github.com/pytorch/vision/issues/5928
-ARG CTO_FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-4.4.2.tar.gz"
-ARG CTO_FFMPEG_CUDA='--enable-cuda --enable-cuvid --enable-nvenc --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic"'
 RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
-  && wget -q --no-check-certificate ${CTO_FFMPEG_URL} -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
+  && wget -q --no-check-certificate https://ffmpeg.org/releases/ffmpeg-${CTO_FFMPEG_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
   && cd /usr/local/src/builder \
-  && time ./configure  --enable-shared --disable-static --enable-libvpx --enable-libopus --enable-libx264  --enable-gpl --enable-pic --enable-libass --enable-libx265 | tee /tmp/ffmpeg_config.txt \
+  && if [ -f /tmp/.GPU_build ]; \
+    then \
+      time ./configure --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic" --enable-shared --disable-static --enable-gpl --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
+    else \
+      time ./configure `cat /tmp/ffmpeg.args` --enable-shared --disable-static --enable-gpl --enable-libnpp --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
+    fi \
   && make -j${CTO_NUMPROC} install \
   && ldconfig \
   && rm -rf /usr/local/src/builder
+# From https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#basic-testing
+# GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
 
 ##### OpenCV
 
@@ -297,14 +306,13 @@ RUN pip3 install ${CTO_TF_KERAS}  \
 ##### Magma (for PyTorch GPU only)
 
 ARG CTO_MAGMA=2.6.2
-ARG CTO_MAGMA_BUILD='-DGPU_TARGET="Pascal Volta Ampere"'
 RUN if [ -f /tmp/.GPU_build ]; \
   then \
     mkdir -p /usr/local/src/builder/build; \
     cd /usr/local/src; \
     wget -q --no-check-certificate http://icl.utk.edu/projectsfiles/magma/downloads/magma-${CTO_MAGMA}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder; \
     cd /usr/local/src/builder/build; \
-    time cmake ${CTO_MAGMA_BUILD} .. | tee /tmp/magma_build.txt; \
+    time cmake -DGPU_TARGET="Pascal Volta Ampere" .. | tee /tmp/magma_build.txt; \
     time make -j${CTO_NUMPROC} install; \
     rm -rf /usr/local/src/magma; \
   fi
@@ -312,38 +320,40 @@ RUN if [ -f /tmp/.GPU_build ]; \
 
 ##### Torch (using FFMpeg + OpenCV + Magma)
 
-ARG CTO_TORCH_VERSION=1.11.0
-ARG CTO_TORCH_BUILD="USE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON"
-RUN mkdir -p /usr/local/src/builder \
+ARG CTO_TORCH=1.11
+RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
-  && wget -q --no-check-certificate https://github.com/pytorch/pytorch/releases/download/v${CTO_TORCH_VERSION}/pytorch-v${CTO_TORCH_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
-  && cd /usr/local/src/builder \
-  && time env ${CTO_TORCH_BUILD} USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torch_config.txt \
-  && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && git clone --depth 1 --branch release/${CTO_TORCH}  https://github.com/pytorch/pytorch.git  \
+  && cd /usr/local/src/pytorch \
+  && if [ -f /tmp/.GPU_build ]; \
+    then \
+      time env USE_CUDA=ON USE_CUDNN=ON TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX" USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torch_config.txt; \
+    else \
+      time env USE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torch_config.txt; \
+    fi \
+  && time pip3 install /usr/local/src/pytorch/dist/*.whl \
   && cd /tmp \
   && perl -i.bak -pe 'exit if m%^-- Configuring done%' torch_config.txt \
   && sh -c "cmp --silent torch_config.txt torch_config.txt.bak && exit 1 || rm torch_config.txt.bak" \
   && ldconfig \
-  && rm -rf /root/.cache/pip /usr/local/src/builder
+  && rm -rf /root/.cache/pip /usr/local/src/pytorch
 RUN python3 -c "import torch"
 
-ARG CTO_TORCHVISION=0.12.0
-RUN mkdir -p /usr/local/src/builder \
+ARG CTO_TORCHVISION=0.12
+RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
-  && wget -q --no-check-certificate https://github.com/pytorch/vision/archive/refs/tags/v${CTO_TORCHVISION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder \
-  && cd /usr/local/src/builder \
+  && git clone --depth 1 --branch release/${CTO_TORCHVISION}  https://github.com/pytorch/vision.git  \
+  && cd /usr/local/src/vision \
   && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt" \
-  && time pip3 install /usr/local/src/builder/dist/*.whl \
+  && time pip3 install /usr/local/src/vision/dist/*.whl \
   && cd /tmp \
   && perl -i.bak -pe 'exit if m%^running bdist_wheel%' torchvision_config.txt \
   && sh -c "cmp --silent torchvision_config.txt torchvision_config.txt.bak && exit 1 || rm torchvision_config.txt.bak" \
   && ldconfig \
-  && rm -rf /root/.cache/pip /usr/local/src/builder
+  && rm -rf /root/.cache/pip /usr/local/src/vision
 RUN python3 -c "import torchvision"
 
 ARG CTO_TORCHAUDIO=0.11
-# should be   && git clone --depth 1 --branch v${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
-# but because of https://github.com/pytorch/audio/issues/2405
 RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src \
   && git clone --depth 1 --branch release/${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
@@ -364,6 +374,11 @@ RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
 COPY tools/tf_info.sh /tmp/
 RUN chmod +x /tmp/tf_info.sh \
   && touch /.within_container
+
+#ENV NVIDIA_VISIBLE_DEVICES all
+#ENV NVIDIA_DRIVER_CAPABILITIES all
+
+ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
 # Setting up working directory 
 RUN mkdir /dmc
