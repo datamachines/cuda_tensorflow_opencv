@@ -5,6 +5,10 @@ SHELL := /bin/bash
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
 CTO_RELEASE=pytorch
 
+# The default is not to build OpenCV non-free or build FFmpeg with libnpp
+# Uncomment the following line to build those
+#CTO_ENABLE_NONFREE="ForPersonalUseOnly"
+
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
 
@@ -180,7 +184,6 @@ build_prep:
 	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else if [ ${CTO_SC} == 1 ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi; fi))
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
-	@$(eval CTO_TF_CUDNN=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "yes"; else echo "no"; fi))
 	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
 	@$(eval CTO_TF_KERAS=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo ${TF1_KERAS}; else echo ${TF2_KERAS}; fi))
 
@@ -204,10 +207,14 @@ build_prep:
 	@$(eval CTO_TMP="-D WITH_CUDA=ON -D CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda -D CMAKE_LIBRARY_PATH=/usr/local/cuda/lib64/stubs -D CUDA_FAST_MATH=1 -D WITH_CUBLAS=1 ${CUDX_COMP} -D WITH_NVCUVID=ON")
 	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
 
+# Enable Non-free?
+	$(eval CTO_OPENCV_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "AForPersonalUseOnly" ]; then echo "-DOPENCV_ENABLE_NONFREE=ON"; else echo ""; fi))
+	$(eval CTO_FFMPEG_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "AForPersonalUseOnly" ]; then echo "--enable-nonfree --enable-libnpp"; else echo ""; fi))
+
 	@echo ""; echo "";
 	@echo "[*****] Build: datamachines/${CTO_NAME}:${CTO_TAG}";\
 
-	@if [ "A${DOCKERPULL}" == "Ayes" ]; then echo "** Base image: ${CTO_FROM}"; docker pull ${CTO_FROM}; echo ""; else if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_UBUNTU=${CTO_UBUNTU} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_CUDNN="${CTO_TF_CUDNN}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_TF_NUMPY="${CTO_TF_NUMPY}" CTO_CUDA11_APT_XTRA="${CUDA11_APT_XTRA}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" CTO_BUILD="${CTO_BUILD}" make actual_build; fi; fi
+	@if [ "A${DOCKERPULL}" == "Ayes" ]; then echo "** Base image: ${CTO_FROM}"; docker pull ${CTO_FROM}; echo ""; else if [ -f ./${CTO_NAME}-${CTO_TAG}.log ]; then echo "  !! Log file (${CTO_NAME}-${CTO_TAG}.log) exists, skipping rebuild (remove to force)"; echo ""; else CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} CTO_UBUNTU=${CTO_UBUNTU} CTO_FROM=${CTO_FROM} CTO_TENSORFLOW_VERSION=${CTO_TENSORFLOW_VERSION} CTO_OPENCV_VERSION=${CTO_OPENCV_VERSION} CTO_NUMPROC=$(CTO_NUMPROC) CTO_CUDA_APT="${CTO_CUDA_APT}" CTO_CUDA_BUILD="${CTO_CUDA_BUILD}" CTO_TF_OPT="${CTO_TF_OPT}" CTO_TF_KERAS="${CTO_TF_KERAS}" CTO_TF_NUMPY="${CTO_TF_NUMPY}" CTO_CUDA11_APT_XTRA="${CUDA11_APT_XTRA}" CTO_DNN_ARCH="${CTO_DNN_ARCH}" CTO_BUILD="${CTO_BUILD}" CTO_OPENCV_NONFREE="${CTO_OPENCV_NONFREE}" CTO_FFMPEG_NONFREE="${CTO_FFMPEG_NONFREE}" make actual_build; fi; fi
 
 
 actual_build:
@@ -228,15 +235,16 @@ actual_build:
 	@echo "  --build-arg CTO_CUDA_APT=\"${CTO_CUDA_APT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_CUDA11_APT_XTRA=\"${CTO_CUDA11_APT_XTRA}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_CUDA_BUILD=\"${CTO_CUDA_BUILD}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_OPENCV_NONFREE=\"${CTO_OPENCV_NONFREE}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg LATEST_BAZELISK=\"${LATEST_BAZELISK}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg LATEST_BAZEL=\"${LATEST_BAZEL}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TF_CUDNN=\"${CTO_TF_CUDNN}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TF_OPT=\"${CTO_TF_OPT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TF_KERAS=\"${CTO_TF_KERAS}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TF_NUMPY=\"${CTO_TF_NUMPY}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_DNN_ARCH=\"${CTO_DNN_ARCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_FFMPEG_VERSION=\"${CTO_FFMPEG_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_FFMPEG_NVCODEC=\"${CTO_FFMPEG_NVCODEC}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
+	@echo "  --build-arg CTO_FFMPEG_NONFREE=\"${CTO_FFMPEG_NONFREE}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_MAGMA=\"${CTO_MAGMA}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TORCH=\"${CTO_TORCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
 	@echo "  --build-arg CTO_TORCHVISION=\"${CTO_TORCHVISION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd

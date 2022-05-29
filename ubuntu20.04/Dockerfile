@@ -4,11 +4,11 @@ FROM ${CTO_FROM}
 ##### Splitting installation into controlled parts:
 ## - base container setup (all apt-get + system + ldd extension)
 ## - Python pip3 preparation + First batch of python tools installs
-## - Magma build and install (GPU only)
 ## - Tensorflow build and install
 ## - FFmpeg build and install
 ## - OpenCV build and install (using FFmpeg)
 ## - Additional python tools installs
+## - Magma build and install (GPU only)
 ## - PyTorch (+ vison + audio) build and install (using FFmpeg + OpenCV)
 
 ##### Base
@@ -205,6 +205,7 @@ RUN python3 -c "import tensorflow"
 ##### FFMPEG
 ARG CTO_FFMPEG_VERSION="4.4.2"
 ARG CTO_FFMPEG_NVCODEC="11.1.5.1"
+ARG CTO_FFMPEG_NONFREE=""
 RUN if [ -f /tmp/.GPU_build ]; \
   then \
     mkdir -p /usr/local/src/builder; \
@@ -220,9 +221,9 @@ RUN mkdir -p /usr/local/src/builder \
   && cd /usr/local/src/builder \
   && if [ -f /tmp/.GPU_build ]; \
     then \
-      time ./configure --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic" --enable-shared --disable-static --enable-gpl --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
+      time ./configure --enable-cuda --enable-cuvid --enable-nvdec --enable-nvenc ${CTO_FFMPEG_NONFREE} --extra-cflags="-I/usr/local/cuda/include/ -fPIC" --extra-ldflags="-L/usr/local/cuda/lib64/ -Wl,-Bsymbolic" --enable-shared --disable-static --enable-gpl --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
     else \
-      time ./configure `cat /tmp/ffmpeg.args` --enable-shared --disable-static --enable-gpl --enable-libnpp --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
+      time ./configure --enable-shared --disable-static --enable-gpl --enable-libv4l2 --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libxvid --enable-libopus --enable-pic --enable-libass --enable-libx264 --enable-libx265 | tee /tmp/ffmpeg_config.txt; \
     fi \
   && make -j${CTO_NUMPROC} install \
   && ldconfig \
@@ -240,6 +241,7 @@ RUN mkdir -p /usr/local/src/builder \
 ARG CTO_OPENCV_VERSION
 ARG CTO_NUMPROC=1
 ARG CTO_CUDA_BUILD
+ARG CTO_OPENCV_NONFREE=""
 RUN mkdir -p /usr/local/src/opencv/build /usr/local/src/opencv_contrib \
   && cd /usr/local/src \
   && wget -q --no-check-certificate https://github.com/opencv/opencv/archive/${CTO_OPENCV_VERSION}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/opencv \
@@ -277,6 +279,7 @@ RUN mkdir -p /usr/local/src/opencv/build /usr/local/src/opencv_contrib \
     -DWITH_WEBP=ON \
     -DWITH_XINE=ON \
     ${CTO_CUDA_BUILD} \
+    ${CTO_OPENCV_NONFREE} \
     .. \
   && time make -j${CTO_NUMPROC} install \
   && ldconfig \
