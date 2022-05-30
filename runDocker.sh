@@ -1,6 +1,6 @@
 #!/bin/bash
 
-D_GPUS="--gpus all"
+D_GPUS="--gpus all -e NVIDIA_VISIBLE_DEVICES=all -e NVIDIA_DRIVER_CAPABILITIES=all"
 
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 

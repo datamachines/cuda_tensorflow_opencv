@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+BUILD=$1
+
 # /etc/ld.so.conf.d/nvidia.conf point to /usr/local/nvidia which seems to be missing, point to the cuda directory install for libraries
 cd /usr/local
 if [ -e cuda ]; then
@@ -17,3 +19,5 @@ if [[ -d $tmp ]] ; then
   ldconfig
   echo "***** CUPTI added to LD path"
 fi
+
+touch /tmp/.${BUILD}_build

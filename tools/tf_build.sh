@@ -8,16 +8,13 @@ set -e
 #  'build' options: --action_env PYTHON_BIN_PATH=/usr/local/bin/python --action_env PYTHON_LIB_PATH=/usr/local/lib/python3.6/dist-packages --python_path=/usr/local/bin/python --action_env TF_CUDA_VERSION=10.1 --action_env TF_CUDNN_VERSION=7 --action_env CUDA_TOOLKIT_PATH=/usr/local/cuda-10.1 --action_env TF_CUDA_COMPUTE_CAPABILITIES=3.5,7.0 --action_env LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/extras/CUPTI/lib64 --action_env GCC_HOST_COMPILER_PATH=/usr/bin/x86_64-linux-gnu-gcc-7 --config=cuda --action_env TF_CONFIGURE_IOS=0
 
 cd /usr/local/src/tensorflow
-# Args: 
-# 1 = CuDNN:yes/no
-# 2 = Tensorflow config build extra (ex:v1)
+# Args: Tensorflow config build extra (ex:v1)
 
 # Default config is to have it "CPU"
 config_add="--config=opt"
 
 if [ "A$1" == "A" ]; then 
-  echo "Usage: $0 CuDNN TF_config"
-  echo "  CuDNN: yes no"
+  echo "Usage: $0 TF_config"
   echo "  TF_config: 1x extra argument to pass to --config= (ex: v1)"
   exit 1
 fi
@@ -29,7 +26,7 @@ fi
 echo "--- Tensorflow Build --- " > /tmp/tf_env.dump
 export TF_NEED_CUDA=0
 cudnn=0
-if [ "A$1" == "Ayes" ]; then
+if [ -f /tmp/.GPU_build ]; then
   cudnn=1
   echo "** CUDNN requested" | tee -a /tmp/tf_env.dump
   # CuDNN8
