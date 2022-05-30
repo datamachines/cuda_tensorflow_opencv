@@ -5,9 +5,9 @@ SHELL := /bin/bash
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
 CTO_RELEASE=pytorch
 
-# The default is not to build OpenCV non-free or build FFmpeg with libnpp
-# Uncomment the following line to build those
-#CTO_ENABLE_NONFREE="ForPersonalUseOnly"
+# The default is not to build OpenCV non-free or build FFmpeg with libnpp, as those would make the images unredistributable 
+# Replace "" by "unredistributable" if you need to use those for a personal build
+CTO_ENABLE_NONFREE=""
 
 # Maximize build speed
 CTO_NUMPROC := $(shell nproc --all)
@@ -71,23 +71,14 @@ LATEST_BAZELISK=1.11.0
 # https://github.com/bazelbuild/bazel (4+ is out but keeping with 3.x for TF < 2.8)
 LATEST_BAZEL=5.1.1
 # https://github.com/keras-team/keras/releases
-# Note: skipping for TF2 < 2.6.0:  built with it
-# TF 2.6.0: Keras been split into a separate PIP package (keras), and its code has been moved to the GitHub repositorykeras-team/keras. The API endpoints for tf.keras stay unchanged, but are now backed by the keras PIP package 
-#TF1_KERAS="keras==2.3.1 tensorflow<2"
 TF2_KERAS="keras"
 
-# 20200615: numpy 1.19.0 breaks TF build
-# 20201204: numpy >= 1.19.0 still breaks build for TF 1.15.4 & 2.3.1
-# 20210211: numpy >= 1.19.0 breaks TF 1.15.5 + numpy >= 1.20 breaks TF 2.4.1
-# 20211027: TF 2.6.0 specifies TF 1.19 so keeping restriction
-#TF1_NUMPY='numpy<1.19.0'
-#TF2_NUMPY='numpy<1.20.0'
 TF2_NUMPY='numpy'
 
 # Magma
 # Release page: https://icl.utk.edu/magma/software/index.html
-CTO_MAGMA="2.6.2"
 # Note: GPU targets (ie ARCH) are directly added in Dockerfile
+CTO_MAGMA="2.6.2"
 
 ## PyTorch (with FFmpeg + OpenCV & Magma if available)
 # Note: same as FFmpeg and Magma, GPU specific selection (including ARCH) are in the Dockerfile
@@ -101,29 +92,13 @@ CTO_TORCHAUDIO="0.11"
 ##########
 
 ##### CuDNN _ Tensorflow _ OpenCV (aka CTO)
-#CTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF1}_${STABLE_OPENCV4}
-# TF > 2.1.0 requires CUDA >= 10.1 -- error when building 2.3.0, skipping CUDNN 9.2
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA9}_${STABLE_TF2}_${STABLE_OPENCV4}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF1}_${STABLE_OPENCV4}
-# Issues with building TF 2.5.0 with CUDA 10.2
-# Builld fixed https://github.com/tensorflow/tensorflow/issues/49983 
-#CTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA10}_${STABLE_TF2}_${STABLE_OPENCV4}
-# TF1 does not handle cudnn8 well, skipping
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV3}
-#CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11}_${STABLE_TF1}_${STABLE_OPENCV4}
-CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV3}
+CTO_BUILDALL =cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV3}
 CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11p}_${STABLE_TF2}_${STABLE_OPENCV4}
 CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV3}
 CTO_BUILDALL+=cudnn_tensorflow_opencv-${STABLE_CUDA11l}_${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Tensorflow _ OpenCV (aka TO)
-#TO_BUILDALL =tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV3}
-#TO_BUILDALL+=tensorflow_opencv-${STABLE_TF1}_${STABLE_OPENCV4}
-TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV3}
+TO_BUILDALL =tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV3}
 TO_BUILDALL+=tensorflow_opencv-${STABLE_TF2}_${STABLE_OPENCV4}
 
 ##### Jupyter Notebook ready based on TO & CTO
@@ -196,8 +171,7 @@ build_prep:
 	@$(eval CTO_TMP20=$(shell if [ "A${CUDA11_APT_XTRA}" == "A" ]; then echo ""; else echo "cuda-libraries-${CTO_CUDA_USEDVERSION} cuda-libraries-dev-${CTO_CUDA_USEDVERSION} cuda-tools-${CTO_CUDA_USEDVERSION} cuda-toolkit-${CTO_CUDA_USEDVERSION} libcublas-${CTO_CUDA_USEDVERSION} libcublas-dev-${CTO_CUDA_USEDVERSION} libcufft-${CTO_CUDA_USEDVERSION} libcufft-dev-${CTO_CUDA_USEDVERSION} libnccl2 libnccl-dev libnpp-${CTO_CUDA_USEDVERSION} libnpp-dev-${CTO_CUDA_USEDVERSION}"; fi))
 	@$(eval CTO_CUDA_APT=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else if [ "A${CTO_UBUNTU}" == "Aubuntu18.04" ]; then echo ${CTO_TMP18}; else echo ${CTO_TMP20}; fi; fi))
 
-	@$(eval CTO_DNN_ARCH=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA9}" ]; then echo "${DNN_ARCH_CUDA9}"; else if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA10}" ]; then echo "${DNN_ARCH_CUDA10}"; else echo "${DNN_ARCH_CUDA11}"; fi; fi))
-	@$(eval CTO_DNN_ARCH=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${CTO_DNN_ARCH}"; fi))
+	@$(eval CTO_DNN_ARCH=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${DNN_ARCH_CUDA11}"; fi))
 	@$(eval CUDX_COMP=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo "${CUDX_COMP} -DCUDA_ARCH_BIN=${CTO_DNN_ARCH}"; fi))
 
 	@$(eval CUDX_FROM=$(shell if [ "A${CUDX}" == "Acudnn" ]; then echo "-cudnn8"; else echo ""; fi))
@@ -208,8 +182,8 @@ build_prep:
 	@$(eval CTO_CUDA_BUILD=$(shell if [ ${CTO_SC} == 1 ]; then echo ""; else echo ${CTO_TMP}; fi))
 
 # Enable Non-free?
-	$(eval CTO_OPENCV_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "AForPersonalUseOnly" ]; then echo "-DOPENCV_ENABLE_NONFREE=ON"; else echo ""; fi))
-	$(eval CTO_FFMPEG_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "AForPersonalUseOnly" ]; then echo "--enable-nonfree --enable-libnpp"; else echo ""; fi))
+	$(eval CTO_OPENCV_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "Aunredistributable" ]; then echo "-DOPENCV_ENABLE_NONFREE=ON"; else echo ""; fi))
+	$(eval CTO_FFMPEG_NONFREE=$(shell if [ "A${CTO_ENABLE_NONFREE}" == "Aunredistributable" ]; then echo "--enable-nonfree --enable-libnpp"; else echo ""; fi))
 
 	@echo ""; echo "";
 	@echo "[*****] Build: datamachines/${CTO_NAME}:${CTO_TAG}";\

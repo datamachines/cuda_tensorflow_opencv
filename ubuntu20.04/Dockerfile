@@ -10,6 +10,7 @@ FROM ${CTO_FROM}
 ## - Additional python tools installs
 ## - Magma build and install (GPU only)
 ## - PyTorch (+ vison + audio) build and install (using FFmpeg + OpenCV)
+## - Final steps: /dmc setup, ...
 
 ##### Base
 
@@ -114,8 +115,12 @@ RUN apt-get install -y \
     zlib1g \
   # FFMpeg (source install, do not install packages: libavcodec-dev libavformat-dev libavresample-dev libavutil-dev libswscale-dev)
     libass-dev \
+    libc6 \
+    libc6-dev \
+    libnuma1 \
     libnuma-dev \
     libopus-dev \
+    libtool \
     libvpx-dev \
   && apt-get clean
 
@@ -177,6 +182,7 @@ RUN pip3 install -U \
   && pip3 install -U keras_preprocessing --no-deps \
   && rm -rf /root/.cache/pip
 
+
 ##### TensorFlow
 
 ## Download & Building TensorFlow from source in same RUN
@@ -203,6 +209,7 @@ RUN python3 -c "import tensorflow"
 
 
 ##### FFMPEG
+
 ARG CTO_FFMPEG_VERSION="4.4.2"
 ARG CTO_FFMPEG_NVCODEC="11.1.5.1"
 ARG CTO_FFMPEG_NONFREE=""
@@ -230,6 +237,7 @@ RUN mkdir -p /usr/local/src/builder \
   && rm -rf /usr/local/src/builder
 # From https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#basic-testing
 # GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+
 
 ##### OpenCV
 
@@ -306,6 +314,7 @@ ARG CTO_TF_KERAS
 RUN pip3 install ${CTO_TF_KERAS}  \
   && rm -rf /root/.cache/pip
 
+
 ##### Magma (for PyTorch GPU only)
 
 ARG CTO_MAGMA=2.6.2
@@ -369,6 +378,9 @@ RUN mkdir -p /usr/local/src/builder \
   && ldconfig \
   && rm -rf /root/.cache/pip /usr/local/src/builder
 RUN python3 -c "import torchaudio"
+
+
+##### Final steps
 
 # Add dataframe display widget
 RUN jupyter nbextension enable --py --sys-prefix widgetsnbextension
