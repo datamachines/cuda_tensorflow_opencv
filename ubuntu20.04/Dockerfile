@@ -324,7 +324,7 @@ RUN if [ -f /tmp/.GPU_build ]; \
     cd /usr/local/src; \
     wget -q --no-check-certificate http://icl.utk.edu/projectsfiles/magma/downloads/magma-${CTO_MAGMA}.tar.gz -O - | tar --strip-components=1 -xz -C /usr/local/src/builder; \
     cd /usr/local/src/builder/build; \
-    time cmake -DGPU_TARGET="Pascal Volta Ampere" .. | tee /tmp/magma_build.txt; \
+    time cmake -DGPU_TARGET="Pascal Volta Ampere" ..; \
     time make -j${CTO_NUMPROC} install; \
     rm -rf /usr/local/src/magma; \
   fi
