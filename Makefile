@@ -241,6 +241,10 @@ actual_build:
 	@fgrep "CUDA NVCC" ${VAR_NT}.log.temp >> ${VAR_CV} || true
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> ${VAR_CV}
 	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh >> ${VAR_TF}
+	@printf "\n\n***** FFmpeg configuration:\n" >> ${VAR_FF}; docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} cat /tmp/ffmpeg_config.txt >> ${VAR_FF}
+	@printf "\n\n***** PyTorch configuration:\n" >> ${VAR_PT}; docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} cat /tmp/torch_config.txt >> ${VAR_PT}
+	@printf "\n\n***** TorchVision configuration:\n" >> ${VAR_PT}; docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} cat /tmp/torchvision_config.txt >> ${VAR_PT}
+	@printf "\n\n***** TorchAudio configuration:\n" >> ${VAR_PT}; docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} cat /tmp/torchaudio_config.txt >> ${VAR_PT}
 	@if [ "A${MLTK_CHECK}" == "Ayes" ]; then CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} make force_mltk_check; fi
 	@mv ${VAR_NT}.log.temp ${VAR_NT}.log
 	@rm -f ./${VAR_NT}.cmd
@@ -248,7 +252,10 @@ actual_build:
 ##### Force ML Toolkit checks
 force_mltk_check:
 	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo/${CTO_NAME}-${CTO_TAG}/${CTO_NAME}-${CTO_TAG}-TensorFlow.txt; exit "$${PIPESTATUS[0]}"
+	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/pt_hw.py | tee -a BuildInfo/${CTO_NAME}-${CTO_TAG}/${CTO_NAME}-${CTO_TAG}-PyTorch.txt; exit "$${PIPESTATUS[0]}"
 
+
+##########
 ##### Jupyter Notebook
 JN_MODE=""
 JN_UID=$(shell id -u)
