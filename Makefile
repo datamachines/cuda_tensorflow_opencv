@@ -27,12 +27,7 @@ MLTK_CHECK="yes"
 # https://docs.nvidia.com/deploy/cuda-compatibility/index.html#binary-compatibility__table-toolkit-driver
 #
 # According to https://hub.docker.com/r/nvidia/cuda/
-# Looking at the tags, Ubuntu 18.04 is still the primary for 9.x and 10.x
-# 
-# CUDA 11 came out in May 2020
-# Nivida released their CUDA11 containers only with Ubuntu 20.04 support
 # https://hub.docker.com/r/nvidia/cuda/tags?page=1&name=20.04
-# 10.2 release now is available with cuddn8
 #
 # Note: CUDA11 minimum version has to match the one used by PyTorch
 STABLE_CUDA11p=11.3.1
@@ -45,7 +40,6 @@ CUDA11_APT_XTRA=""
 # CUDNN needs 5.3 at minimum, extending list from https://en.wikipedia.org/wiki/CUDA#GPUs_supported 
 # Skipping Tegra, Jetson, ... (ie not desktop/server GPUs) from this list
 # Keeping from Pascal and above
-# Also only installing cudnn7 for 18.04 based systems
 DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
@@ -155,8 +149,7 @@ build_prep:
 # Two CUDA11 possiblities, work with both
 	@$(eval STABLE_CUDA11=$(shell if [ "A${CTO_CUDA_PRIMEVERSION}" == "A11.0" ]; then echo ${CTO_CUDA_VERSION}; else echo "_____"; fi))
 
-# Nvidia's container requires Ubuntu 20.04 for CUDA11 + CPU only now use Ubuntu 20.04, only CUDA9 and CUDA10 uses 18.04
-	@$(eval CTO_UBUNTU=$(shell if [ "A${CTO_CUDA_VERSION}" == "A${STABLE_CUDA11}" ]; then echo "ubuntu20.04"; else if [ ${CTO_SC} == 1 ]; then echo "ubuntu20.04"; else echo "ubuntu18.04"; fi; fi))
+	@$(eval CTO_UBUNTU="ubuntu20.04")
 
 	@$(eval CTO_TMP=${CTO_TENSORFLOW_VERSION})
 	@$(eval CTO_TF_OPT=$(shell if [ "A${CTO_TMP}" == "A${STABLE_TF1}" ]; then echo "v1"; else echo "v2"; fi))
