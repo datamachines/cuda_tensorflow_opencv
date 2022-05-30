@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=pytorch
+CTO_RELEASE=20220530
 
 # The default is not to build OpenCV non-free or build FFmpeg with libnpp, as those would make the images unredistributable 
 # Replace "" by "unredistributable" if you need to use those for a personal build
@@ -193,56 +193,61 @@ build_prep:
 
 actual_build:
 # Build prep
-	@mkdir -p BuildInfo-OpenCV
-	@mkdir -p BuildInfo-TensorFlow
+	@$(eval VAR_NT="${CTO_NAME}-${CTO_TAG}")
+	@$(eval VAR_DD="BuildInfo/${VAR_NT}")
+	@$(eval VAR_CV="BuildInfo/${VAR_NT}/${VAR_NT}-OpenCV.txt")
+	@$(eval VAR_TF="BuildInfo/${VAR_NT}/${VAR_NT}-TensorFlow.txt")
+	@$(eval VAR_FF="BuildInfo/${VAR_NT}/${VAR_NT}-FFmpeg.txt")
+	@$(eval VAR_PT="BuildInfo/${VAR_NT}/${VAR_NT}-PyTorch.txt")
+	@mkdir -p ${VAR_DD}
 	@echo ""
-	@echo "  CTO_FROM               : ${CTO_FROM}" | tee BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt | tee BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@echo "  CTO_FROM               : ${CTO_FROM}" | tee ${VAR_CV} | tee ${VAR_TF} | tee ${VAR_FF} | tee ${VAR_PT}
 	@echo ""
 	@echo "-- Docker command to be run:"
-#	@echo "docker buildx build --progress plain --allow network.host --platform linux/amd64 ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "docker build ${DOCKER_BUILD_ARGS} \\" > ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_FROM=\"${CTO_FROM}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_BUILD=\"${CTO_BUILD}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TENSORFLOW_VERSION=\"${CTO_TENSORFLOW_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_OPENCV_VERSION=\"${CTO_OPENCV_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_NUMPROC=\"$(CTO_NUMPROC)\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_CUDA_APT=\"${CTO_CUDA_APT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_CUDA11_APT_XTRA=\"${CTO_CUDA11_APT_XTRA}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_CUDA_BUILD=\"${CTO_CUDA_BUILD}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_OPENCV_NONFREE=\"${CTO_OPENCV_NONFREE}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg LATEST_BAZELISK=\"${LATEST_BAZELISK}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg LATEST_BAZEL=\"${LATEST_BAZEL}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TF_OPT=\"${CTO_TF_OPT}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TF_KERAS=\"${CTO_TF_KERAS}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TF_NUMPY=\"${CTO_TF_NUMPY}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_DNN_ARCH=\"${CTO_DNN_ARCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_FFMPEG_VERSION=\"${CTO_FFMPEG_VERSION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_FFMPEG_NVCODEC=\"${CTO_FFMPEG_NVCODEC}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_FFMPEG_NONFREE=\"${CTO_FFMPEG_NONFREE}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_MAGMA=\"${CTO_MAGMA}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TORCH=\"${CTO_TORCH}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TORCHVISION=\"${CTO_TORCHVISION}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --build-arg CTO_TORCHAUDIO=\"${CTO_TORCHAUDIO}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  --tag=\"datamachines/${CTO_NAME}:${CTO_TAG}\" \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  -f ${CTO_UBUNTU}/Dockerfile \\" >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@echo "  ." >> ${CTO_NAME}-${CTO_TAG}.cmd
-	@cat ${CTO_NAME}-${CTO_TAG}.cmd | tee ${CTO_NAME}-${CTO_TAG}.log.temp | tee -a BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
-	@echo "" | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp
+#	@echo "docker buildx build --progress plain --allow network.host --platform linux/amd64 ${DOCKER_BUILD_ARGS} \\" > ${VAR_NT}.cmd
+	@echo "docker build ${DOCKER_BUILD_ARGS} \\" > ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_FROM=\"${CTO_FROM}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_BUILD=\"${CTO_BUILD}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TENSORFLOW_VERSION=\"${CTO_TENSORFLOW_VERSION}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_OPENCV_VERSION=\"${CTO_OPENCV_VERSION}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_NUMPROC=\"$(CTO_NUMPROC)\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_CUDA_APT=\"${CTO_CUDA_APT}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_CUDA11_APT_XTRA=\"${CTO_CUDA11_APT_XTRA}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_CUDA_BUILD=\"${CTO_CUDA_BUILD}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_OPENCV_NONFREE=\"${CTO_OPENCV_NONFREE}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg LATEST_BAZELISK=\"${LATEST_BAZELISK}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg LATEST_BAZEL=\"${LATEST_BAZEL}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TF_OPT=\"${CTO_TF_OPT}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TF_KERAS=\"${CTO_TF_KERAS}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TF_NUMPY=\"${CTO_TF_NUMPY}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_DNN_ARCH=\"${CTO_DNN_ARCH}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_FFMPEG_VERSION=\"${CTO_FFMPEG_VERSION}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_FFMPEG_NVCODEC=\"${CTO_FFMPEG_NVCODEC}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_FFMPEG_NONFREE=\"${CTO_FFMPEG_NONFREE}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_MAGMA=\"${CTO_MAGMA}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TORCH=\"${CTO_TORCH}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TORCHVISION=\"${CTO_TORCHVISION}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --build-arg CTO_TORCHAUDIO=\"${CTO_TORCHAUDIO}\" \\" >> ${VAR_NT}.cmd
+	@echo "  --tag=\"datamachines/${CTO_NAME}:${CTO_TAG}\" \\" >> ${VAR_NT}.cmd
+	@echo "  -f ${CTO_UBUNTU}/Dockerfile \\" >> ${VAR_NT}.cmd
+	@echo "  ." >> ${VAR_NT}.cmd
+	@cat ${VAR_NT}.cmd | tee ${VAR_NT}.log.temp | tee -a ${VAR_CV} | tee -a ${VAR_TF} | tee -a ${VAR_FF} | tee -a ${VAR_PT}
+	@echo "" | tee -a ${VAR_NT}.log.temp
 	@echo "Press Ctl+c within 5 seconds to cancel"
 	@for i in 5 4 3 2 1; do echo -n "$$i "; sleep 1; done; echo ""
 # Actual build
-	@chmod +x ./${CTO_NAME}-${CTO_TAG}.cmd
-	@./${CTO_NAME}-${CTO_TAG}.cmd | tee -a ${CTO_NAME}-${CTO_TAG}.log.temp; exit "$${PIPESTATUS[0]}"
-	@fgrep "CUDA NVCC" ${CTO_NAME}-${CTO_TAG}.log.temp >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt || true
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> BuildInfo-OpenCV/${CTO_NAME}-${CTO_TAG}.txt
-	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh >> BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt
+	@chmod +x ./${VAR_NT}.cmd
+	@./${VAR_NT}.cmd | tee -a ${VAR_NT}.log.temp; exit "$${PIPESTATUS[0]}"
+	@fgrep "CUDA NVCC" ${VAR_NT}.log.temp >> ${VAR_CV} || true
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} opencv_version -v >> ${VAR_CV}
+	@docker run --rm datamachines/${CTO_NAME}:${CTO_TAG} /tmp/tf_info.sh >> ${VAR_TF}
 	@if [ "A${MLTK_CHECK}" == "Ayes" ]; then CTO_NAME=${CTO_NAME} CTO_TAG=${CTO_TAG} make force_mltk_check; fi
-	@mv ${CTO_NAME}-${CTO_TAG}.log.temp ${CTO_NAME}-${CTO_TAG}.log
-	@rm -f ./${CTO_NAME}-${CTO_TAG}.cmd
+	@mv ${VAR_NT}.log.temp ${VAR_NT}.log
+	@rm -f ./${VAR_NT}.cmd
 
 ##### Force ML Toolkit checks
 force_mltk_check:
-	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo-TensorFlow/${CTO_NAME}-${CTO_TAG}.txt; exit "$${PIPESTATUS[0]}"
+	@docker run --rm -v `pwd`:/dmc --gpus all datamachines/${CTO_NAME}:${CTO_TAG} python3 /dmc/test/tf_hw.py | tee -a BuildInfo/${CTO_NAME}-${CTO_TAG}/${CTO_NAME}-${CTO_TAG}-TensorFlow.txt; exit "$${PIPESTATUS[0]}"
 
 ##### Jupyter Notebook
 JN_MODE=""
