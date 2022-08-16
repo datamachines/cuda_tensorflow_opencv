@@ -51,5 +51,6 @@ inc/
 # Mac cache
 .DS_Store
 
-# Test MP4 files
+# Test video files
 *.mp4
+*.mkv
