@@ -110,6 +110,12 @@ Similarly, the `tensorflow_opencv` and `cudnn_tensorflow_opencv` tags follow the
 
 ##  3. <a name='Buildingtheimages'></a>Building the images
 
+Building a GPU container requires [`nvidia-docker`](https://github.com/NVIDIA/nvidia-docker) and its `nvidia` container runtime to be the default. To do so, after installation, add `"default-runtime": "nvidia"` to the `/etc/docker/daemon.json` configuration file and restarting the docker daemon using `sudo systemctl restart docker` as described in https://docs.nvidia.com/dgx/nvidia-container-runtime-upgrade/index.html#using-nv-container-runtime . You can test it is valid by running `docker run --rm -it nvidia/cuda:11.2.1-runtime nvidia-smi` from the command line (this command does not have the `--runtime nvidia`). If you get details on your GPU(s) setup, `nvidia` is your `Default Runtime` (use `docker info` for further details).
+
+Building a CPU image requires the `nvidia` runtime disabled: comment the `default-runtime` line above and restart docker.
+
+On GPU build: we do our best effort to specify the GPU architectures; please let us know if some that should be present are missing.
+
 The tag for any image built will contain the `datamachines/` organization addition that is found in the publicly released pre-built container images.
 
 Use the provided `Makefile` by running `make` to get a list of targets to build:
