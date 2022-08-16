@@ -186,6 +186,8 @@ build_prep:
 
 actual_build:
 # Build prep
+	@$(eval CHECK_DOCKER_RUNTIME=$(shell docker run --rm -it ${CTO_FROM} nvidia-smi >& /dev/null && echo "GPU" || echo "CPU"))
+	@if [ "A${CTO_BUILD}" != "A${CHECK_DOCKER_RUNTIME}" ]; then echo "ERROR: Unable to build, default runtime is ${CHECK_DOCKER_RUNTIME} and build requires ${CTO_BUILD}, aborting"; echo ""; echo ""; exit 1; fi
 	@$(eval VAR_NT="${CTO_NAME}-${CTO_TAG}")
 	@$(eval VAR_DD="BuildInfo/${VAR_NT}")
 	@$(eval VAR_CV="BuildInfo/${VAR_NT}/${VAR_NT}-OpenCV.txt")
@@ -195,6 +197,8 @@ actual_build:
 	@mkdir -p ${VAR_DD}
 	@echo ""
 	@echo "  CTO_FROM               : ${CTO_FROM}" | tee ${VAR_CV} | tee ${VAR_TF} | tee ${VAR_FF} | tee ${VAR_PT}
+	@echo ""
+	@echo -n "  Built with Docker"; docker info | grep "Default Runtime"
 	@echo ""
 	@echo "-- Docker command to be run:"
 #	@echo "docker buildx build --progress plain --allow network.host --platform linux/amd64 ${DOCKER_BUILD_ARGS} \\" > ${VAR_NT}.cmd
