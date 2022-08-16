@@ -237,7 +237,9 @@ RUN mkdir -p /usr/local/src/builder \
   && rm -rf /usr/local/src/builder
 # From https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#basic-testing
 # GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+# GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuvid -c:v h264_cuvid -i in.mp4 -c:v hevc_nvenc out.mkv
 
+ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
 ##### OpenCV
 
@@ -352,10 +354,7 @@ RUN mkdir -p /usr/local/src \
   && rm -rf /root/.cache/pip /usr/local/src/pytorch
 RUN python3 -c "import torch"
 
-ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
-
+# Note: NOT building with Video Codec SDK as it requires an Nvidia account
 ARG CTO_TORCHVISION=0.12
 RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
@@ -412,6 +411,9 @@ RUN chmod +x /tmp/tf_info.sh \
 # Setting up working directory 
 RUN mkdir /dmc
 WORKDIR /dmc
+
+#ENV NVIDIA_VISIBLE_DEVICES all
+#ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 
 CMD bash
 
