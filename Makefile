@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20220530
+CTO_RELEASE=20220815
 
 # The default is not to build OpenCV non-free or build FFmpeg with libnpp, as those would make the images unredistributable 
 # Replace "" by "unredistributable" if you need to use those for a personal build
@@ -44,11 +44,11 @@ DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
 STABLE_OPENCV3=3.4.16
-STABLE_OPENCV4=4.5.5
+STABLE_OPENCV4=4.6.0
 
 # FFmpeg
 # Release list: https://ffmpeg.org/download.html
-# Note: FFmpeg < 5 because https://github.com/pytorch/vision/issues/5928
+# Note: FFmpeg < 5 because https://github.com/opencv/opencv/issues/20147
 # Note: GPU extensions are added directly in the Dockerfile
 CTO_FFMPEG_VERSION=4.4.2
 # https://github.com/FFmpeg/nv-codec-headers/releases
@@ -74,14 +74,14 @@ TF2_NUMPY='numpy'
 # Note: GPU targets (ie ARCH) are directly added in Dockerfile
 CTO_MAGMA="2.6.2"
 
-## PyTorch (with FFmpeg + OpenCV & Magma if available)
+## PyTorch (with FFmpeg + OpenCV & Magma if available) https://pytorch.org/
 # Note: same as FFmpeg and Magma, GPU specific selection (including ARCH) are in the Dockerfile
 # Use release branch https://github.com/pytorch/pytorch
-CTO_TORCH="1.11"
+CTO_TORCH="1.12.1"
 # Use release branch https://github.com/pytorch/vision
-CTO_TORCHVISION="0.12"
+CTO_TORCHVISION="0.13.1"
 # Use release branch https://github.com/pytorch/audio
-CTO_TORCHAUDIO="0.11"
+CTO_TORCHAUDIO="0.12.1"
 
 ##########
 
