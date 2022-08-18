@@ -3,7 +3,7 @@ SHELL := /bin/bash
 .PHONY: all build_all actual_build build_prep
 
 # Release to match data of Dockerfile and follow YYYYMMDD pattern
-CTO_RELEASE=20220530
+CTO_RELEASE=20220815
 
 # The default is not to build OpenCV non-free or build FFmpeg with libnpp, as those would make the images unredistributable 
 # Replace "" by "unredistributable" if you need to use those for a personal build
@@ -44,11 +44,11 @@ DNN_ARCH_CUDA11=6.0,6.1,7.0,7.5,8.0,8.6
 
 # According to https://opencv.org/releases/
 STABLE_OPENCV3=3.4.16
-STABLE_OPENCV4=4.5.5
+STABLE_OPENCV4=4.6.0
 
 # FFmpeg
 # Release list: https://ffmpeg.org/download.html
-# Note: FFmpeg < 5 because https://github.com/pytorch/vision/issues/5928
+# Note: FFmpeg < 5 because https://github.com/opencv/opencv/issues/20147
 # Note: GPU extensions are added directly in the Dockerfile
 CTO_FFMPEG_VERSION=4.4.2
 # https://github.com/FFmpeg/nv-codec-headers/releases
@@ -74,14 +74,14 @@ TF2_NUMPY='numpy'
 # Note: GPU targets (ie ARCH) are directly added in Dockerfile
 CTO_MAGMA="2.6.2"
 
-## PyTorch (with FFmpeg + OpenCV & Magma if available)
+## PyTorch (with FFmpeg + OpenCV & Magma if available) https://pytorch.org/
 # Note: same as FFmpeg and Magma, GPU specific selection (including ARCH) are in the Dockerfile
 # Use release branch https://github.com/pytorch/pytorch
-CTO_TORCH="1.11"
+CTO_TORCH="1.12.1"
 # Use release branch https://github.com/pytorch/vision
-CTO_TORCHVISION="0.12"
+CTO_TORCHVISION="0.13.1"
 # Use release branch https://github.com/pytorch/audio
-CTO_TORCHAUDIO="0.11"
+CTO_TORCHAUDIO="0.12.1"
 
 ##########
 
@@ -114,7 +114,7 @@ all:
 	@echo "  jupyter_cto: "; echo -n "      "; echo ${CTO_JUP}
 	@echo "  jupyter_all: jupyter_to jupyter_cto"
 	@echo ""
-	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers"
+	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers and for PyTorch vision, we use of the Nvidia runtime as default for build"
 
 ## special command to build all targets
 build_all:
@@ -186,6 +186,8 @@ build_prep:
 
 actual_build:
 # Build prep
+	@$(eval CHECK_DOCKER_RUNTIME=$(shell docker run --rm -it ${CTO_FROM} nvidia-smi >& /dev/null && echo "GPU" || echo "CPU"))
+	@if [ "A${CTO_BUILD}" != "A${CHECK_DOCKER_RUNTIME}" ]; then echo "ERROR: Unable to build, default runtime is ${CHECK_DOCKER_RUNTIME} and build requires ${CTO_BUILD}, aborting"; echo ""; echo ""; exit 1; fi
 	@$(eval VAR_NT="${CTO_NAME}-${CTO_TAG}")
 	@$(eval VAR_DD="BuildInfo/${VAR_NT}")
 	@$(eval VAR_CV="BuildInfo/${VAR_NT}/${VAR_NT}-OpenCV.txt")
@@ -195,6 +197,8 @@ actual_build:
 	@mkdir -p ${VAR_DD}
 	@echo ""
 	@echo "  CTO_FROM               : ${CTO_FROM}" | tee ${VAR_CV} | tee ${VAR_TF} | tee ${VAR_FF} | tee ${VAR_PT}
+	@echo ""
+	@echo -n "  Built with Docker"; docker info | grep "Default Runtime"
 	@echo ""
 	@echo "-- Docker command to be run:"
 #	@echo "docker buildx build --progress plain --allow network.host --platform linux/amd64 ${DOCKER_BUILD_ARGS} \\" > ${VAR_NT}.cmd

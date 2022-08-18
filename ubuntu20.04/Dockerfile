@@ -237,7 +237,9 @@ RUN mkdir -p /usr/local/src/builder \
   && rm -rf /usr/local/src/builder
 # From https://docs.nvidia.com/video-technologies/video-codec-sdk/ffmpeg-with-nvidia-gpu/#basic-testing
 # GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuda -hwaccel_output_format cuda -i input.mp4 -c:a copy -c:v h264_nvenc -b:v 5M output.mp4
+# GPU Testing: ffmpeg -y -vsync 0 -hwaccel cuvid -c:v h264_cuvid -i in.mp4 -c:v hevc_nvenc out.mkv
 
+ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
 
 ##### OpenCV
 
@@ -335,8 +337,9 @@ RUN if [ -f /tmp/.GPU_build ]; \
 ARG CTO_TORCH=1.11
 RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
-  && git clone --depth 1 --branch release/${CTO_TORCH}  https://github.com/pytorch/pytorch.git  \
+  && git clone --depth 1 --branch v${CTO_TORCH} https://github.com/pytorch/pytorch.git  \
   && cd /usr/local/src/pytorch \
+  && git submodule sync && git submodule update --init --recursive \
   && if [ -f /tmp/.GPU_build ]; \
     then \
       time env USE_CUDA=ON USE_CUDNN=ON TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX" USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torch_config.txt; \
@@ -351,12 +354,20 @@ RUN mkdir -p /usr/local/src \
   && rm -rf /root/.cache/pip /usr/local/src/pytorch
 RUN python3 -c "import torch"
 
+# Note: NOT building with Video Codec SDK as it requires an Nvidia account
 ARG CTO_TORCHVISION=0.12
 RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
-  && git clone --depth 1 --branch release/${CTO_TORCHVISION}  https://github.com/pytorch/vision.git  \
+  && git clone  --depth 1 --branch v${CTO_TORCHVISION} https://github.com/pytorch/vision.git  \
   && cd /usr/local/src/vision \
-  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt" \
+  && git submodule sync && git submodule update --init --recursive \
+  && if [ -f /tmp/.GPU_build ]; \
+    then \
+      time env FORCE_CUDA=ON CUDA_HOME=/usr/local/nvidia USE_CUDNN=ON TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX" USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt; \
+    else \
+      time env FORCE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt; \
+    fi \
+#  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchvision_config.txt" \
   && time pip3 install /usr/local/src/vision/dist/*.whl \
   && cd /tmp \
   && perl -i.bak -pe 'exit if m%^running bdist_wheel%' torchvision_config.txt \
@@ -366,17 +377,24 @@ RUN mkdir -p /usr/local/src \
 RUN python3 -c "import torchvision"
 
 ARG CTO_TORCHAUDIO=0.11
-RUN mkdir -p /usr/local/src/builder \
+RUN mkdir -p /usr/local/src \
   && cd /usr/local/src \
-  && git clone --depth 1 --branch release/${CTO_TORCHAUDIO}  https://github.com/pytorch/audio.git \
+  && git clone --depth 1 --branch v${CTO_TORCHAUDIO} https://github.com/pytorch/audio.git \
   && cd /usr/local/src/audio \
-  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchaudio_config.txt" \
+  && git submodule sync && git submodule update --init --recursive \
+  && if [ -f /tmp/.GPU_build ]; \
+    then \
+      time env USE_CUDA=ON USE_CUDNN=ON TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0 8.6+PTX" USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torchaudio_config.txt; \
+    else \
+      time env USE_CUDA=OFF USE_CUDNN=OFF USE_MKLDNN=ON USE_FFMPEG=ON USE_OPENCV=ON python3 ./setup.py bdist_wheel | tee /tmp/torchaudio_config.txt; \
+    fi \
+#  && time sh -c "python3 ./setup.py bdist_wheel | tee /tmp/torchaudio_config.txt" \
   && time pip3 install /usr/local/src/audio/dist/*.whl \
   && cd /tmp \
   && perl -i.bak -pe 'exit if m%^-- Configuring done%' torchaudio_config.txt \
   && sh -c "cmp --silent torchaudio_config.txt torchaudio_config.txt.bak && exit 1 || rm torchaudio_config.txt.bak" \
   && ldconfig \
-  && rm -rf /root/.cache/pip /usr/local/src/builder
+  && rm -rf /root/.cache/pip /usr/local/src/audio
 RUN python3 -c "import torchaudio"
 
 
@@ -390,14 +408,12 @@ COPY tools/tf_info.sh /tmp/
 RUN chmod +x /tmp/tf_info.sh \
   && touch /.within_container
 
-#ENV NVIDIA_VISIBLE_DEVICES all
-#ENV NVIDIA_DRIVER_CAPABILITIES all
-
-ENV LD_LIBRARY_PATH /usr/local/lib:$LD_LIBRARY_PATH
-
 # Setting up working directory 
 RUN mkdir /dmc
 WORKDIR /dmc
+
+#ENV NVIDIA_VISIBLE_DEVICES all
+#ENV NVIDIA_DRIVER_CAPABILITIES video,compute,utility
 
 CMD bash
 
