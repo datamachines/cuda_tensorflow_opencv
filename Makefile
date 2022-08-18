@@ -114,7 +114,7 @@ all:
 	@echo "  jupyter_cto: "; echo -n "      "; echo ${CTO_JUP}
 	@echo "  jupyter_all: jupyter_to jupyter_cto"
 	@echo ""
-	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers"
+	@echo "Note: TensorFlow GPU support can only be compiled for CuDNN containers and for PyTorch vision, we use of the Nvidia runtime as default for build"
 
 ## special command to build all targets
 build_all:
